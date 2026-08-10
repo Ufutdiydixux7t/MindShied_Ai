@@ -1,0 +1,7 @@
+- [ ] Define `SettingsSubScreen` enum to track sub-navigation in `HomeScreen.kt`
+- [ ] Create `AccountSettingsScreen` composable
+- [ ] Create `SecuritySettingsScreen` composable
+- [ ] Create `NotificationsSettingsScreen` and `PrivacySettingsScreen` placeholders
+- [ ] Update `MoreContent` to handle sub-navigation logic
+- [ ] Add "Back" functionality to sub-screens
+- [ ] Verify functionality on device

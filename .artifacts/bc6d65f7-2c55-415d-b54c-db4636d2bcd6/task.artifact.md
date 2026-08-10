@@ -1,0 +1,9 @@
+- [ ] Update `Color.kt` with refined palette
+- [ ] Configure `Type.kt` with Cairo font integration
+- [ ] Implement `LoginScreen.kt` UI refinements:
+    - [ ] Create Custom Logo Composable (Shield + Brain)
+    - [ ] Update Text Fields (rounded, icons in circles)
+    - [ ] Add "Remember Me" and "Forgot Password" row
+    - [ ] Customize Login Button with arrow
+    - [ ] Add Divider and Footer section
+- [ ] Verify build and preview
