@@ -1,6 +1,8 @@
 package com.example.mindshieldai.ui.theme
 
 import android.app.Activity
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.MaterialTheme
@@ -38,6 +40,7 @@ private val DarkColorScheme = darkColorScheme(
     surface = Color(0xFF1B1B1F),
 )
 
+@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 @Composable
 fun MindShieldAiTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

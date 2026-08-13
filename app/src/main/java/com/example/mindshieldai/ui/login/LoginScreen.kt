@@ -235,21 +235,13 @@ fun LoginScreen(
                     )
                     TextButton(onClick = onRegisterClick) {
                         Text(
-                            text = "إنشاء حساب",
+                            text = "إنشاء حساب جديد",
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 color = DarkBlue,
                                 fontWeight = FontWeight.Bold
                             )
                         )
                     }
-                }
-
-                // Guest Mode
-                TextButton(onClick = onGuestClick) {
-                    Text(
-                        text = "المتابعة كزائر",
-                        style = MaterialTheme.typography.bodyMedium.copy(color = Secondary)
-                    )
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
