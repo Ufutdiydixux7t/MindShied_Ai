@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mindguard.core.components.AppTopBar
 import com.mindguard.core.theme.DarkBlue
 import com.mindguard.core.theme.Primary
 
@@ -38,8 +39,6 @@ enum class GeneralSettingsSubScreen {
 
 @Composable
 fun GeneralSettingsScreen(
-    isDarkMode: Boolean,
-    onDarkModeChange: (Boolean) -> Unit,
     onBack: () -> Unit
 ) {
     var currentSubScreen by remember { mutableStateOf(GeneralSettingsSubScreen.Main) }
@@ -57,40 +56,7 @@ fun GeneralSettingsScreen(
                         .padding(horizontal = 16.dp)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    // Top Bar (Compact & Sleek)
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column {
-                            Text(
-                                text = "الإعدادات",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = DarkBlue,
-                                fontSize = 21.sp
-                            )
-                            Spacer(modifier = Modifier.height(1.dp))
-                            Text(
-                                text = "إعدادات التطبيق",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color.Gray,
-                                fontSize = 12.sp
-                            )
-                        }
-
-                        Icon(
-                            imageVector = Icons.Default.ChevronLeft,
-                            contentDescription = "Back",
-                            tint = DarkBlue,
-                            modifier = Modifier
-                                .size(24.dp)
-                                .clickable(onClick = onBack)
-                        )
-                    }
+                    AppTopBar(title = "الإعدادات العامة", onBack = onBack)
 
                     // Section 1: التفضيلات
                     GeneralSettingsSectionTitle("التفضيلات")
@@ -106,13 +72,6 @@ fun GeneralSettingsScreen(
                                 title = "اللغة",
                                 icon = Icons.Outlined.Language,
                                 onClick = { currentSubScreen = GeneralSettingsSubScreen.Language }
-                            )
-                            HorizontalDivider(modifier = Modifier.padding(horizontal = 14.dp), color = Color(0xFFF1F5F9))
-                            GeneralSettingsSwitchRow(
-                                title = "الوضع الداكن",
-                                icon = Icons.Outlined.NightsStay,
-                                checked = isDarkMode,
-                                onCheckedChange = onDarkModeChange
                             )
                             HorizontalDivider(modifier = Modifier.padding(horizontal = 14.dp), color = Color(0xFFF1F5F9))
                             GeneralSettingsSwitchRow(

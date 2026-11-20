@@ -43,8 +43,6 @@ enum class MoreSubScreen {
 
 @Composable
 fun SettingsScreen(
-    isDarkMode: Boolean,
-    onDarkModeChange: (Boolean) -> Unit = {},
     onLogout: () -> Unit = {},
     onNavigateToTab: (Int) -> Unit = {},
     navController: NavController? = null,
@@ -70,7 +68,6 @@ fun SettingsScreen(
                     ProfileHeaderCard(
                         name = "أحمد محمد",
                         email = "ahmed.mohamed@example.com",
-                        isDarkMode = isDarkMode,
                         profileImageUri = profileImageUri,
                         onClick = { navController?.navigate("account_profile") }
                     )
@@ -191,8 +188,6 @@ fun SettingsScreen(
             }
 
             MoreSubScreen.GeneralSettings -> GeneralSettingsScreen(
-                isDarkMode = isDarkMode,
-                onDarkModeChange = onDarkModeChange,
                 onBack = { currentSubScreen = MoreSubScreen.Main }
             )
 
@@ -209,7 +204,6 @@ fun SettingsScreen(
 fun ProfileHeaderCard(
     name: String,
     email: String,
-    isDarkMode: Boolean = false,
     profileImageUri: Uri? = null,
     onClick: () -> Unit
 ) {
@@ -263,7 +257,7 @@ fun ProfileHeaderCard(
                 Surface(
                     modifier = Modifier.size(54.dp),
                     shape = CircleShape,
-                    color = if (isDarkMode) Color.DarkGray else Color(0xFFE2E8F0)
+                        color = Color(0xFFE2E8F0)
                 ) {
                     if (profileImageUri != null) {
                         AsyncImage(

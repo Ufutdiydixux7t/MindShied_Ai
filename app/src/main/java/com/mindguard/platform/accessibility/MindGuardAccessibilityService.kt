@@ -252,7 +252,7 @@ class MindGuardAccessibilityService : AccessibilityService() {
             bottomMargin = 30
         })
         content.addView(subtitle, LinearLayout.LayoutParams(-1, -2).apply {
-            bottomMargin = 44
+            bottomMargin = 72
         })
         content.addView(button, LinearLayout.LayoutParams(buttonWidth, buttonHeight).apply {
             gravity = Gravity.CENTER_HORIZONTAL

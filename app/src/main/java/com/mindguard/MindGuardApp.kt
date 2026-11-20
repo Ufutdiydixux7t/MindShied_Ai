@@ -15,12 +15,11 @@ fun MindGuardApp(
     blockedAppName: String? = null,
     blockedPackageName: String? = null
 ) {
-    var isDarkMode by remember { mutableStateOf(false) }
     var profileImageUri by remember { mutableStateOf<Uri?>(null) }
     var showBlockedScreen by remember(blockedAppName) { mutableStateOf(blockedAppName != null) }
     val context = LocalContext.current
 
-    MindShieldAiTheme(darkTheme = isDarkMode) {
+    MindShieldAiTheme {
         if (showBlockedScreen && blockedAppName != null) {
             BlockedScreen(
                 blockedAppName = blockedAppName,
@@ -40,8 +39,6 @@ fun MindGuardApp(
             AppNavHost(
                 navController = navController,
                 startAtHome = blockedAppName != null,
-                isDarkMode = isDarkMode,
-                onDarkModeChange = { isDarkMode = it },
                 profileImageUri = profileImageUri,
                 onProfileImageChange = { newUri ->
                     profileImageUri = newUri ?: profileImageUri

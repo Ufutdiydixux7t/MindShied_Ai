@@ -17,8 +17,6 @@ import com.mindguard.feature.settings.GeneralSettingsScreen
 fun AppNavHost(
     navController: NavHostController,
     startAtHome: Boolean = false,
-    isDarkMode: Boolean,
-    onDarkModeChange: (Boolean) -> Unit,
     profileImageUri: Uri?,
     onProfileImageChange: (Uri?) -> Unit
 ) {
@@ -77,8 +75,6 @@ fun AppNavHost(
             HomeScreen(
                 userName = userName,
                 navController = navController,
-                isDarkMode = isDarkMode,
-                onDarkModeChange = onDarkModeChange,
                 profileImageUri = profileImageUri
             )
         }
@@ -93,8 +89,6 @@ fun AppNavHost(
 
         composable(AppRoute.GeneralSettings.route) {
             GeneralSettingsScreen(
-                isDarkMode = isDarkMode,
-                onDarkModeChange = onDarkModeChange,
                 onBack = { navController.popBackStack() }
             )
         }

@@ -25,8 +25,6 @@ import com.mindguard.feature.usage.UsageScreen
 fun HomeScreen(
     userName: String = "أحمد",
     navController: NavController? = null,
-    isDarkMode: Boolean = false,
-    onDarkModeChange: (Boolean) -> Unit = {},
     profileImageUri: Uri? = null
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
@@ -71,8 +69,6 @@ fun HomeScreen(
                         2 -> ProtectionScreen()
                         3 -> ParentHomeScreen()
                         4 -> SettingsScreen(
-                            isDarkMode = isDarkMode,
-                            onDarkModeChange = onDarkModeChange,
                             onLogout = {
                                 navController?.navigate("login") {
                                     popUpTo("login") { inclusive = true }
