@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.rememberDrawablePainter
+import coil.compose.rememberAsyncImagePainter
 import com.mindguard.core.theme.Primary
 import com.mindguard.core.theme.Success
 import com.mindguard.core.theme.TextDark
@@ -685,7 +685,7 @@ fun AppBrandIconBadge(appId: String, appName: String, icon: android.graphics.dra
     ) {
         if (icon != null) {
             Image(
-                painter = rememberDrawablePainter(icon),
+                painter = rememberAsyncImagePainter(icon),
                 contentDescription = appName,
                 modifier = Modifier.padding(7.dp)
             )
