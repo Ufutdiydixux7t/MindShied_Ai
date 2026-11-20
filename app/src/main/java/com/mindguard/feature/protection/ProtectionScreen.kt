@@ -9,6 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.Image
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.rememberDrawablePainter
 import com.mindguard.core.theme.Primary
 import com.mindguard.core.theme.Success
 import com.mindguard.core.theme.TextDark
@@ -36,6 +38,10 @@ fun ProtectionScreen(
     viewModel: ProtectionViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadInstalledApps()
+    }
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         AnimatedContent(
@@ -352,16 +358,30 @@ fun AppProtectionSubScreen(
                 modifier = Modifier.padding(top = 4.dp, bottom = 2.dp)
             )
 
-            // List of Expandable App Cards (TikTok, Instagram, YouTube, Snapchat)
-            uiState.appProtectionItems.forEach { item ->
-                ExpandableAppProtectionCard(
-                    item = item,
-                    onToggleExpand = { viewModel.toggleAppExpansion(item.id) },
-                    onReelsToggle = { viewModel.toggleAppReelsBlock(item.id, it) },
-                    onReelsDurationSelect = { viewModel.setAppReelsDuration(item.id, it) },
-                    onFreezeToggle = { viewModel.toggleAppFreeze(item.id, it) },
-                    onFreezeDurationSelect = { viewModel.setAppFreezeDuration(item.id, it) }
-                )
+            if (uiState.appProtectionItems.isEmpty()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(
+                        text = "لا توجد تطبيقات قابلة للتشغيل على الجهاز",
+                        modifier = Modifier.fillMaxWidth().padding(20.dp),
+                        color = TextGray,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                }
+            } else {
+                uiState.appProtectionItems.forEach { item ->
+                    ExpandableAppProtectionCard(
+                        item = item,
+                        onToggleExpand = { viewModel.toggleAppExpansion(item.id) },
+                        onReelsToggle = { viewModel.toggleAppReelsBlock(item.id, it) },
+                        onReelsDurationSelect = { viewModel.setAppReelsDuration(item.id, it) },
+                        onFreezeToggle = { viewModel.toggleAppFreeze(item.id, it) },
+                        onFreezeDurationSelect = { viewModel.setAppFreezeDuration(item.id, it) }
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -404,7 +424,7 @@ fun ExpandableAppProtectionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Right App Icon Badge
-                AppBrandIconBadge(appId = item.id)
+                AppBrandIconBadge(appId = item.id, appName = item.name, icon = item.icon)
 
                 Spacer(modifier = Modifier.width(12.dp))
 
@@ -649,7 +669,7 @@ fun ExpandableAppProtectionCard(
 }
 
 @Composable
-fun AppBrandIconBadge(appId: String) {
+fun AppBrandIconBadge(appId: String, appName: String, icon: android.graphics.drawable.Drawable?) {
     val (bgColor, iconVector) = when (appId.lowercase()) {
         "tiktok" -> Color(0xFF000000) to Icons.Outlined.MusicNote
         "instagram" -> Color(0xFFE1306C) to Icons.Outlined.CameraAlt
@@ -663,12 +683,20 @@ fun AppBrandIconBadge(appId: String) {
         shape = RoundedCornerShape(12.dp),
         color = bgColor
     ) {
-        Icon(
-            imageVector = iconVector,
-            contentDescription = appId,
-            tint = if (appId.lowercase() == "snapchat") Color.Black else Color.White,
-            modifier = Modifier.padding(10.dp)
-        )
+        if (icon != null) {
+            Image(
+                painter = rememberDrawablePainter(icon),
+                contentDescription = appName,
+                modifier = Modifier.padding(7.dp)
+            )
+        } else {
+            Icon(
+                imageVector = iconVector,
+                contentDescription = appName,
+                tint = if (appId.lowercase() == "snapchat") Color.Black else Color.White,
+                modifier = Modifier.padding(10.dp)
+            )
+        }
     }
 }
 

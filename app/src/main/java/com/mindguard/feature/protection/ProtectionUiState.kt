@@ -1,5 +1,7 @@
 package com.mindguard.feature.protection
 
+import android.graphics.drawable.Drawable
+
 enum class ProtectionSubScreen {
     APP_PROTECTION,
     CONTENT_PROTECTION,
@@ -16,6 +18,7 @@ enum class BlockDurationEditMode {
 data class AppProtectionItemState(
     val id: String,
     val name: String,
+    val icon: Drawable? = null,
     val isExpanded: Boolean = false,
     val isReelsBlocked: Boolean = true,
     val reelsBlockDuration: String = "30 دقيقة",
@@ -26,13 +29,8 @@ data class AppProtectionItemState(
 data class ProtectionUiState(
     val activeSubScreen: ProtectionSubScreen? = null,
 
-    // 1. App Protection Apps List
-    val appProtectionItems: List<AppProtectionItemState> = listOf(
-        AppProtectionItemState(id = "tiktok", name = "TikTok", isExpanded = true, reelsBlockDuration = "30 دقيقة", appFreezeDuration = "ساعة"),
-        AppProtectionItemState(id = "instagram", name = "Instagram", isExpanded = false, reelsBlockDuration = "45 دقيقة", appFreezeDuration = "ساعتان"),
-        AppProtectionItemState(id = "youtube", name = "YouTube", isExpanded = false, reelsBlockDuration = "30 دقيقة", appFreezeDuration = "ساعة"),
-        AppProtectionItemState(id = "snapchat", name = "Snapchat", isExpanded = false, reelsBlockDuration = "15 دقيقة", appFreezeDuration = "30 دقيقة")
-    ),
+    // 1. App Protection Apps List (loaded from the device PackageManager)
+    val appProtectionItems: List<AppProtectionItemState> = emptyList(),
 
     // 2. Content Protection State
     val isAiFilteringActive: Boolean = true,

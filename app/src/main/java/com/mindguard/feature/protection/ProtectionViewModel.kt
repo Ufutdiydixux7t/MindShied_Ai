@@ -1,12 +1,16 @@
 package com.mindguard.feature.protection
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import android.content.Intent
+import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-class ProtectionViewModel : ViewModel() {
+class ProtectionViewModel(application: Application) : AndroidViewModel(application) {
+
+    private var appsLoaded = false
 
     private val _uiState = MutableStateFlow(ProtectionUiState())
     val uiState: StateFlow<ProtectionUiState> = _uiState.asStateFlow()
@@ -17,6 +21,35 @@ class ProtectionViewModel : ViewModel() {
 
     fun navigateBack() {
         _uiState.update { it.copy(activeSubScreen = null) }
+    }
+
+    fun loadInstalledApps() {
+        if (appsLoaded) return
+        appsLoaded = true
+
+        val application = getApplication<Application>()
+        val packageManager = application.packageManager
+        val launcherIntent = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_LAUNCHER)
+        }
+        val installedApps = packageManager.queryIntentActivities(launcherIntent, 0)
+            .asSequence()
+            .filter { it.activityInfo.packageName != application.packageName }
+            .distinctBy { it.activityInfo.packageName }
+            .map { resolveInfo ->
+                val applicationInfo = resolveInfo.activityInfo.applicationInfo
+                AppProtectionItemState(
+                    id = applicationInfo.packageName,
+                    name = resolveInfo.loadLabel(packageManager).toString(),
+                    icon = resolveInfo.loadIcon(packageManager),
+                    isReelsBlocked = false,
+                    isAppFrozen = false
+                )
+            }
+            .sortedBy { it.name.lowercase() }
+            .toList()
+
+        _uiState.update { it.copy(appProtectionItems = installedApps) }
     }
 
     // 1. App Protection Handlers
