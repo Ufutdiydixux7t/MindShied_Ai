@@ -443,7 +443,23 @@ private fun LoginWaveDecoration(top: Boolean, modifier: Modifier) {
                 close()
             }
         }
+        val third = Path().apply {
+            if (top) {
+                moveTo(0f, height * .62f)
+                cubicTo(width * .24f, height * .30f, width * .48f, height * .34f, width * .72f, 0f)
+                lineTo(width, 0f)
+                lineTo(width, height * .06f)
+                cubicTo(width * .52f, height * .56f, width * .28f, height * .48f, 0f, height * .92f)
+                close()
+            } else {
+                moveTo(0f, height)
+                cubicTo(width * .24f, height * .68f, width * .54f, height * .74f, width, height * .34f)
+                lineTo(width, height)
+                close()
+            }
+        }
         drawPath(first, color = Color(0xFFC9DBF7).copy(alpha = .72f))
         drawPath(second, color = Color(0xFFAFC9F1).copy(alpha = .58f))
+        drawPath(third, color = Color(0xFFE1EBFA).copy(alpha = .82f))
     }
 }
