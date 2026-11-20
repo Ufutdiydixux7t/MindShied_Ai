@@ -13,7 +13,8 @@ class MainActivity : ComponentActivity() {
             MindGuardApp(
                 blockedAppName = if (intent.getBooleanExtra(EXTRA_SHOW_BLOCKED, false)) {
                     intent.getStringExtra(EXTRA_BLOCKED_APP).orEmpty()
-                } else null
+                } else null,
+                blockedPackageName = intent.getStringExtra(EXTRA_BLOCKED_PACKAGE)
             )
         }
     }
@@ -21,5 +22,6 @@ class MainActivity : ComponentActivity() {
     companion object {
         const val EXTRA_SHOW_BLOCKED = "show_blocked_screen"
         const val EXTRA_BLOCKED_APP = "blocked_app_name"
+        const val EXTRA_BLOCKED_PACKAGE = "blocked_package_name"
     }
 }

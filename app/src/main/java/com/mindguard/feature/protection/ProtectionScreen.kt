@@ -406,7 +406,8 @@ fun AppProtectionSubScreen(
                         onPeriodMinutesChange = { periodId, minutes ->
                             viewModel.updateReelsPeriodMinutes(item.id, periodId, minutes)
                         },
-                        onAddPeriod = { viewModel.addReelsPeriod(item.id) }
+                        onAddPeriod = { viewModel.addReelsPeriod(item.id) },
+                        onPeriodsToggle = { viewModel.togglePeriodsVisibility(item.id) }
                     )
                 }
             }
@@ -466,7 +467,8 @@ fun ExpandableAppProtectionCard(
     onFreezeToggle: (Boolean) -> Unit,
     onFreezeDurationSelect: (String) -> Unit,
     onPeriodMinutesChange: (String, String) -> Unit,
-    onAddPeriod: () -> Unit
+    onAddPeriod: () -> Unit,
+    onPeriodsToggle: () -> Unit
 ) {
     val durationOptions = listOf("15 دقيقة", "30 دقيقة", "45 دقيقة", "ساعة", "ساعتان", "4 ساعات", "دائمًا")
     var reelsDropdownExpanded by remember { mutableStateOf(false) }
@@ -575,11 +577,35 @@ fun ExpandableAppProtectionCard(
                                     onCheckedChange = onReelsToggle,
                                     colors = SwitchDefaults.colors(
                                         checkedThumbColor = Color.White,
-                                        checkedTrackColor = Primary
+                                        checkedTrackColor = Primary,
+                                        uncheckedThumbColor = Color(0xFF64748B),
+                                        uncheckedTrackColor = Color(0xFFE2E8F0)
                                     )
+                                )
+                                Text(
+                                    text = if (item.isReelsBlocked) "مفعل" else "متوقف",
+                                    color = if (item.isReelsBlocked) Primary else TextGray,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
                                 )
                             }
 
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                OutlinedButton(
+                                    onClick = onPeriodsToggle,
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(10.dp)
+                                ) {
+                                    Icon(Icons.Outlined.Schedule, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(if (item.arePeriodsVisible) "إخفاء الفترات" else "الفترات", fontSize = 12.sp)
+                                }
+                            }
+
+                            if (item.arePeriodsVisible) {
                             Spacer(modifier = Modifier.height(10.dp))
 
                             // Reels Duration Selector Box
@@ -691,6 +717,8 @@ fun ExpandableAppProtectionCard(
                                 Text("إضافة فترة")
                             }
 
+                            }
+
                             Spacer(modifier = Modifier.height(14.dp))
                             HorizontalDivider(color = Color(0xFFF1F5F9))
                             Spacer(modifier = Modifier.height(14.dp))
@@ -735,8 +763,16 @@ fun ExpandableAppProtectionCard(
                                     onCheckedChange = onFreezeToggle,
                                     colors = SwitchDefaults.colors(
                                         checkedThumbColor = Color.White,
-                                        checkedTrackColor = Primary
+                                        checkedTrackColor = Primary,
+                                        uncheckedThumbColor = Color(0xFF64748B),
+                                        uncheckedTrackColor = Color(0xFFE2E8F0)
                                     )
+                                )
+                                Text(
+                                    text = if (item.isAppFrozen) "مفعل" else "متوقف",
+                                    color = if (item.isAppFrozen) Primary else TextGray,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
                                 )
                             }
 

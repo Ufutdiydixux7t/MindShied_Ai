@@ -3,6 +3,7 @@ package com.mindguard.platform.accessibility
 import android.accessibilityservice.AccessibilityService
 import android.content.Intent
 import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityNodeInfo
 import com.mindguard.MainActivity
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -16,14 +17,14 @@ class MindGuardAccessibilityService : AccessibilityService() {
         val packageName = event?.packageName?.toString() ?: return
         if (packageName == applicationContext.packageName) return
 
-        updateUsage(packageName)
-        if (!shouldBlock(packageName)) return
+        val reelsSurface = isShortVideoSurface(event)
+        updateUsage(packageName, reelsSurface)
+        if (!shouldBlock(packageName, reelsSurface)) return
 
         val now = System.currentTimeMillis()
         if (now - lastBlockedAt < 1200L) return
         lastBlockedAt = now
 
-        // Leave the blocked app first. No overlay is created; the user sees MindGuard instead.
         performGlobalAction(GLOBAL_ACTION_HOME)
         val label = runCatching {
             applicationContext.packageManager
@@ -34,14 +35,15 @@ class MindGuardAccessibilityService : AccessibilityService() {
             Intent(this, MainActivity::class.java).apply {
                 putExtra(MainActivity.EXTRA_SHOW_BLOCKED, true)
                 putExtra(MainActivity.EXTRA_BLOCKED_APP, label)
+                putExtra(MainActivity.EXTRA_BLOCKED_PACKAGE, packageName)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             }
         )
     }
 
-    private fun shouldBlock(packageName: String): Boolean {
+    private fun shouldBlock(packageName: String, reelsSurface: Boolean): Boolean {
         if (ProtectionPreferences.isFrozen(this, packageName)) return true
-        if (!ProtectionPreferences.isReelsEnabled(this, packageName)) return false
+        if (!ProtectionPreferences.isReelsEnabled(this, packageName) || !reelsSurface) return false
 
         val period = ProtectionPreferences.currentPeriod(this, packageName) ?: return true
         if (period.minutes <= 0) return true
@@ -54,11 +56,11 @@ class MindGuardAccessibilityService : AccessibilityService() {
         return used >= period.minutes
     }
 
-    private fun updateUsage(packageName: String) {
+    private fun updateUsage(packageName: String, reelsSurface: Boolean) {
         val now = LocalDateTime.now()
-        if (trackedPackage != packageName) {
-            trackedPackage = packageName
-            trackedSince = now
+        if (trackedPackage != packageName || !reelsSurface) {
+            trackedPackage = if (reelsSurface) packageName else null
+            trackedSince = if (reelsSurface) now else null
             return
         }
 
@@ -69,6 +71,28 @@ class MindGuardAccessibilityService : AccessibilityService() {
             ProtectionPreferences.addUsedMinute(this, packageName, LocalDate.now().toString(), period.id)
             trackedSince = now
         }
+    }
+
+    private fun isShortVideoSurface(event: AccessibilityEvent): Boolean {
+        val root = rootInActiveWindow ?: return false
+        return containsShortVideoText(root, 0)
+    }
+
+    private fun containsShortVideoText(node: AccessibilityNodeInfo, depth: Int): Boolean {
+        if (depth > 12) return false
+        val value = "${node.text ?: ""} ${node.contentDescription ?: ""} ${node.viewIdResourceName ?: ""}".lowercase()
+        val isShortVideoLabel = listOf("reels", "shorts", "ريلز", "الريلز", "short_video")
+            .any { value.contains(it) }
+        val isActiveControl = node.isSelected || node.isChecked || node.isFocused || node.isAccessibilityFocused
+        val resourceLooksLikeFeed = node.viewIdResourceName?.lowercase()?.let {
+            (it.contains("reel") || it.contains("short")) && !it.contains("tab")
+        } == true
+        if (isShortVideoLabel && (isActiveControl || resourceLooksLikeFeed)) return true
+        for (index in 0 until node.childCount) {
+            val child = node.getChild(index) ?: continue
+            if (containsShortVideoText(child, depth + 1)) return true
+        }
+        return false
     }
 
     override fun onInterrupt() {

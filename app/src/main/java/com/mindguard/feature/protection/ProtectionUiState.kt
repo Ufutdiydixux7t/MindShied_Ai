@@ -32,7 +32,8 @@ data class AppProtectionItemState(
     val reelsBlockDuration: String = "30 دقيقة",
     val isAppFrozen: Boolean = true,
     val appFreezeDuration: String = "ساعة",
-    val reelsPeriods: List<ReelsTimePeriod> = defaultReelsPeriods()
+    val reelsPeriods: List<ReelsTimePeriod> = defaultReelsPeriods(),
+    val arePeriodsVisible: Boolean = false
 )
 
 private fun defaultReelsPeriods() = listOf(

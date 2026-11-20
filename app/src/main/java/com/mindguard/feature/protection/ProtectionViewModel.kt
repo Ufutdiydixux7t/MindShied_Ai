@@ -92,6 +92,14 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
+    fun togglePeriodsVisibility(appId: String) {
+        _uiState.update { state ->
+            state.copy(appProtectionItems = state.appProtectionItems.map { item ->
+                if (item.id == appId) item.copy(arePeriodsVisible = !item.arePeriodsVisible) else item
+            })
+        }
+    }
+
     fun toggleAppReelsBlock(appId: String, enabled: Boolean) {
         ProtectionPreferences.setReelsEnabled(getApplication(), appId, enabled)
         _uiState.update { state ->
