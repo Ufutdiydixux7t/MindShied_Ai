@@ -5,6 +5,8 @@ import android.accessibilityservice.AccessibilityServiceInfo
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.drawable.GradientDrawable
+import android.os.Handler
+import android.os.Looper
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
@@ -23,6 +25,7 @@ class MindGuardAccessibilityService : AccessibilityService() {
     private var activeShortVideoPackage: String? = null
     private var overlayTargetPackage: String? = null
     private var reelsOverlay: View? = null
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     override fun onServiceConnected() {
         super.onServiceConnected()
@@ -203,17 +206,23 @@ class MindGuardAccessibilityService : AccessibilityService() {
                 cornerRadius = 64f
             }
             setOnClickListener {
+                val targetPackage = overlayTargetPackage
                 removeReelsOverlay()
                 trackedPackage = null
                 trackedSince = null
                 activeShortVideoPackage = null
-                val returnedToHome = if (overlayTargetPackage == YOUTUBE_PACKAGE) {
-                    clickHomeInCurrentWindow()
-                } else false
                 overlayTargetPackage = null
-                // If the current YouTube build hides its Home node, use the
-                // normal system Back action as the safe fallback.
-                if (!returnedToHome) performGlobalAction(GLOBAL_ACTION_BACK)
+                // Let WindowManager restore YouTube's window before reading
+                // its accessibility tree. Otherwise rootInActiveWindow may
+                // still point to the overlay and the button appears stuck.
+                mainHandler.postDelayed({
+                    val returnedToHome = if (targetPackage == YOUTUBE_PACKAGE) {
+                        clickHomeInCurrentWindow()
+                    } else false
+                    // If this YouTube build does not expose a clickable Home
+                    // node, one normal Back returns from Shorts to YouTube.
+                    if (!returnedToHome) performGlobalAction(GLOBAL_ACTION_BACK)
+                }, 180L)
             }
         }
 
@@ -248,8 +257,12 @@ class MindGuardAccessibilityService : AccessibilityService() {
         if (depth > 20) return false
         val label = "${node.text ?: ""} ${node.contentDescription ?: ""}".lowercase()
         val isHome = listOf("home", "الرئيسية", "الصفحة الرئيسية").any(label::contains)
-        if (isHome && node.isVisibleToUser && node.isClickable) {
-            return node.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+        if (isHome && node.isVisibleToUser) {
+            if (node.isClickable && node.performAction(AccessibilityNodeInfo.ACTION_CLICK)) return true
+            val parent = node.parent
+            if (parent != null && parent.isVisibleToUser && parent.isClickable) {
+                return parent.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+            }
         }
         for (index in 0 until node.childCount) {
             val child = node.getChild(index) ?: continue
@@ -259,6 +272,7 @@ class MindGuardAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() {
+        mainHandler.removeCallbacksAndMessages(null)
         removeReelsOverlay()
         trackedPackage = null
         trackedSince = null
@@ -267,6 +281,7 @@ class MindGuardAccessibilityService : AccessibilityService() {
     }
 
     override fun onDestroy() {
+        mainHandler.removeCallbacksAndMessages(null)
         removeReelsOverlay()
         activeShortVideoPackage = null
         overlayTargetPackage = null
