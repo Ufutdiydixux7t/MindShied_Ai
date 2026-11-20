@@ -644,25 +644,45 @@ fun ExpandableAppProtectionCard(
                                 color = TextGray
                             )
                             item.reelsPeriods.forEach { period ->
-                                Row(
+                                Card(
                                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),
+                                    shape = RoundedCornerShape(14.dp),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                                 ) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(period.name, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = TextDark)
-                                        Text("${period.startTime} - ${period.endTime}", fontSize = 11.sp, color = TextGray)
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().padding(10.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Surface(
+                                            modifier = Modifier.size(38.dp),
+                                            shape = RoundedCornerShape(11.dp),
+                                            color = Primary.copy(alpha = 0.10f)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Outlined.Schedule,
+                                                contentDescription = null,
+                                                tint = Primary,
+                                                modifier = Modifier.padding(9.dp)
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.width(10.dp))
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(period.name, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = TextDark)
+                                            Text("${period.startTime} - ${period.endTime}", fontSize = 11.sp, color = TextGray)
+                                        }
+                                        OutlinedTextField(
+                                            value = period.minutes,
+                                            onValueChange = { onPeriodMinutesChange(period.id, it) },
+                                            modifier = Modifier.width(92.dp),
+                                            singleLine = true,
+                                            label = { Text("دقائق", fontSize = 10.sp) },
+                                            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                                                keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
+                                            ),
+                                            shape = RoundedCornerShape(10.dp)
+                                        )
                                     }
-                                    OutlinedTextField(
-                                        value = period.minutes,
-                                        onValueChange = { onPeriodMinutesChange(period.id, it) },
-                                        modifier = Modifier.width(100.dp),
-                                        singleLine = true,
-                                        label = { Text("دقائق", fontSize = 11.sp) },
-                                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
-                                        ),
-                                        shape = RoundedCornerShape(10.dp)
-                                    )
                                 }
                             }
                             TextButton(onClick = onAddPeriod) {
@@ -791,13 +811,13 @@ fun AppBrandIconBadge(appId: String, appName: String, icon: android.graphics.dra
     Surface(
         modifier = Modifier.size(36.dp),
         shape = RoundedCornerShape(10.dp),
-        color = bgColor
+        color = if (icon == null) bgColor else Color.Transparent
     ) {
         if (icon != null) {
             Image(
-                painter = rememberAsyncImagePainter(icon),
+                painter = rememberDrawablePainter(icon),
                 contentDescription = appName,
-                modifier = Modifier.padding(5.dp)
+                modifier = Modifier.fillMaxSize()
             )
         } else {
             Icon(

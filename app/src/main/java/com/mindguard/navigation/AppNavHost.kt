@@ -16,12 +16,16 @@ import com.mindguard.feature.settings.GeneralSettingsScreen
 @Composable
 fun AppNavHost(
     navController: NavHostController,
+    startAtHome: Boolean = false,
     isDarkMode: Boolean,
     onDarkModeChange: (Boolean) -> Unit,
     profileImageUri: Uri?,
     onProfileImageChange: (Uri?) -> Unit
 ) {
-    NavHost(navController = navController, startDestination = AppRoute.Login.route) {
+    NavHost(
+        navController = navController,
+        startDestination = if (startAtHome) AppRoute.Home.createRoute("المستخدم") else AppRoute.Login.route
+    ) {
         composable(AppRoute.Login.route) {
             LoginScreen(
                 onLoginClick = { name, _ ->

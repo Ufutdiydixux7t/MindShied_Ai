@@ -10,7 +10,16 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MindGuardApp()
+            MindGuardApp(
+                blockedAppName = if (intent.getBooleanExtra(EXTRA_SHOW_BLOCKED, false)) {
+                    intent.getStringExtra(EXTRA_BLOCKED_APP).orEmpty()
+                } else null
+            )
         }
+    }
+
+    companion object {
+        const val EXTRA_SHOW_BLOCKED = "show_blocked_screen"
+        const val EXTRA_BLOCKED_APP = "blocked_app_name"
     }
 }

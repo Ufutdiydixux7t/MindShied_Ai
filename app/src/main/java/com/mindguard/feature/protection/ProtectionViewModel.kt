@@ -5,6 +5,8 @@ import android.content.Intent
 import android.provider.Settings
 import androidx.lifecycle.AndroidViewModel
 import com.mindguard.platform.accessibility.MindGuardAccessibilityService
+import com.mindguard.platform.accessibility.ProtectionPreferences
+import com.mindguard.platform.accessibility.StoredProtectionPeriod
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -52,6 +54,7 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
             .toList()
 
         val reelApps = installedApps.filter { it.id in reelSupportedPackages }
+        reelApps.forEach { persistPeriods(it) }
         _uiState.update {
             it.copy(
                 appProtectionItems = reelApps,
@@ -64,6 +67,7 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
         _uiState.update { state ->
             val app = state.availableApps.firstOrNull { it.id == appId } ?: return@update state
             if (state.appProtectionItems.any { it.id == appId }) return@update state
+            persistPeriods(app)
             state.copy(appProtectionItems = state.appProtectionItems + app)
         }
     }
@@ -89,6 +93,7 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun toggleAppReelsBlock(appId: String, enabled: Boolean) {
+        ProtectionPreferences.setReelsEnabled(getApplication(), appId, enabled)
         _uiState.update { state ->
             val updatedItems = state.appProtectionItems.map { item ->
                 if (item.id == appId) item.copy(isReelsBlocked = enabled)
@@ -109,6 +114,7 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun toggleAppFreeze(appId: String, enabled: Boolean) {
+        ProtectionPreferences.setFreezeEnabled(getApplication(), appId, enabled)
         _uiState.update { state ->
             val updatedItems = state.appProtectionItems.map { item ->
                 if (item.id == appId) item.copy(isAppFrozen = enabled)
@@ -130,19 +136,21 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
 
     fun updateReelsPeriodMinutes(appId: String, periodId: String, minutes: String) {
         _uiState.update { state ->
-            state.copy(appProtectionItems = state.appProtectionItems.map { item ->
+            val updatedState = state.copy(appProtectionItems = state.appProtectionItems.map { item ->
                 if (item.id != appId) item else item.copy(
                     reelsPeriods = item.reelsPeriods.map { period ->
                         if (period.id == periodId) period.copy(minutes = minutes.filter(Char::isDigit)) else period
                     }
                 )
             })
+            updatedState.appProtectionItems.firstOrNull { it.id == appId }?.let { persistPeriods(it) }
+            updatedState
         }
     }
 
     fun addReelsPeriod(appId: String) {
         _uiState.update { state ->
-            state.copy(appProtectionItems = state.appProtectionItems.map { item ->
+            val updatedState = state.copy(appProtectionItems = state.appProtectionItems.map { item ->
                 if (item.id != appId) item else item.copy(
                     reelsPeriods = item.reelsPeriods + ReelsTimePeriod(
                         id = "period_${item.reelsPeriods.size + 1}",
@@ -153,7 +161,24 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
                     )
                 )
             })
+            updatedState.appProtectionItems.firstOrNull { it.id == appId }?.let { persistPeriods(it) }
+            updatedState
         }
+    }
+
+    private fun persistPeriods(item: AppProtectionItemState) {
+        ProtectionPreferences.savePeriods(
+            getApplication(),
+            item.id,
+            item.reelsPeriods.map { period ->
+                StoredProtectionPeriod(
+                    id = period.id,
+                    start = period.startTime,
+                    end = period.endTime,
+                    minutes = period.minutes.toIntOrNull() ?: 0
+                )
+            }
+        )
     }
 
     // 2. Content Protection Toggles
