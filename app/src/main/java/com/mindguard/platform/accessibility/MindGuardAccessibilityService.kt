@@ -83,11 +83,8 @@ class MindGuardAccessibilityService : AccessibilityService() {
         val value = "${node.text ?: ""} ${node.contentDescription ?: ""} ${node.viewIdResourceName ?: ""}".lowercase()
         val isShortVideoLabel = listOf("reels", "shorts", "ريلز", "الريلز", "short_video")
             .any { value.contains(it) }
-        val isActiveControl = node.isSelected || node.isChecked || node.isFocused || node.isAccessibilityFocused
-        val resourceLooksLikeFeed = node.viewIdResourceName?.lowercase()?.let {
-            (it.contains("reel") || it.contains("short")) && !it.contains("tab")
-        } == true
-        if (isShortVideoLabel && (isActiveControl || resourceLooksLikeFeed)) return true
+        val isActiveControl = node.isSelected || node.isChecked
+        if (isShortVideoLabel && isActiveControl) return true
         for (index in 0 until node.childCount) {
             val child = node.getChild(index) ?: continue
             if (containsShortVideoText(child, depth + 1)) return true

@@ -1,6 +1,7 @@
 package com.mindguard.core.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -21,14 +22,14 @@ fun BottomNavigationBar(selectedTab: Int, onTabSelected: (Int) -> Unit) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 14.dp, vertical = 10.dp),
+            .padding(horizontal = 18.dp, vertical = 7.dp),
         shape = RoundedCornerShape(28.dp),
         color = MaterialTheme.colorScheme.surface,
         shadowElevation = 10.dp,
         tonalElevation = 2.dp
     ) {
         NavigationBar(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().height(68.dp),
             containerColor = Color.Transparent,
             contentColor = Primary,
             tonalElevation = 0.dp

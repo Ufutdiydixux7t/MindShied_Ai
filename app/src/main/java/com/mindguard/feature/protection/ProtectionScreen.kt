@@ -4,6 +4,7 @@ import android.content.Intent
 import android.provider.Settings
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -572,22 +573,23 @@ fun ExpandableAppProtectionCard(
                                     )
                                 }
 
-                                Switch(
-                                    checked = item.isReelsBlocked,
-                                    onCheckedChange = onReelsToggle,
-                                    colors = SwitchDefaults.colors(
-                                        checkedThumbColor = Color.White,
-                                        checkedTrackColor = Primary,
-                                        uncheckedThumbColor = Color(0xFF64748B),
-                                        uncheckedTrackColor = Color(0xFFE2E8F0)
+                                OutlinedButton(
+                                    onClick = { onReelsToggle(!item.isReelsBlocked) },
+                                    border = BorderStroke(1.dp, if (item.isReelsBlocked) Primary else Color(0xFFCBD5E1)),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        contentColor = if (item.isReelsBlocked) Primary else TextGray
+                                    ),
+                                    contentPadding = PaddingValues(horizontal = 10.dp),
+                                    shape = RoundedCornerShape(10.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = if (item.isReelsBlocked) Icons.Default.Check else Icons.Default.Block,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp)
                                     )
-                                )
-                                Text(
-                                    text = if (item.isReelsBlocked) "مفعل" else "متوقف",
-                                    color = if (item.isReelsBlocked) Primary else TextGray,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("حظر الريلز", fontSize = 12.sp)
+                                }
                             }
 
                             Row(
@@ -758,22 +760,23 @@ fun ExpandableAppProtectionCard(
                                     )
                                 }
 
-                                Switch(
-                                    checked = item.isAppFrozen,
-                                    onCheckedChange = onFreezeToggle,
-                                    colors = SwitchDefaults.colors(
-                                        checkedThumbColor = Color.White,
-                                        checkedTrackColor = Primary,
-                                        uncheckedThumbColor = Color(0xFF64748B),
-                                        uncheckedTrackColor = Color(0xFFE2E8F0)
+                                OutlinedButton(
+                                    onClick = { onFreezeToggle(!item.isAppFrozen) },
+                                    border = BorderStroke(1.dp, if (item.isAppFrozen) Primary else Color(0xFFCBD5E1)),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        contentColor = if (item.isAppFrozen) Primary else TextGray
+                                    ),
+                                    contentPadding = PaddingValues(horizontal = 10.dp),
+                                    shape = RoundedCornerShape(10.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = if (item.isAppFrozen) Icons.Default.AcUnit else Icons.Default.LockOpen,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp)
                                     )
-                                )
-                                Text(
-                                    text = if (item.isAppFrozen) "مفعل" else "متوقف",
-                                    color = if (item.isAppFrozen) Primary else TextGray,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("تجميد التطبيق", fontSize = 12.sp)
+                                }
                             }
 
                             Spacer(modifier = Modifier.height(10.dp))
