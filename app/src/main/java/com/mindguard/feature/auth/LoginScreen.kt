@@ -411,7 +411,7 @@ private fun LoginWaveDecoration(top: Boolean, modifier: Modifier) {
     Canvas(
         modifier = modifier
             .fillMaxWidth()
-            .height(if (top) 190.dp else 220.dp)
+            .height(if (top) 135.dp else 155.dp)
     ) {
         val width = size.width
         val height = size.height

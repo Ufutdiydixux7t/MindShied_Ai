@@ -49,7 +49,12 @@ fun ProtectionScreen(
     }
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-        AnimatedContent(
+        Column(modifier = Modifier.fillMaxSize()) {
+            if (uiState.activeSubScreen == null) {
+                AppTopBar(title = "الحماية")
+            }
+            AnimatedContent(
+                modifier = Modifier.fillMaxSize(),
             targetState = uiState.activeSubScreen,
             transitionSpec = {
                 if (targetState != null) {
@@ -92,6 +97,7 @@ fun ProtectionScreen(
                     onBack = { viewModel.navigateBack() }
                 )
             }
+        }
         }
     }
 }

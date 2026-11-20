@@ -47,17 +47,18 @@ fun HomeScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-                AppTopBar(
-                    title = when (selectedTab) {
-                        0 -> "الرئيسية"
-                        1 -> "الإحصائيات"
-                        2 -> "الحماية"
-                        3 -> "العائلة"
-                        else -> "الإعدادات"
-                    },
-                    userName = if (isHome) userName else null,
-                    profileImageUri = if (isHome) profileImageUri else null
-                )
+                if (selectedTab != 2 && selectedTab != 4) {
+                    AppTopBar(
+                        title = when (selectedTab) {
+                            0 -> "الرئيسية"
+                            1 -> "الإحصائيات"
+                            3 -> "العائلة"
+                            else -> ""
+                        },
+                        userName = if (isHome) userName else null,
+                        profileImageUri = if (isHome) profileImageUri else null
+                    )
+                }
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),

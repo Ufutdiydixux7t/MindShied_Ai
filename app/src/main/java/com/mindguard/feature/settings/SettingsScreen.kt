@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.mindguard.core.components.AppTopBar
 import com.mindguard.core.theme.DarkBlue
 
 enum class MoreSubScreen {
@@ -62,6 +63,7 @@ fun SettingsScreen(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    AppTopBar(title = "الإعدادات")
                     Spacer(modifier = Modifier.height(12.dp))
 
                     // 1. Profile Header Card (Matching More screen screenshot)
@@ -345,26 +347,11 @@ fun PlaceholderMoreScreen(title: String, onBack: () -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(20.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "رجوع", tint = DarkBlue)
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = DarkBlue
-            )
-        }
+        AppTopBar(title = title, onBack = onBack)
 
         Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().padding(20.dp),
             contentAlignment = Alignment.Center
         ) {
             Text("واجهة $title فارغة", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)

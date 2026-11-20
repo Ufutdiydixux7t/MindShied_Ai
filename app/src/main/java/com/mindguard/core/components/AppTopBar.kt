@@ -36,12 +36,17 @@ fun AppTopBar(
     profileImageUri: Uri? = null,
     userName: String? = null
 ) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 14.dp),
-        contentAlignment = Alignment.Center
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.background,
+        shadowElevation = 6.dp
     ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 14.dp),
+            contentAlignment = Alignment.Center
+        ) {
         if (onBack != null) {
             androidx.compose.material3.IconButton(
                 onClick = onBack,
@@ -94,6 +99,7 @@ fun AppTopBar(
                     }
                 }
             }
+        }
         }
     }
 }
