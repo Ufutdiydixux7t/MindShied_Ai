@@ -3,7 +3,9 @@ package com.mindguard.platform.accessibility
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.PixelFormat
+import android.graphics.Path
 import android.graphics.drawable.GradientDrawable
 import android.os.Handler
 import android.os.Looper
@@ -13,6 +15,7 @@ import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import java.time.LocalDate
@@ -175,14 +178,21 @@ class MindGuardAccessibilityService : AccessibilityService() {
         if (reelsOverlay != null) return
         overlayTargetPackage = packageName
         val windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-        val root = LinearLayout(this).apply {
+        val root = FrameLayout(this).apply {
+            setBackgroundColor(Color.WHITE)
+        }
+        root.addView(
+            OverlayWaveView(this, top = true),
+            FrameLayout.LayoutParams(-1, 270).apply { gravity = Gravity.TOP }
+        )
+        root.addView(
+            OverlayWaveView(this, top = false),
+            FrameLayout.LayoutParams(-1, 300).apply { gravity = Gravity.BOTTOM }
+        )
+        val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
-            setPadding(48, 48, 48, 48)
-            background = GradientDrawable().apply {
-                setColor(Color.WHITE)
-                cornerRadius = 0f
-            }
+            setPadding(56, 48, 56, 48)
         }
 
         val title = TextView(this).apply {
@@ -203,9 +213,14 @@ class MindGuardAccessibilityService : AccessibilityService() {
             text = "العودة إلى الرئيسية"
             textSize = 17f
             setTextColor(Color.WHITE)
+            isAllCaps = false
+            minHeight = 140
+            setPadding(28, 0, 28, 0)
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
             background = GradientDrawable().apply {
                 setColor(Color.rgb(36, 79, 165))
-                cornerRadius = 64f
+                cornerRadius = 72f
+                setStroke(3, Color.rgb(19, 53, 126))
             }
             setOnClickListener {
                 val targetPackage = overlayTargetPackage
@@ -229,9 +244,13 @@ class MindGuardAccessibilityService : AccessibilityService() {
             }
         }
 
-        root.addView(title, LinearLayout.LayoutParams(-1, -2))
-        root.addView(subtitle, LinearLayout.LayoutParams(-1, -2))
-        root.addView(button, LinearLayout.LayoutParams(-1, 128))
+        content.addView(title, LinearLayout.LayoutParams(-1, -2))
+        content.addView(subtitle, LinearLayout.LayoutParams(-1, -2))
+        content.addView(button, LinearLayout.LayoutParams(-1, 140))
+        root.addView(
+            content,
+            FrameLayout.LayoutParams(-1, -1).apply { gravity = Gravity.CENTER }
+        )
 
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
@@ -289,6 +308,50 @@ class MindGuardAccessibilityService : AccessibilityService() {
         activeShortVideoPackage = null
         overlayTargetPackage = null
         super.onDestroy()
+    }
+
+    private class OverlayWaveView(
+        context: android.content.Context,
+        private val top: Boolean
+    ) : View(context) {
+        private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+        override fun onDraw(canvas: android.graphics.Canvas) {
+            super.onDraw(canvas)
+            val width = width.toFloat()
+            val height = height.toFloat()
+            val path = Path()
+            paint.style = Paint.Style.FILL
+            paint.color = Color.rgb(201, 219, 247)
+            if (top) {
+                path.moveTo(0f, 0f)
+                path.lineTo(width * .42f, 0f)
+                path.cubicTo(width * .34f, height * .40f, width * .18f, height * .52f, 0f, height * .76f)
+                path.close()
+            } else {
+                path.moveTo(0f, height)
+                path.lineTo(width, height)
+                path.cubicTo(width * .78f, height * .60f, width * .56f, height * .54f, width * .38f, height)
+                path.close()
+            }
+            canvas.drawPath(path, paint)
+
+            path.reset()
+            paint.color = Color.rgb(175, 201, 241)
+            if (top) {
+                path.moveTo(0f, height * .34f)
+                path.cubicTo(width * .25f, height * .08f, width * .48f, height * .20f, width * .66f, 0f)
+                path.lineTo(width, 0f)
+                path.lineTo(width, height * .14f)
+                path.cubicTo(width * .55f, height * .48f, width * .30f, height * .40f, 0f, height * .82f)
+            } else {
+                path.moveTo(0f, height)
+                path.cubicTo(width * .32f, height * .55f, width * .62f, height * .78f, width, height * .20f)
+                path.lineTo(width, height)
+            }
+            path.close()
+            canvas.drawPath(path, paint)
+        }
     }
 
     companion object {

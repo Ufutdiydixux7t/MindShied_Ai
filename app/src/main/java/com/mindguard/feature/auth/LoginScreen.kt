@@ -1,6 +1,7 @@
 package com.mindguard.feature.auth
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -21,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -68,6 +70,9 @@ fun LoginScreen(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
         ) {
+            LoginWaveDecoration(top = true, modifier = Modifier.align(Alignment.TopCenter))
+            LoginWaveDecoration(top = false, modifier = Modifier.align(Alignment.BottomCenter))
+
             // Watermark (علامة مائية خفيفة في الخلفية)
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -398,5 +403,47 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
+    }
+}
+
+@Composable
+private fun LoginWaveDecoration(top: Boolean, modifier: Modifier) {
+    Canvas(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(if (top) 230.dp else 260.dp)
+    ) {
+        val width = size.width
+        val height = size.height
+        val first = Path().apply {
+            if (top) {
+                moveTo(0f, 0f)
+                lineTo(width * .42f, 0f)
+                cubicTo(width * .34f, height * .42f, width * .18f, height * .52f, 0f, height * .70f)
+                close()
+            } else {
+                moveTo(0f, height)
+                lineTo(width, height)
+                cubicTo(width * .78f, height * .62f, width * .55f, height * .55f, width * .38f, height)
+                close()
+            }
+        }
+        val second = Path().apply {
+            if (top) {
+                moveTo(0f, height * .34f)
+                cubicTo(width * .25f, height * .08f, width * .48f, height * .20f, width * .66f, 0f)
+                lineTo(width, 0f)
+                lineTo(width, height * .12f)
+                cubicTo(width * .55f, height * .48f, width * .30f, height * .40f, 0f, height * .80f)
+                close()
+            } else {
+                moveTo(0f, height)
+                cubicTo(width * .32f, height * .55f, width * .62f, height * .78f, width, height * .22f)
+                lineTo(width, height)
+                close()
+            }
+        }
+        drawPath(first, color = Color(0xFFC9DBF7).copy(alpha = .72f))
+        drawPath(second, color = Color(0xFFAFC9F1).copy(alpha = .58f))
     }
 }
