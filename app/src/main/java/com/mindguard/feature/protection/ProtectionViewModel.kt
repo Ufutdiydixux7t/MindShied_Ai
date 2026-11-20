@@ -56,9 +56,9 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
             .sortedBy { it.name.lowercase() }
             .toList()
 
-        val reelApps = installedApps.filter { app ->
-            app.id in reelSupportedPackages || isLikelyShortVideoApp(app.id, app.name)
-        }
+        // Keep the main list limited to apps known to expose a Reels/Shorts surface.
+        // Other apps remain available through the explicit "إضافة تطبيق" action.
+        val reelApps = installedApps.filter { it.id in reelSupportedPackages }
         reelApps.forEach { item ->
             if (ProtectionPreferences.getPeriods(application, item.id).isEmpty()) {
                 persistPeriods(item)
@@ -247,13 +247,5 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
             "com.pinterest"
         )
 
-        private fun isLikelyShortVideoApp(packageName: String, appName: String): Boolean {
-            val value = "$packageName $appName".lowercase()
-            return listOf(
-                "instagram", "youtube", "tiktok", "musical", "facebook", "snapchat",
-                "likee", "kwai", "reels", "shorts", "video", "social", "reddit",
-                "pinterest", "twitter", "x.com"
-            ).any(value::contains)
-        }
     }
 }

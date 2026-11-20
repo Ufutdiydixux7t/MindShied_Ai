@@ -45,6 +45,8 @@ class MindGuardAccessibilityService : AccessibilityService() {
     }
 
     private fun hasExceededReelsLimit(packageName: String): Boolean {
+        // A manually entered zero always means: show the overlay immediately.
+        if (ProtectionPreferences.getReelsLimitMinutes(this, packageName) <= 0) return true
         val period = if (ProtectionPreferences.arePeriodsEnabled(this, packageName)) {
             ProtectionPreferences.currentPeriod(this, packageName) ?: return false
         } else null
