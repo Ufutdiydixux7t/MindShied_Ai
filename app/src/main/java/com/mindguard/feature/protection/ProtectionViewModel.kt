@@ -1,6 +1,7 @@
 package com.mindguard.feature.protection
 
 import android.app.Application
+import android.content.ComponentName
 import android.content.Intent
 import android.provider.Settings
 import androidx.lifecycle.AndroidViewModel
@@ -113,8 +114,12 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
             getApplication<Application>().contentResolver,
             Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
         ).orEmpty()
-        val serviceName = "${getApplication<Application>().packageName}/${MindGuardAccessibilityService::class.java.name}"
-        return enabledServices.split(':').any { it.equals(serviceName, ignoreCase = true) }
+        val component = ComponentName(getApplication(), MindGuardAccessibilityService::class.java)
+        val fullName = component.flattenToString()
+        val shortName = component.flattenToShortString()
+        return enabledServices.split(':').any {
+            it.equals(fullName, ignoreCase = true) || it.equals(shortName, ignoreCase = true)
+        }
     }
 
     fun toggleAppExpansion(appId: String) {

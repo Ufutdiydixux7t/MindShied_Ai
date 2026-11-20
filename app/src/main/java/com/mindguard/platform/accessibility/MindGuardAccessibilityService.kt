@@ -1,6 +1,7 @@
 package com.mindguard.platform.accessibility
 
 import android.accessibilityservice.AccessibilityService
+import android.accessibilityservice.AccessibilityServiceInfo
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.drawable.GradientDrawable
@@ -21,6 +22,24 @@ class MindGuardAccessibilityService : AccessibilityService() {
     private var lastFrozenActionAt = 0L
     private var activeShortVideoPackage: String? = null
     private var reelsOverlay: View? = null
+
+    override fun onServiceConnected() {
+        super.onServiceConnected()
+        // Keep the event configuration active after Android rebinds the service.
+        setServiceInfo(AccessibilityServiceInfo().apply {
+            eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or
+                    AccessibilityEvent.TYPE_WINDOWS_CHANGED or
+                    AccessibilityEvent.TYPE_VIEW_CLICKED or
+                    AccessibilityEvent.TYPE_VIEW_SELECTED or
+                    AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED or
+                    AccessibilityEvent.TYPE_VIEW_SCROLLED
+            feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
+            flags = AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS or
+                    AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS or
+                    AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS
+            notificationTimeout = 100
+        })
+    }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         val packageName = event?.packageName?.toString() ?: return
@@ -107,8 +126,30 @@ class MindGuardAccessibilityService : AccessibilityService() {
 
         if (activeShortVideoPackage == packageName) return true
 
+        if (packageName == YOUTUBE_PACKAGE &&
+            YOUTUBE_SHORTS_VIEW_IDS.any { source?.viewIdResourceName?.lowercase()?.contains(it) == true }
+        ) {
+            activeShortVideoPackage = packageName
+            return true
+        }
+
         val root = rootInActiveWindow ?: return false
+        if (packageName == YOUTUBE_PACKAGE && containsYoutubeShortsContainer(root, 0)) {
+            activeShortVideoPackage = packageName
+            return true
+        }
         return containsSelectedShortVideoControl(root, 0)
+    }
+
+    private fun containsYoutubeShortsContainer(node: AccessibilityNodeInfo, depth: Int): Boolean {
+        if (depth > 20) return false
+        val viewId = node.viewIdResourceName?.lowercase().orEmpty()
+        if (YOUTUBE_SHORTS_VIEW_IDS.any(viewId::contains)) return true
+        for (index in 0 until node.childCount) {
+            val child = node.getChild(index) ?: continue
+            if (containsYoutubeShortsContainer(child, depth + 1)) return true
+        }
+        return false
     }
 
     private fun containsSelectedShortVideoControl(node: AccessibilityNodeInfo, depth: Int): Boolean {
@@ -202,5 +243,15 @@ class MindGuardAccessibilityService : AccessibilityService() {
         removeReelsOverlay()
         activeShortVideoPackage = null
         super.onDestroy()
+    }
+
+    companion object {
+        private const val YOUTUBE_PACKAGE = "com.google.android.youtube"
+        private val YOUTUBE_SHORTS_VIEW_IDS = listOf(
+            "reel_watch_fragment_root",
+            "reel_recycler",
+            "reel_progress_bar",
+            "shorts_player"
+        )
     }
 }
