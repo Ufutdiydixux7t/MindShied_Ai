@@ -19,7 +19,6 @@ class MindGuardAccessibilityService : AccessibilityService() {
     private var trackedPackage: String? = null
     private var trackedSince: LocalDateTime? = null
     private var lastFrozenActionAt = 0L
-    private var reelsPackage: String? = null
     private var reelsOverlay: View? = null
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -87,14 +86,11 @@ class MindGuardAccessibilityService : AccessibilityService() {
             .any { eventText.contains(it) }
 
         if (event.eventType == AccessibilityEvent.TYPE_VIEW_CLICKED && isHomeLabel) {
-            if (reelsPackage == packageName) reelsPackage = null
             return false
         }
         if (event.eventType == AccessibilityEvent.TYPE_VIEW_CLICKED && isShortVideoLabel) {
-            reelsPackage = packageName
             return true
         }
-        if (reelsPackage == packageName) return true
 
         val root = rootInActiveWindow ?: return false
         return containsSelectedShortVideoControl(root, 0)
@@ -150,7 +146,6 @@ class MindGuardAccessibilityService : AccessibilityService() {
             }
             setOnClickListener {
                 removeReelsOverlay()
-                reelsPackage = null
                 trackedPackage = null
                 trackedSince = null
                 // Back returns from Shorts/Reels to the target app's normal home/feed.
@@ -184,7 +179,6 @@ class MindGuardAccessibilityService : AccessibilityService() {
         removeReelsOverlay()
         trackedPackage = null
         trackedSince = null
-        reelsPackage = null
     }
 
     override fun onDestroy() {

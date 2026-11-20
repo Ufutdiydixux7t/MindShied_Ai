@@ -46,15 +46,21 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
                     id = applicationInfo.packageName,
                     name = resolveInfo.loadLabel(packageManager).toString(),
                     icon = resolveInfo.loadIcon(packageManager),
-                    isReelsBlocked = false,
-                    isAppFrozen = false
+                    isReelsBlocked = ProtectionPreferences.isReelsEnabled(application, applicationInfo.packageName),
+                    isAppFrozen = ProtectionPreferences.isFrozen(application, applicationInfo.packageName),
+                    reelsPeriods = restorePeriods(applicationInfo.packageName),
+                    arePeriodsVisible = ProtectionPreferences.arePeriodsEnabled(application, applicationInfo.packageName)
                 )
             }
             .sortedBy { it.name.lowercase() }
             .toList()
 
         val reelApps = installedApps.filter { it.id in reelSupportedPackages }
-        reelApps.forEach { persistPeriods(it) }
+        reelApps.forEach { item ->
+            if (ProtectionPreferences.getPeriods(application, item.id).isEmpty()) {
+                persistPeriods(item)
+            }
+        }
         _uiState.update {
             it.copy(
                 appProtectionItems = reelApps,
@@ -63,11 +69,38 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
+    private fun restorePeriods(appId: String): List<ReelsTimePeriod> {
+        val stored = ProtectionPreferences.getPeriods(getApplication(), appId)
+        if (stored.isEmpty()) return defaultPeriods()
+        return stored.map { period ->
+            ReelsTimePeriod(
+                id = period.id,
+                name = periodName(period.id),
+                startTime = period.start,
+                endTime = period.end,
+                minutes = period.minutes.toString()
+            )
+        }
+    }
+
+    private fun defaultPeriods() = listOf(
+        ReelsTimePeriod("morning", "الصباح", "06:00", "12:00", "10"),
+        ReelsTimePeriod("afternoon", "الظهر", "12:00", "17:00", "20"),
+        ReelsTimePeriod("evening", "المساء", "17:00", "22:00", "15")
+    )
+
+    private fun periodName(id: String) = when (id) {
+        "morning" -> "الصباح"
+        "afternoon" -> "الظهر"
+        "evening" -> "المساء"
+        else -> "فترة جديدة"
+    }
+
     fun addApp(appId: String) {
         _uiState.update { state ->
             val app = state.availableApps.firstOrNull { it.id == appId } ?: return@update state
             if (state.appProtectionItems.any { it.id == appId }) return@update state
-            persistPeriods(app)
+            if (ProtectionPreferences.getPeriods(getApplication(), appId).isEmpty()) persistPeriods(app)
             state.copy(appProtectionItems = state.appProtectionItems + app)
         }
     }
@@ -81,14 +114,11 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
         return enabledServices.split(':').any { it.equals(serviceName, ignoreCase = true) }
     }
 
-    // 1. App Protection Handlers
     fun toggleAppExpansion(appId: String) {
         _uiState.update { state ->
-            val updatedItems = state.appProtectionItems.map { item ->
-                if (item.id == appId) item.copy(isExpanded = !item.isExpanded)
-                else item
-            }
-            state.copy(appProtectionItems = updatedItems)
+            state.copy(appProtectionItems = state.appProtectionItems.map { item ->
+                if (item.id == appId) item.copy(isExpanded = !item.isExpanded) else item
+            })
         }
     }
 
@@ -97,7 +127,7 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
         ProtectionPreferences.setPeriodsEnabled(getApplication(), appId, enabled)
         _uiState.update { state ->
             state.copy(appProtectionItems = state.appProtectionItems.map { item ->
-                if (item.id == appId) item.copy(arePeriodsVisible = !item.arePeriodsVisible) else item
+                if (item.id == appId) item.copy(arePeriodsVisible = enabled) else item
             })
         }
     }
@@ -105,42 +135,34 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
     fun toggleAppReelsBlock(appId: String, enabled: Boolean) {
         ProtectionPreferences.setReelsEnabled(getApplication(), appId, enabled)
         _uiState.update { state ->
-            val updatedItems = state.appProtectionItems.map { item ->
-                if (item.id == appId) item.copy(isReelsBlocked = enabled)
-                else item
-            }
-            state.copy(appProtectionItems = updatedItems)
+            state.copy(appProtectionItems = state.appProtectionItems.map { item ->
+                if (item.id == appId) item.copy(isReelsBlocked = enabled) else item
+            })
         }
     }
 
     fun setAppReelsDuration(appId: String, duration: String) {
         _uiState.update { state ->
-            val updatedItems = state.appProtectionItems.map { item ->
-                if (item.id == appId) item.copy(reelsBlockDuration = duration)
-                else item
-            }
-            state.copy(appProtectionItems = updatedItems)
+            state.copy(appProtectionItems = state.appProtectionItems.map { item ->
+                if (item.id == appId) item.copy(reelsBlockDuration = duration) else item
+            })
         }
     }
 
     fun toggleAppFreeze(appId: String, enabled: Boolean) {
         ProtectionPreferences.setFreezeEnabled(getApplication(), appId, enabled)
         _uiState.update { state ->
-            val updatedItems = state.appProtectionItems.map { item ->
-                if (item.id == appId) item.copy(isAppFrozen = enabled)
-                else item
-            }
-            state.copy(appProtectionItems = updatedItems)
+            state.copy(appProtectionItems = state.appProtectionItems.map { item ->
+                if (item.id == appId) item.copy(isAppFrozen = enabled) else item
+            })
         }
     }
 
     fun setAppFreezeDuration(appId: String, duration: String) {
         _uiState.update { state ->
-            val updatedItems = state.appProtectionItems.map { item ->
-                if (item.id == appId) item.copy(appFreezeDuration = duration)
-                else item
-            }
-            state.copy(appProtectionItems = updatedItems)
+            state.copy(appProtectionItems = state.appProtectionItems.map { item ->
+                if (item.id == appId) item.copy(appFreezeDuration = duration) else item
+            })
         }
     }
 
@@ -178,8 +200,7 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
 
     private fun persistPeriods(item: AppProtectionItemState) {
         ProtectionPreferences.savePeriods(
-            getApplication(),
-            item.id,
+            getApplication(), item.id,
             item.reelsPeriods.map { period ->
                 StoredProtectionPeriod(
                     id = period.id,
@@ -191,61 +212,19 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
         )
     }
 
-    // 2. Content Protection Toggles
-    fun toggleAiFiltering(enabled: Boolean) {
-        _uiState.update { it.copy(isAiFilteringActive = enabled) }
-    }
-
-    fun toggleAdultContent(enabled: Boolean) {
-        _uiState.update { it.copy(isAdultContentBlocked = enabled) }
-    }
-
-    fun toggleSafeBrowsing(enabled: Boolean) {
-        _uiState.update { it.copy(isSafeBrowsingActive = enabled) }
-    }
-
-    fun updateStrictnessLevel(level: Int) {
-        _uiState.update { it.copy(filterStrictnessLevel = level) }
-    }
-
-    // 3. Rest & Sleep Toggles
-    fun toggleSleepSchedule(enabled: Boolean) {
-        _uiState.update { it.copy(isSleepScheduleActive = enabled) }
-    }
-
-    fun updateBedtime(start: String, end: String) {
-        _uiState.update { it.copy(bedtimeStart = start, bedtimeEnd = end) }
-    }
-
-    fun toggleLockScreenDuringSleep(enabled: Boolean) {
-        _uiState.update { it.copy(lockScreenDuringSleep = enabled) }
-    }
-
-    // 4. Settings Lock Toggles
-    fun toggleSettingsLock(enabled: Boolean) {
-        _uiState.update { it.copy(isSettingsLockActive = enabled) }
-    }
-
-    fun toggleBiometrics(enabled: Boolean) {
-        _uiState.update { it.copy(isBiometricsActive = enabled) }
-    }
-
-    fun toggleLockTimeAndDate(enabled: Boolean) {
-        _uiState.update { it.copy(lockTimeAndDateChange = enabled) }
-    }
-
-    fun updatePinCode(pin: String) {
-        _uiState.update { it.copy(pinCode = pin) }
-    }
-
-    // 5. Advanced Protection Handlers (الحماية المتقدمة)
-    fun setBlockDurationEditMode(mode: BlockDurationEditMode) {
-        _uiState.update { it.copy(blockDurationEditMode = mode) }
-    }
-
-    fun togglePreventUninstall(enabled: Boolean) {
-        _uiState.update { it.copy(isPreventUninstallActive = enabled) }
-    }
+    fun toggleAiFiltering(enabled: Boolean) { _uiState.update { it.copy(isAiFilteringActive = enabled) } }
+    fun toggleAdultContent(enabled: Boolean) { _uiState.update { it.copy(isAdultContentBlocked = enabled) } }
+    fun toggleSafeBrowsing(enabled: Boolean) { _uiState.update { it.copy(isSafeBrowsingActive = enabled) } }
+    fun updateStrictnessLevel(level: Int) { _uiState.update { it.copy(filterStrictnessLevel = level) } }
+    fun toggleSleepSchedule(enabled: Boolean) { _uiState.update { it.copy(isSleepScheduleActive = enabled) } }
+    fun updateBedtime(start: String, end: String) { _uiState.update { it.copy(bedtimeStart = start, bedtimeEnd = end) } }
+    fun toggleLockScreenDuringSleep(enabled: Boolean) { _uiState.update { it.copy(lockScreenDuringSleep = enabled) } }
+    fun toggleSettingsLock(enabled: Boolean) { _uiState.update { it.copy(isSettingsLockActive = enabled) } }
+    fun toggleBiometrics(enabled: Boolean) { _uiState.update { it.copy(isBiometricsActive = enabled) } }
+    fun toggleLockTimeAndDate(enabled: Boolean) { _uiState.update { it.copy(lockTimeAndDateChange = enabled) } }
+    fun updatePinCode(pin: String) { _uiState.update { it.copy(pinCode = pin) } }
+    fun setBlockDurationEditMode(mode: BlockDurationEditMode) { _uiState.update { it.copy(blockDurationEditMode = mode) } }
+    fun togglePreventUninstall(enabled: Boolean) { _uiState.update { it.copy(isPreventUninstallActive = enabled) } }
 
     companion object {
         private val reelSupportedPackages = setOf(
