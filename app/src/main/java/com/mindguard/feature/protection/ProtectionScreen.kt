@@ -335,13 +335,19 @@ fun AppProtectionSubScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                text = "حماية التطبيقات",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                fontSize = 26.sp,
-                color = MaterialTheme.colorScheme.onBackground
-            )
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "حماية التطبيقات",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 26.sp,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+            }
 
             Spacer(modifier = Modifier.height(4.dp))
 

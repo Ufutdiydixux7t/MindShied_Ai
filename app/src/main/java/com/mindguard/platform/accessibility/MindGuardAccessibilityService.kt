@@ -24,6 +24,7 @@ class MindGuardAccessibilityService : AccessibilityService() {
     private var lastFrozenActionAt = 0L
     private var activeShortVideoPackage: String? = null
     private var overlayTargetPackage: String? = null
+    private var suppressReelsUntil = 0L
     private var reelsOverlay: View? = null
     private val mainHandler = Handler(Looper.getMainLooper())
 
@@ -48,6 +49,7 @@ class MindGuardAccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         val packageName = event?.packageName?.toString() ?: return
         if (packageName == applicationContext.packageName) return
+        if (System.currentTimeMillis() < suppressReelsUntil) return
 
         val reelsSurface = isShortVideoSurface(event, packageName)
         updateUsage(packageName, reelsSurface)
@@ -211,6 +213,7 @@ class MindGuardAccessibilityService : AccessibilityService() {
                 trackedPackage = null
                 trackedSince = null
                 activeShortVideoPackage = null
+                suppressReelsUntil = System.currentTimeMillis() + 1500L
                 overlayTargetPackage = null
                 // Let WindowManager restore YouTube's window before reading
                 // its accessibility tree. Otherwise rootInActiveWindow may
