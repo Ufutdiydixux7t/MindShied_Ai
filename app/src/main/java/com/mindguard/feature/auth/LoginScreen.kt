@@ -411,55 +411,52 @@ private fun LoginWaveDecoration(top: Boolean, modifier: Modifier) {
     Canvas(
         modifier = modifier
             .fillMaxWidth()
-            .height(if (top) 230.dp else 260.dp)
+            .height(if (top) 190.dp else 220.dp)
     ) {
         val width = size.width
         val height = size.height
-        val first = Path().apply {
+        fun wavePath(offset: Float, amplitude: Float): Path = Path().apply {
             if (top) {
                 moveTo(0f, 0f)
-                lineTo(width * .42f, 0f)
-                cubicTo(width * .34f, height * .42f, width * .18f, height * .52f, 0f, height * .70f)
-                close()
-            } else {
-                moveTo(0f, height)
-                lineTo(width, height)
-                cubicTo(width * .78f, height * .62f, width * .55f, height * .55f, width * .38f, height)
-                close()
-            }
-        }
-        val second = Path().apply {
-            if (top) {
-                moveTo(0f, height * .34f)
-                cubicTo(width * .25f, height * .08f, width * .48f, height * .20f, width * .66f, 0f)
                 lineTo(width, 0f)
-                lineTo(width, height * .12f)
-                cubicTo(width * .55f, height * .48f, width * .30f, height * .40f, 0f, height * .80f)
+                lineTo(width, height * 0.55f + offset)
+                cubicTo(
+                    width * 0.78f, height * 0.38f + offset - amplitude,
+                    width * 0.58f, height * 0.78f + offset + amplitude,
+                    width * 0.36f, height * 0.58f + offset
+                )
+                cubicTo(
+                    width * 0.20f, height * 0.42f + offset - amplitude,
+                    width * 0.08f, height * 0.72f + offset + amplitude,
+                    0f, height * 0.56f + offset
+                )
                 close()
             } else {
                 moveTo(0f, height)
-                cubicTo(width * .32f, height * .55f, width * .62f, height * .78f, width, height * .22f)
                 lineTo(width, height)
+                lineTo(width, height * 0.38f + offset)
+                cubicTo(
+                    width * 0.80f, height * 0.60f + offset + amplitude,
+                    width * 0.60f, height * 0.22f + offset - amplitude,
+                    width * 0.38f, height * 0.45f + offset
+                )
+                cubicTo(
+                    width * 0.22f, height * 0.62f + offset + amplitude,
+                    width * 0.08f, height * 0.30f + offset - amplitude,
+                    0f, height * 0.48f + offset
+                )
                 close()
             }
         }
-        val third = Path().apply {
-            if (top) {
-                moveTo(0f, height * .62f)
-                cubicTo(width * .24f, height * .30f, width * .48f, height * .34f, width * .72f, 0f)
-                lineTo(width, 0f)
-                lineTo(width, height * .06f)
-                cubicTo(width * .52f, height * .56f, width * .28f, height * .48f, 0f, height * .92f)
-                close()
-            } else {
-                moveTo(0f, height)
-                cubicTo(width * .24f, height * .68f, width * .54f, height * .74f, width, height * .34f)
-                lineTo(width, height)
-                close()
-            }
+
+        if (top) {
+            drawPath(wavePath(0f, height * 0.08f), Color(0xFFDCE9FA).copy(alpha = 0.9f))
+            drawPath(wavePath(height * 0.09f, height * 0.06f), Color(0xFFC4D9F5).copy(alpha = 0.72f))
+            drawPath(wavePath(height * 0.18f, height * 0.05f), Color(0xFFAFC9F1).copy(alpha = 0.48f))
+        } else {
+            drawPath(wavePath(0f, height * 0.08f), Color(0xFFDCE9FA).copy(alpha = 0.9f))
+            drawPath(wavePath(-height * 0.09f, height * 0.06f), Color(0xFFC4D9F5).copy(alpha = 0.72f))
+            drawPath(wavePath(-height * 0.18f, height * 0.05f), Color(0xFFAFC9F1).copy(alpha = 0.48f))
         }
-        drawPath(first, color = Color(0xFFC9DBF7).copy(alpha = .72f))
-        drawPath(second, color = Color(0xFFAFC9F1).copy(alpha = .58f))
-        drawPath(third, color = Color(0xFFE1EBFA).copy(alpha = .82f))
     }
 }
