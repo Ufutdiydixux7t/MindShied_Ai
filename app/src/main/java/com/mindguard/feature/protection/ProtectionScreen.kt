@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.Canvas
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -23,6 +24,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -306,6 +308,7 @@ fun AppProtectionSubScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
+        SoftWave(top = true)
         // App Protection Screen Header
         Column(
             modifier = Modifier
@@ -317,12 +320,6 @@ fun AppProtectionSubScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                TextButton(onClick = { showAddAppDialog = true }) {
-                    Icon(Icons.Default.Add, contentDescription = null, tint = Primary)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("إضافة تطبيق", color = Primary, fontWeight = FontWeight.Bold)
-                }
-
                 IconButton(onClick = onBack) {
                     Icon(
                         imageVector = Icons.Default.ChevronRight,
@@ -367,14 +364,24 @@ fun AppProtectionSubScreen(
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             // Section Title: التطبيقات
-            Text(
-                text = "التطبيقات",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                fontSize = 17.sp,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(top = 4.dp, bottom = 2.dp)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "التطبيقات",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 17.sp,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.weight(1f)
+                )
+                TextButton(onClick = { showAddAppDialog = true }) {
+                    Icon(Icons.Default.Add, contentDescription = null, tint = Primary, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(3.dp))
+                    Text("إضافة تطبيق", color = Primary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                }
+            }
 
             if (uiState.appProtectionItems.isEmpty()) {
                 Card(
@@ -420,6 +427,7 @@ fun AppProtectionSubScreen(
                 }
             }
 
+            SoftWave(top = false)
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
@@ -463,6 +471,31 @@ fun AppProtectionSubScreen(
             },
             dismissButton = { TextButton(onClick = { showAccessibilityDialog = false }) { Text("لاحقًا") } }
         )
+    }
+}
+
+@Composable
+private fun SoftWave(top: Boolean) {
+    Canvas(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(28.dp)
+    ) {
+        val path = Path().apply {
+            if (top) {
+                moveTo(0f, size.height)
+                cubicTo(size.width * .25f, 0f, size.width * .55f, 0f, size.width, size.height * .55f)
+                lineTo(size.width, 0f)
+                lineTo(0f, 0f)
+            } else {
+                moveTo(0f, 0f)
+                cubicTo(size.width * .25f, size.height, size.width * .65f, size.height, size.width, 0f)
+                lineTo(size.width, size.height)
+                lineTo(0f, size.height)
+            }
+            close()
+        }
+        drawPath(path, color = Primary.copy(alpha = .08f))
     }
 }
 
@@ -552,27 +585,27 @@ fun ExpandableAppProtectionCard(
                         )
                         item.reelsPeriods.forEach { period ->
                             Card(
-                                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
                                 colors = CardDefaults.cardColors(containerColor = Color(0xFFF7F9FC)),
-                                shape = RoundedCornerShape(14.dp),
+                                shape = RoundedCornerShape(12.dp),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                             ) {
                                 Row(
-                                    modifier = Modifier.fillMaxWidth().padding(10.dp),
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Icon(Icons.Outlined.Schedule, contentDescription = null, tint = Primary, modifier = Modifier.size(20.dp))
-                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Icon(Icons.Outlined.Schedule, contentDescription = null, tint = Primary, modifier = Modifier.size(18.dp))
+                                    Spacer(modifier = Modifier.width(6.dp))
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text(period.name, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = TextDark)
-                                        Text("${period.startTime} - ${period.endTime}", fontSize = 11.sp, color = TextGray)
+                                        Text(period.name, fontWeight = FontWeight.Bold, fontSize = 12.sp, color = TextDark)
+                                        Text("${period.startTime} - ${period.endTime}", fontSize = 10.sp, color = TextGray)
                                     }
                                     OutlinedTextField(
                                         value = period.minutes,
                                         onValueChange = { onPeriodMinutesChange(period.id, it) },
-                                        modifier = Modifier.width(88.dp),
+                                        modifier = Modifier.width(78.dp),
                                         singleLine = true,
-                                        label = { Text("دقائق", fontSize = 10.sp) },
+                                        label = { Text("دقائق", fontSize = 9.sp) },
                                         keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                                             keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
                                         ),

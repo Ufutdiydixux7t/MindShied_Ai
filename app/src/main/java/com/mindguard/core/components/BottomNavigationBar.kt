@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
@@ -31,11 +33,12 @@ fun BottomNavigationBar(selectedTab: Int, onTabSelected: (Int) -> Unit) {
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .widthIn(max = 420.dp),
+                .widthIn(max = 420.dp)
+                .border(BorderStroke(1.dp, Primary.copy(alpha = 0.16f)), RoundedCornerShape(28.dp)),
             shape = RoundedCornerShape(28.dp),
-            color = MaterialTheme.colorScheme.surface,
-            shadowElevation = 10.dp,
-            tonalElevation = 2.dp
+            color = Color.White,
+            shadowElevation = 16.dp,
+            tonalElevation = 3.dp
         ) {
             NavigationBar(
                 modifier = Modifier
