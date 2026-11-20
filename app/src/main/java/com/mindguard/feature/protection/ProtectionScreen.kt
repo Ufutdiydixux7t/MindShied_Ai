@@ -13,7 +13,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.Canvas
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -24,7 +23,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -308,7 +306,6 @@ fun AppProtectionSubScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        SoftWave(top = true)
         // App Protection Screen Header
         Column(
             modifier = Modifier
@@ -328,25 +325,25 @@ fun AppProtectionSubScreen(
                         modifier = Modifier.size(32.dp)
                     )
                 }
+
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "حماية التطبيقات",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 24.sp,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                }
+
+                Spacer(modifier = Modifier.size(48.dp))
             }
 
             Spacer(modifier = Modifier.height(8.dp))
-
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "حماية التطبيقات",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 26.sp,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                )
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
 
             Text(
                 text = "حظر التطبيقات التي تستهلك وقتك",
@@ -427,7 +424,6 @@ fun AppProtectionSubScreen(
                 }
             }
 
-            SoftWave(top = false)
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
@@ -471,31 +467,6 @@ fun AppProtectionSubScreen(
             },
             dismissButton = { TextButton(onClick = { showAccessibilityDialog = false }) { Text("لاحقًا") } }
         )
-    }
-}
-
-@Composable
-private fun SoftWave(top: Boolean) {
-    Canvas(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(28.dp)
-    ) {
-        val path = Path().apply {
-            if (top) {
-                moveTo(0f, size.height)
-                cubicTo(size.width * .25f, 0f, size.width * .55f, 0f, size.width, size.height * .55f)
-                lineTo(size.width, 0f)
-                lineTo(0f, 0f)
-            } else {
-                moveTo(0f, 0f)
-                cubicTo(size.width * .25f, size.height, size.width * .65f, size.height, size.width, 0f)
-                lineTo(size.width, size.height)
-                lineTo(0f, size.height)
-            }
-            close()
-        }
-        drawPath(path, color = Primary.copy(alpha = .08f))
     }
 }
 
