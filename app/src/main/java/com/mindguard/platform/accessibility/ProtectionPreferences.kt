@@ -17,6 +17,7 @@ object ProtectionPreferences {
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     private fun reelsKey(packageName: String) = "reels_$packageName"
     private fun freezeKey(packageName: String) = "freeze_$packageName"
+    private fun periodsEnabledKey(packageName: String) = "periods_enabled_$packageName"
     private fun periodsKey(packageName: String) = "periods_$packageName"
     private fun usageKey(packageName: String, date: String, periodId: String) = "usage_${packageName}_${date}_$periodId"
 
@@ -33,6 +34,13 @@ object ProtectionPreferences {
 
     fun isFrozen(context: Context, packageName: String) =
         prefs(context).getBoolean(freezeKey(packageName), false)
+
+    fun setPeriodsEnabled(context: Context, packageName: String, enabled: Boolean) {
+        prefs(context).edit().putBoolean(periodsEnabledKey(packageName), enabled).apply()
+    }
+
+    fun arePeriodsEnabled(context: Context, packageName: String) =
+        prefs(context).getBoolean(periodsEnabledKey(packageName), false)
 
     fun savePeriods(context: Context, packageName: String, periods: List<StoredProtectionPeriod>) {
         val encoded = periods.joinToString(";") {

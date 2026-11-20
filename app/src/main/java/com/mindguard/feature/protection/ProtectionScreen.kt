@@ -471,367 +471,198 @@ fun ExpandableAppProtectionCard(
     onAddPeriod: () -> Unit,
     onPeriodsToggle: () -> Unit
 ) {
-    val durationOptions = listOf("15 دقيقة", "30 دقيقة", "45 دقيقة", "ساعة", "ساعتان", "4 ساعات", "دائمًا")
+    val durationOptions = listOf("5 دقائق", "10 دقائق", "15 دقيقة", "30 دقيقة", "45 دقيقة", "ساعة", "ساعتان")
     var reelsDropdownExpanded by remember { mutableStateOf(false) }
     var freezeDropdownExpanded by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
-        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(24.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 10.dp, vertical = 8.dp)
-        ) {
-            // App Card Header (Always Visible)
+        Column(modifier = Modifier.fillMaxWidth()) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(onClick = onToggleExpand)
-                .padding(vertical = 2.dp),
+                    .padding(horizontal = 18.dp, vertical = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Right App Icon Badge
                 AppBrandIconBadge(appId = item.id, appName = item.name, icon = item.icon)
-
                 Spacer(modifier = Modifier.width(12.dp))
-
-                // App Name in Middle
                 Text(
                     text = item.name,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 18.sp,
+                    color = Color(0xFF0B1652),
                     modifier = Modifier.weight(1f)
                 )
-
-                // Left Chevron Up / Down
                 Icon(
                     imageVector = if (item.isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                     contentDescription = null,
-                    tint = TextDark,
-                    modifier = Modifier.size(22.dp)
+                    tint = Color(0xFF0B1652),
+                    modifier = Modifier.size(24.dp)
                 )
             }
 
-            // Expanded Card Content
             AnimatedVisibility(visible = item.isExpanded) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 12.dp)
-                ) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(14.dp)
-                        ) {
-                            // 1. Reels Block Section
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
+                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 4.dp)) {
+                    HorizontalDivider(color = Color(0xFFE7EAF0))
+                    ProtectionSwitchRow(
+                        label = "حظر الريلز",
+                        checked = item.isReelsBlocked,
+                        onCheckedChange = onReelsToggle
+                    )
+                    if (item.isReelsBlocked) {
+                        CompactDurationSelector(
+                            value = item.reelsBlockDuration,
+                            expanded = reelsDropdownExpanded,
+                            onExpand = { reelsDropdownExpanded = true },
+                            onDismiss = { reelsDropdownExpanded = false },
+                            options = durationOptions,
+                            onSelect = {
+                                onReelsDurationSelect(it)
+                                reelsDropdownExpanded = false
+                            }
+                        )
+                    }
+
+                    HorizontalDivider(color = Color(0xFFE7EAF0))
+                    ProtectionSwitchRow(
+                        label = "الفترات",
+                        checked = item.arePeriodsVisible,
+                        onCheckedChange = { onPeriodsToggle() }
+                    )
+                    if (item.arePeriodsVisible) {
+                        Text(
+                            text = "حدد وقت المشاهدة لكل فترة يومية",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TextGray,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                        item.reelsPeriods.forEach { period ->
+                            Card(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFF7F9FC)),
+                                shape = RoundedCornerShape(14.dp),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                             ) {
-                                Surface(
-                                    modifier = Modifier.size(38.dp),
-                                    shape = RoundedCornerShape(10.dp),
-                                    color = Color(0xFFF1F5F9)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(10.dp),
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.VideoLibrary,
-                                        contentDescription = null,
-                                        tint = TextDark,
-                                        modifier = Modifier.padding(9.dp)
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.width(12.dp))
-
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = "حظر الريلز",
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 15.sp
-                                    )
-                                    Text(
-                                        text = "مدة حظر الريلز",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = TextGray,
-                                        fontSize = 12.sp
-                                    )
-                                }
-
-                                OutlinedButton(
-                                    onClick = { onReelsToggle(!item.isReelsBlocked) },
-                                    border = BorderStroke(1.dp, if (item.isReelsBlocked) Primary else Color(0xFFCBD5E1)),
-                                    colors = ButtonDefaults.outlinedButtonColors(
-                                        contentColor = if (item.isReelsBlocked) Primary else TextGray
-                                    ),
-                                    contentPadding = PaddingValues(horizontal = 10.dp),
-                                    shape = RoundedCornerShape(10.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = if (item.isReelsBlocked) Icons.Default.Check else Icons.Default.Block,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text("حظر الريلز", fontSize = 12.sp)
-                                }
-                            }
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                OutlinedButton(
-                                    onClick = onPeriodsToggle,
-                                    modifier = Modifier.weight(1f),
-                                    shape = RoundedCornerShape(10.dp)
-                                ) {
-                                    Icon(Icons.Outlined.Schedule, contentDescription = null, modifier = Modifier.size(16.dp))
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(if (item.arePeriodsVisible) "إخفاء الفترات" else "الفترات", fontSize = 12.sp)
-                                }
-                            }
-
-                            if (item.arePeriodsVisible) {
-                            Spacer(modifier = Modifier.height(10.dp))
-
-                            // Reels Duration Selector Box
-                            Box(modifier = Modifier.fillMaxWidth()) {
-                                Surface(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable { reelsDropdownExpanded = true },
-                                    shape = RoundedCornerShape(12.dp),
-                                    color = Color.White
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 14.dp, vertical = 10.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Text(
-                                            text = item.reelsBlockDuration,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 14.sp,
-                                            color = TextDark
-                                        )
-
-                                        Icon(
-                                            imageVector = Icons.Default.KeyboardArrowDown,
-                                            contentDescription = null,
-                                            tint = TextDark,
-                                            modifier = Modifier.size(20.dp)
-                                        )
+                                    Icon(Icons.Outlined.Schedule, contentDescription = null, tint = Primary, modifier = Modifier.size(20.dp))
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(period.name, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = TextDark)
+                                        Text("${period.startTime} - ${period.endTime}", fontSize = 11.sp, color = TextGray)
                                     }
-                                }
-
-                                DropdownMenu(
-                                    expanded = reelsDropdownExpanded,
-                                    onDismissRequest = { reelsDropdownExpanded = false }
-                                ) {
-                                    durationOptions.forEach { option ->
-                                        DropdownMenuItem(
-                                            text = { Text(option, fontSize = 14.sp) },
-                                            onClick = {
-                                                onReelsDurationSelect(option)
-                                                reelsDropdownExpanded = false
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text(
-                                text = "الفترات اليومية",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = TextDark
-                            )
-                            Text(
-                                text = "اكتب عدد الدقائق المسموح بها لكل فترة",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = TextGray
-                            )
-                            item.reelsPeriods.forEach { period ->
-                                Card(
-                                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),
-                                    shape = RoundedCornerShape(14.dp),
-                                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                                ) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth().padding(10.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Surface(
-                                            modifier = Modifier.size(38.dp),
-                                            shape = RoundedCornerShape(11.dp),
-                                            color = Primary.copy(alpha = 0.10f)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Outlined.Schedule,
-                                                contentDescription = null,
-                                                tint = Primary,
-                                                modifier = Modifier.padding(9.dp)
-                                            )
-                                        }
-                                        Spacer(modifier = Modifier.width(10.dp))
-                                        Column(modifier = Modifier.weight(1f)) {
-                                            Text(period.name, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = TextDark)
-                                            Text("${period.startTime} - ${period.endTime}", fontSize = 11.sp, color = TextGray)
-                                        }
-                                        OutlinedTextField(
-                                            value = period.minutes,
-                                            onValueChange = { onPeriodMinutesChange(period.id, it) },
-                                            modifier = Modifier.width(92.dp),
-                                            singleLine = true,
-                                            label = { Text("دقائق", fontSize = 10.sp) },
-                                            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                                                keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
-                                            ),
-                                            shape = RoundedCornerShape(10.dp)
-                                        )
-                                    }
-                                }
-                            }
-                            TextButton(onClick = onAddPeriod) {
-                                Icon(Icons.Default.Add, contentDescription = null)
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("إضافة فترة")
-                            }
-
-                            }
-
-                            Spacer(modifier = Modifier.height(14.dp))
-                            HorizontalDivider(color = Color(0xFFF1F5F9))
-                            Spacer(modifier = Modifier.height(14.dp))
-
-                            // 2. App Freeze Section
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Surface(
-                                    modifier = Modifier.size(38.dp),
-                                    shape = RoundedCornerShape(10.dp),
-                                    color = Color(0xFFF1F5F9)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.AcUnit,
-                                        contentDescription = null,
-                                        tint = TextDark,
-                                        modifier = Modifier.padding(9.dp)
+                                    OutlinedTextField(
+                                        value = period.minutes,
+                                        onValueChange = { onPeriodMinutesChange(period.id, it) },
+                                        modifier = Modifier.width(88.dp),
+                                        singleLine = true,
+                                        label = { Text("دقائق", fontSize = 10.sp) },
+                                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
+                                        ),
+                                        shape = RoundedCornerShape(10.dp)
                                     )
-                                }
-
-                                Spacer(modifier = Modifier.width(12.dp))
-
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = "تجميد التطبيق",
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 15.sp
-                                    )
-                                    Text(
-                                        text = "مدة تجميد التطبيق",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = TextGray,
-                                        fontSize = 12.sp
-                                    )
-                                }
-
-                                OutlinedButton(
-                                    onClick = { onFreezeToggle(!item.isAppFrozen) },
-                                    border = BorderStroke(1.dp, if (item.isAppFrozen) Primary else Color(0xFFCBD5E1)),
-                                    colors = ButtonDefaults.outlinedButtonColors(
-                                        contentColor = if (item.isAppFrozen) Primary else TextGray
-                                    ),
-                                    contentPadding = PaddingValues(horizontal = 10.dp),
-                                    shape = RoundedCornerShape(10.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = if (item.isAppFrozen) Icons.Default.AcUnit else Icons.Default.LockOpen,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text("تجميد التطبيق", fontSize = 12.sp)
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(10.dp))
-
-                            // Freeze Duration Selector Box
-                            Box(modifier = Modifier.fillMaxWidth()) {
-                                Surface(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable { freezeDropdownExpanded = true },
-                                    shape = RoundedCornerShape(12.dp),
-                                    color = Color.White
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 14.dp, vertical = 10.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Text(
-                                            text = item.appFreezeDuration,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 14.sp,
-                                            color = TextDark
-                                        )
-
-                                        Icon(
-                                            imageVector = Icons.Default.KeyboardArrowDown,
-                                            contentDescription = null,
-                                            tint = TextDark,
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                    }
-                                }
-
-                                DropdownMenu(
-                                    expanded = freezeDropdownExpanded,
-                                    onDismissRequest = { freezeDropdownExpanded = false }
-                                ) {
-                                    durationOptions.forEach { option ->
-                                        DropdownMenuItem(
-                                            text = { Text(option, fontSize = 14.sp) },
-                                            onClick = {
-                                                onFreezeDurationSelect(option)
-                                                freezeDropdownExpanded = false
-                                            }
-                                        )
-                                    }
                                 }
                             }
                         }
+                        TextButton(onClick = onAddPeriod) {
+                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("إضافة فترة", fontSize = 12.sp)
+                        }
                     }
+
+                    HorizontalDivider(color = Color(0xFFE7EAF0))
+                    ProtectionSwitchRow(
+                        label = "تجميد التطبيق",
+                        checked = item.isAppFrozen,
+                        onCheckedChange = onFreezeToggle
+                    )
+                    if (item.isAppFrozen) {
+                        CompactDurationSelector(
+                            value = item.appFreezeDuration,
+                            expanded = freezeDropdownExpanded,
+                            onExpand = { freezeDropdownExpanded = true },
+                            onDismiss = { freezeDropdownExpanded = false },
+                            options = durationOptions,
+                            onSelect = {
+                                onFreezeDurationSelect(it)
+                                freezeDropdownExpanded = false
+                            }
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProtectionSwitchRow(
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Medium,
+            color = Color(0xFF0B1652),
+            modifier = Modifier.weight(1f)
+        )
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = Color.White,
+                checkedTrackColor = Primary,
+                uncheckedThumbColor = Color(0xFF64748B),
+                uncheckedTrackColor = Color(0xFFE2E8F0),
+                uncheckedBorderColor = Color(0xFFCBD5E1)
+            )
+        )
+    }
+}
+
+@Composable
+private fun CompactDurationSelector(
+    value: String,
+    expanded: Boolean,
+    onExpand: () -> Unit,
+    onDismiss: () -> Unit,
+    options: List<String>,
+    onSelect: (String) -> Unit
+) {
+    Box(modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)) {
+        OutlinedButton(
+            onClick = onExpand,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            border = BorderStroke(1.dp, Color(0xFFD5DAE4)),
+            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 2.dp)
+        ) {
+            Text("المدة: $value", modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Start, color = TextDark)
+            Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = TextGray)
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = onDismiss) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option, fontSize = 13.sp) },
+                    onClick = { onSelect(option) }
+                )
             }
         }
     }

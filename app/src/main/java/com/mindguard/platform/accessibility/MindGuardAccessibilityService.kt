@@ -39,7 +39,10 @@ class MindGuardAccessibilityService : AccessibilityService() {
             return
         }
 
-        if (!reelsSurface || !ProtectionPreferences.isReelsEnabled(this, packageName)) return
+        if (!reelsSurface ||
+            !ProtectionPreferences.isReelsEnabled(this, packageName) ||
+            !ProtectionPreferences.arePeriodsEnabled(this, packageName)
+        ) return
         if (hasExceededCurrentPeriod(packageName)) {
             showReelsOverlay(packageName)
         }

@@ -93,6 +93,8 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun togglePeriodsVisibility(appId: String) {
+        val enabled = _uiState.value.appProtectionItems.firstOrNull { it.id == appId }?.arePeriodsVisible != true
+        ProtectionPreferences.setPeriodsEnabled(getApplication(), appId, enabled)
         _uiState.update { state ->
             state.copy(appProtectionItems = state.appProtectionItems.map { item ->
                 if (item.id == appId) item.copy(arePeriodsVisible = !item.arePeriodsVisible) else item
