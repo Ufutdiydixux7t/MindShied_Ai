@@ -1,31 +1,31 @@
-# Walkthrough - Enhanced General Settings
+# Walkthrough - Real App Icons Implementation
 
-I have enhanced the "General Settings" screen with advanced digital wellness, security, and data management options to provide a more comprehensive user experience.
+I have updated the Dashboard and Statistics screens to display the actual icons for popular apps like Instagram, TikTok, YouTube, and X, replacing the generic placeholders.
 
 ## Changes Made
 
-### 1. Wellness & AI Section
-- **Usage Alerts:** Added a toggle to allow users to receive notifications when they approach their daily usage limit.
-- **AI Insights:** Added a toggle for the intelligent behavior analysis feature, which provides personalized tips to improve digital well-being.
+### 1. Model Updates
+- **[DashboardUiState](file:///D:/src/MindShieldAi/app/src/main/java/com/example/mindshieldai/ui/home/DashboardUiState.kt):** Updated `AppUsageInfo` to include an `iconUrl` field.
+- **[StatisticsUiState](file:///D:/src/MindShieldAi/app/src/main/java/com/example/mindshieldai/ui/home/StatisticsUiState.kt):** Updated `AppUsageData` to include an `iconUrl` field.
 
-### 2. Security Section
-- **Strict Mode:** Added a toggle to enable a "Strict Mode" that prevents users from modifying protection settings during active sessions, fostering discipline.
-- **App Lock:** Added a menu item (navigates to a placeholder for now) to allow users to protect the MindShield AI app itself with a PIN or biometric lock.
+### 2. High-Fidelity Mock Data
+- Provided real PNG URLs for the icons of Instagram, TikTok, YouTube, and X in both Dashboard and Statistics mock data.
 
-### 3. Data Management Section
-- **Clear Activity Log:** Added a red-themed action item to allow users to reset their local usage statistics for privacy or troubleshooting.
+### 3. UI Enhancement
+- **[HomeScreen](file:///D:/src/MindShieldAi/app/src/main/java/com/example/mindshieldai/ui/home/HomeScreen.kt):**
+    - Updated `AppCard` and `AppUsageItem` to use Coil's `AsyncImage` for loading app icons from the provided URLs.
+    - Added proper padding and scaling (`ContentScale.Fit`) to ensure icons look professional and consistent.
 
-### 4. UI/UX Refinement
-- **Categorization:** Grouped settings into logical cards with clear titles, icons, and descriptions.
-- **RTL & Theme Support:** All new elements are fully RTL-compliant and adapt perfectly to both Light and Dark modes.
-- **Icons:** Used descriptive Material Outlined icons for a modern and premium look.
+### 4. Permissions
+- **[AndroidManifest.xml](file:///D:/src/MindShieldAi/app/src/main/AndroidManifest.xml):** Added the `INTERNET` permission to allow the app to fetch icons from the web.
 
 ## Verification Results
-- **Functional Toggles:** All Switches correctly track their independent states.
-- **Responsive Layout:** The screen is scrollable and handles the additional content gracefully on different screen sizes.
-- **Build:** Verified with `app:assembleDebug`.
+- **Visual Accuracy:** The apps in the "Protected Apps" and "App Usage" lists now display their recognizable brand logos.
+- **Connectivity:** Coil successfully fetches and caches the icons from the internet.
+- **Build Status:** Verified that the project builds correctly with the new permission and logic.
 
 > [!SUCCESS]
-> The "General Settings" screen is now a robust hub for advanced app control, aligning with the "Premium/Modern" design philosophy of MindShield AI.
+> The interface now feels much more realistic and user-friendly, allowing for immediate recognition of protected applications through their official icons.
 
-render_diffs(file:///D:/src/MindShieldAi/app/src/main/java/com/example/mindshieldai/ui/home/GeneralSettingsScreen.kt)
+render_diffs(file:///D:/src/MindShieldAi/app/src/main/java/com/example/mindshieldai/ui/home/HomeScreen.kt)
+render_diffs(file:///D:/src/MindShieldAi/app/src/main/AndroidManifest.xml)
