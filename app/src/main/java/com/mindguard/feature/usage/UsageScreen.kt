@@ -53,14 +53,6 @@ fun UsageScreen() {
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        Text(
-            text = "الإحصائيات",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            color = DarkBlue,
-            modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
-        )
-
         TabRow(
             selectedTabIndex = selectedTabIndex,
             containerColor = Color.Transparent,

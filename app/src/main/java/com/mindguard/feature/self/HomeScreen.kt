@@ -14,9 +14,8 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.mindguard.core.components.AppTopBar
 import com.mindguard.core.components.BottomNavigationBar
-import com.mindguard.core.components.HomeTopBar
-import com.mindguard.core.theme.DarkBlue
 import com.mindguard.feature.parent.ParentHomeScreen
 import com.mindguard.feature.protection.ProtectionScreen
 import com.mindguard.feature.settings.SettingsScreen
@@ -41,16 +40,24 @@ fun HomeScreen(
                     onTabSelected = { selectedTab = it }
                 )
             },
-            containerColor = if (isHome) DarkBlue else MaterialTheme.colorScheme.background
+            containerColor = MaterialTheme.colorScheme.background
         ) { paddingValues ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-                if (isHome) {
-                    HomeTopBar(userName, profileImageUri)
-                }
+                AppTopBar(
+                    title = when (selectedTab) {
+                        0 -> "الرئيسية"
+                        1 -> "الإحصائيات"
+                        2 -> "الحماية"
+                        3 -> "العائلة"
+                        else -> "الإعدادات"
+                    },
+                    userName = if (isHome) userName else null,
+                    profileImageUri = if (isHome) profileImageUri else null
+                )
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),

@@ -41,18 +41,6 @@ fun ParentHomeScreen(
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Title
-                Text(
-                    text = "العائلة",
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = DarkBlue
-                    ),
-                    textAlign = TextAlign.Center
-                )
-
                 Spacer(modifier = Modifier.weight(0.2f))
 
                 // Family Illustration / Icon Container

@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
+import com.mindguard.core.components.AppTopBar
 import com.mindguard.core.theme.Primary
 import com.mindguard.core.theme.Success
 import com.mindguard.core.theme.TextDark
@@ -104,60 +105,6 @@ fun MainProtectionContent(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Top MindGuard Branding Header (Exact match to screenshot)
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 24.dp, end = 24.dp, top = 20.dp, bottom = 16.dp)
-        ) {
-            // Brand Logo & Text at Top Right
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "MindGuard",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Primary
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Surface(
-                    modifier = Modifier.size(34.dp),
-                    shape = CircleShape,
-                    color = Primary.copy(alpha = 0.12f)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Shield,
-                        contentDescription = "MindGuard Logo",
-                        tint = Primary,
-                        modifier = Modifier.padding(7.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Large Heading: الحماية
-            Text(
-                text = "الحماية",
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // Subtitle: اختر ما تريد حمايته
-            Text(
-                text = "اختر ما تريد حمايته",
-                style = MaterialTheme.typography.bodyLarge,
-                color = TextGray,
-                fontWeight = FontWeight.Normal
-            )
-        }
-
         // 5 Core Protection Menu Cards List
         Column(
             modifier = Modifier
@@ -306,45 +253,12 @@ fun AppProtectionSubScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // App Protection Screen Header
+        AppTopBar(title = "حماية التطبيقات", onBack = onBack)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 12.dp)
+                .padding(horizontal = 20.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = Icons.Default.ChevronRight,
-                        contentDescription = "رجوع",
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-
-                Box(
-                    modifier = Modifier.weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "حماية التطبيقات",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 24.sp,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    )
-                }
-
-                Spacer(modifier = Modifier.size(48.dp))
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
             Text(
                 text = "حظر التطبيقات التي تستهلك وقتك",
                 style = MaterialTheme.typography.bodyMedium,
@@ -1195,29 +1109,7 @@ fun SubScreenHeader(
     title: String,
     onBack: () -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(onClick = onBack) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "رجوع",
-                tint = MaterialTheme.colorScheme.onBackground
-            )
-        }
-
-        Spacer(modifier = Modifier.width(8.dp))
-
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-    }
+    AppTopBar(title = title, onBack = onBack)
 }
 
 @Composable

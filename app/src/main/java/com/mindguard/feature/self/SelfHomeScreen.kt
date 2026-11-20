@@ -293,7 +293,7 @@ fun AiTipCard(tip: String) {
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = "نصيحة MindGuard",
+                    text = "نصيحة اليوم",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
