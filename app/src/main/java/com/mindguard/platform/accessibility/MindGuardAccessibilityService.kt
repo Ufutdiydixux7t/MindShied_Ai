@@ -203,25 +203,29 @@ class MindGuardAccessibilityService : AccessibilityService() {
             setTypeface(typeface, android.graphics.Typeface.BOLD)
         }
         val subtitle = TextView(this).apply {
-            text = "الاستخدام المفرط للمقاطع القصيرة قد يشتت الانتباه ويؤثر في النوم والتركيز. خذ استراحة قصيرة وامنح عقلك وقتًا للراحة."
-            textSize = 14f
+            text = "الاستخدام المفرط للمقاطع القصيرة\nقد يشتت الانتباه ويؤثر في النوم والتركيز.\nخذ استراحة قصيرة وامنح عقلك وقتًا للراحة."
+            textSize = 15f
             setTextColor(Color.rgb(82, 106, 146))
             gravity = Gravity.CENTER
             setPadding(0, 0, 0, 0)
         }
+        val buttonWidth = (236 * resources.displayMetrics.density).toInt()
+        val buttonHeight = (58 * resources.displayMetrics.density).toInt()
         val button = Button(this).apply {
             text = "العودة إلى الرئيسية"
-            textSize = 16f
+            textSize = 17f
             setTextColor(Color.WHITE)
             isAllCaps = false
             minHeight = 0
-            setPadding(32, 0, 32, 0)
+            minWidth = 0
+            setPadding(28, 0, 28, 0)
             setTypeface(typeface, android.graphics.Typeface.BOLD)
             background = GradientDrawable().apply {
                 setColor(Color.rgb(36, 79, 165))
-                cornerRadius = 56f
-                setStroke(2, Color.rgb(19, 53, 126))
+                cornerRadius = 32 * resources.displayMetrics.density
+                setStroke((2 * resources.displayMetrics.density).toInt(), Color.rgb(19, 53, 126))
             }
+            elevation = 6 * resources.displayMetrics.density
             setOnClickListener {
                 val targetPackage = overlayTargetPackage
                 removeReelsOverlay()
@@ -245,12 +249,12 @@ class MindGuardAccessibilityService : AccessibilityService() {
         }
 
         content.addView(title, LinearLayout.LayoutParams(-1, -2).apply {
-            bottomMargin = 18
+            bottomMargin = 30
         })
         content.addView(subtitle, LinearLayout.LayoutParams(-1, -2).apply {
-            bottomMargin = 28
+            bottomMargin = 44
         })
-        content.addView(button, LinearLayout.LayoutParams(-2, 68).apply {
+        content.addView(button, LinearLayout.LayoutParams(buttonWidth, buttonHeight).apply {
             gravity = Gravity.CENTER_HORIZONTAL
         })
         root.addView(
