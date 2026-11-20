@@ -1,5 +1,7 @@
 package com.mindguard.feature.protection
 
+import android.content.Intent
+import android.provider.Settings
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -21,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
@@ -293,6 +296,10 @@ fun AppProtectionSubScreen(
     viewModel: ProtectionViewModel,
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
+    var showAddAppDialog by remember { mutableStateOf(false) }
+    var showAccessibilityDialog by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -309,7 +316,11 @@ fun AppProtectionSubScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Spacer(modifier = Modifier.weight(1f))
+                TextButton(onClick = { showAddAppDialog = true }) {
+                    Icon(Icons.Default.Add, contentDescription = null, tint = Primary)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("إضافة تطبيق", color = Primary, fontWeight = FontWeight.Bold)
+                }
 
                 IconButton(onClick = onBack) {
                     Icon(
@@ -376,16 +387,73 @@ fun AppProtectionSubScreen(
                     ExpandableAppProtectionCard(
                         item = item,
                         onToggleExpand = { viewModel.toggleAppExpansion(item.id) },
-                        onReelsToggle = { viewModel.toggleAppReelsBlock(item.id, it) },
+                        onReelsToggle = { enabled ->
+                            if (enabled && !viewModel.isAccessibilityServiceEnabled()) {
+                                showAccessibilityDialog = true
+                            } else {
+                                viewModel.toggleAppReelsBlock(item.id, enabled)
+                            }
+                        },
                         onReelsDurationSelect = { viewModel.setAppReelsDuration(item.id, it) },
-                        onFreezeToggle = { viewModel.toggleAppFreeze(item.id, it) },
-                        onFreezeDurationSelect = { viewModel.setAppFreezeDuration(item.id, it) }
+                        onFreezeToggle = { enabled ->
+                            if (enabled && !viewModel.isAccessibilityServiceEnabled()) {
+                                showAccessibilityDialog = true
+                            } else {
+                                viewModel.toggleAppFreeze(item.id, enabled)
+                            }
+                        },
+                        onFreezeDurationSelect = { viewModel.setAppFreezeDuration(item.id, it) },
+                        onPeriodMinutesChange = { periodId, minutes ->
+                            viewModel.updateReelsPeriodMinutes(item.id, periodId, minutes)
+                        },
+                        onAddPeriod = { viewModel.addReelsPeriod(item.id) }
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(32.dp))
         }
+    }
+
+    if (showAddAppDialog) {
+        AlertDialog(
+            onDismissRequest = { showAddAppDialog = false },
+            title = { Text("إضافة تطبيق للحماية") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    val addedIds = uiState.appProtectionItems.map { it.id }.toSet()
+                    uiState.availableApps.filterNot { it.id in addedIds }.forEach { app ->
+                        TextButton(
+                            onClick = {
+                                viewModel.addApp(app.id)
+                                showAddAppDialog = false
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            AppBrandIconBadge(app.id, app.name, app.icon)
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(app.name, modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Start)
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { showAddAppDialog = false }) { Text("إغلاق") } }
+        )
+    }
+
+    if (showAccessibilityDialog) {
+        AlertDialog(
+            onDismissRequest = { showAccessibilityDialog = false },
+            title = { Text("تفعيل خدمة إمكانية الوصول") },
+            text = { Text("يحتاج MindGuard إلى خدمة إمكانية الوصول لاكتشاف فتح التطبيق المحمي ومنع استخدامه في وقت الحظر.") },
+            confirmButton = {
+                Button(onClick = {
+                    showAccessibilityDialog = false
+                    context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                }) { Text("فتح الإعدادات") }
+            },
+            dismissButton = { TextButton(onClick = { showAccessibilityDialog = false }) { Text("لاحقًا") } }
+        )
     }
 }
 
@@ -396,7 +464,9 @@ fun ExpandableAppProtectionCard(
     onReelsToggle: (Boolean) -> Unit,
     onReelsDurationSelect: (String) -> Unit,
     onFreezeToggle: (Boolean) -> Unit,
-    onFreezeDurationSelect: (String) -> Unit
+    onFreezeDurationSelect: (String) -> Unit,
+    onPeriodMinutesChange: (String, String) -> Unit,
+    onAddPeriod: () -> Unit
 ) {
     val durationOptions = listOf("15 دقيقة", "30 دقيقة", "45 دقيقة", "ساعة", "ساعتان", "4 ساعات", "دائمًا")
     var reelsDropdownExpanded by remember { mutableStateOf(false) }
@@ -405,22 +475,22 @@ fun ExpandableAppProtectionCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFEFF6FF) // Light blue tint matching screenshot
+            containerColor = Color.White
         ),
-        shape = RoundedCornerShape(18.dp),
+        shape = RoundedCornerShape(14.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(14.dp)
+                .padding(horizontal = 10.dp, vertical = 8.dp)
         ) {
             // App Card Header (Always Visible)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(onClick = onToggleExpand)
-                    .padding(vertical = 4.dp),
+                .padding(vertical = 2.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Right App Icon Badge
@@ -433,7 +503,7 @@ fun ExpandableAppProtectionCard(
                     text = item.name,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
+                    fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f)
                 )
@@ -443,7 +513,7 @@ fun ExpandableAppProtectionCard(
                     imageVector = if (item.isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                     contentDescription = null,
                     tint = TextDark,
-                    modifier = Modifier.size(26.dp)
+                    modifier = Modifier.size(22.dp)
                 )
             }
 
@@ -519,7 +589,7 @@ fun ExpandableAppProtectionCard(
                                         .fillMaxWidth()
                                         .clickable { reelsDropdownExpanded = true },
                                     shape = RoundedCornerShape(12.dp),
-                                    color = Color(0xFFEBF3FE)
+                                    color = Color.White
                                 ) {
                                     Row(
                                         modifier = Modifier
@@ -559,6 +629,46 @@ fun ExpandableAppProtectionCard(
                                         )
                                     }
                                 }
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = "الفترات اليومية",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = TextDark
+                            )
+                            Text(
+                                text = "اكتب عدد الدقائق المسموح بها لكل فترة",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = TextGray
+                            )
+                            item.reelsPeriods.forEach { period ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(period.name, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = TextDark)
+                                        Text("${period.startTime} - ${period.endTime}", fontSize = 11.sp, color = TextGray)
+                                    }
+                                    OutlinedTextField(
+                                        value = period.minutes,
+                                        onValueChange = { onPeriodMinutesChange(period.id, it) },
+                                        modifier = Modifier.width(100.dp),
+                                        singleLine = true,
+                                        label = { Text("دقائق", fontSize = 11.sp) },
+                                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
+                                        ),
+                                        shape = RoundedCornerShape(10.dp)
+                                    )
+                                }
+                            }
+                            TextButton(onClick = onAddPeriod) {
+                                Icon(Icons.Default.Add, contentDescription = null)
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("إضافة فترة")
                             }
 
                             Spacer(modifier = Modifier.height(14.dp))
@@ -619,7 +729,7 @@ fun ExpandableAppProtectionCard(
                                         .fillMaxWidth()
                                         .clickable { freezeDropdownExpanded = true },
                                     shape = RoundedCornerShape(12.dp),
-                                    color = Color(0xFFEBF3FE)
+                                    color = Color.White
                                 ) {
                                     Row(
                                         modifier = Modifier
@@ -679,22 +789,22 @@ fun AppBrandIconBadge(appId: String, appName: String, icon: android.graphics.dra
     }
 
     Surface(
-        modifier = Modifier.size(42.dp),
-        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier.size(36.dp),
+        shape = RoundedCornerShape(10.dp),
         color = bgColor
     ) {
         if (icon != null) {
             Image(
                 painter = rememberAsyncImagePainter(icon),
                 contentDescription = appName,
-                modifier = Modifier.padding(7.dp)
+                modifier = Modifier.padding(5.dp)
             )
         } else {
             Icon(
                 imageVector = iconVector,
                 contentDescription = appName,
                 tint = if (appId.lowercase() == "snapchat") Color.Black else Color.White,
-                modifier = Modifier.padding(10.dp)
+                modifier = Modifier.padding(8.dp)
             )
         }
     }

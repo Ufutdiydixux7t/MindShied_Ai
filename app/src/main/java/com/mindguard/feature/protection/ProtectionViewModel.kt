@@ -2,7 +2,9 @@ package com.mindguard.feature.protection
 
 import android.app.Application
 import android.content.Intent
+import android.provider.Settings
 import androidx.lifecycle.AndroidViewModel
+import com.mindguard.platform.accessibility.MindGuardAccessibilityService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -49,7 +51,30 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
             .sortedBy { it.name.lowercase() }
             .toList()
 
-        _uiState.update { it.copy(appProtectionItems = installedApps) }
+        val reelApps = installedApps.filter { it.id in reelSupportedPackages }
+        _uiState.update {
+            it.copy(
+                appProtectionItems = reelApps,
+                availableApps = installedApps
+            )
+        }
+    }
+
+    fun addApp(appId: String) {
+        _uiState.update { state ->
+            val app = state.availableApps.firstOrNull { it.id == appId } ?: return@update state
+            if (state.appProtectionItems.any { it.id == appId }) return@update state
+            state.copy(appProtectionItems = state.appProtectionItems + app)
+        }
+    }
+
+    fun isAccessibilityServiceEnabled(): Boolean {
+        val enabledServices = Settings.Secure.getString(
+            getApplication<Application>().contentResolver,
+            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        ).orEmpty()
+        val serviceName = "${getApplication<Application>().packageName}/${MindGuardAccessibilityService::class.java.name}"
+        return enabledServices.split(':').any { it.equals(serviceName, ignoreCase = true) }
     }
 
     // 1. App Protection Handlers
@@ -100,6 +125,34 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
                 else item
             }
             state.copy(appProtectionItems = updatedItems)
+        }
+    }
+
+    fun updateReelsPeriodMinutes(appId: String, periodId: String, minutes: String) {
+        _uiState.update { state ->
+            state.copy(appProtectionItems = state.appProtectionItems.map { item ->
+                if (item.id != appId) item else item.copy(
+                    reelsPeriods = item.reelsPeriods.map { period ->
+                        if (period.id == periodId) period.copy(minutes = minutes.filter(Char::isDigit)) else period
+                    }
+                )
+            })
+        }
+    }
+
+    fun addReelsPeriod(appId: String) {
+        _uiState.update { state ->
+            state.copy(appProtectionItems = state.appProtectionItems.map { item ->
+                if (item.id != appId) item else item.copy(
+                    reelsPeriods = item.reelsPeriods + ReelsTimePeriod(
+                        id = "period_${item.reelsPeriods.size + 1}",
+                        name = "فترة جديدة",
+                        startTime = "22:00",
+                        endTime = "23:59",
+                        minutes = "10"
+                    )
+                )
+            })
         }
     }
 
@@ -157,5 +210,15 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
 
     fun togglePreventUninstall(enabled: Boolean) {
         _uiState.update { it.copy(isPreventUninstallActive = enabled) }
+    }
+
+    companion object {
+        private val reelSupportedPackages = setOf(
+            "com.instagram.android",
+            "com.zhiliaoapp.musically",
+            "com.ss.android.ugc.trill",
+            "com.google.android.youtube",
+            "com.facebook.katana"
+        )
     }
 }

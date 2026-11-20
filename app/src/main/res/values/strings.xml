@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">MindGuard</string>
+    <string name="accessibility_service_description">تستخدم MindGuard هذه الخدمة لاكتشاف التطبيقات المحمية وتطبيق حدود الاستخدام التي يحددها المستخدم.</string>
 </resources>

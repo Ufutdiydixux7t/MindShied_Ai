@@ -15,6 +15,14 @@ enum class BlockDurationEditMode {
     ALLOW_AFTER_TWO_DAYS
 }
 
+data class ReelsTimePeriod(
+    val id: String,
+    val name: String,
+    val startTime: String,
+    val endTime: String,
+    val minutes: String = "10"
+)
+
 data class AppProtectionItemState(
     val id: String,
     val name: String,
@@ -23,7 +31,14 @@ data class AppProtectionItemState(
     val isReelsBlocked: Boolean = true,
     val reelsBlockDuration: String = "30 دقيقة",
     val isAppFrozen: Boolean = true,
-    val appFreezeDuration: String = "ساعة"
+    val appFreezeDuration: String = "ساعة",
+    val reelsPeriods: List<ReelsTimePeriod> = defaultReelsPeriods()
+)
+
+private fun defaultReelsPeriods() = listOf(
+    ReelsTimePeriod("morning", "الصباح", "06:00", "12:00", "10"),
+    ReelsTimePeriod("afternoon", "الظهر", "12:00", "17:00", "20"),
+    ReelsTimePeriod("evening", "المساء", "17:00", "22:00", "15")
 )
 
 data class ProtectionUiState(
@@ -31,6 +46,7 @@ data class ProtectionUiState(
 
     // 1. App Protection Apps List (loaded from the device PackageManager)
     val appProtectionItems: List<AppProtectionItemState> = emptyList(),
+    val availableApps: List<AppProtectionItemState> = emptyList(),
 
     // 2. Content Protection State
     val isAiFilteringActive: Boolean = true,
