@@ -815,7 +815,7 @@ fun AppBrandIconBadge(appId: String, appName: String, icon: android.graphics.dra
     ) {
         if (icon != null) {
             Image(
-                painter = rememberDrawablePainter(icon),
+                painter = rememberAsyncImagePainter(icon),
                 contentDescription = appName,
                 modifier = Modifier.fillMaxSize()
             )
