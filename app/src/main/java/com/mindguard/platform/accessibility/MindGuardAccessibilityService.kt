@@ -38,25 +38,26 @@ class MindGuardAccessibilityService : AccessibilityService() {
             return
         }
 
-        if (!reelsSurface ||
-            !ProtectionPreferences.isReelsEnabled(this, packageName) ||
-            !ProtectionPreferences.arePeriodsEnabled(this, packageName)
-        ) return
-        if (hasExceededCurrentPeriod(packageName)) {
+        if (!reelsSurface || !ProtectionPreferences.isReelsEnabled(this, packageName)) return
+        if (hasExceededReelsLimit(packageName)) {
             showReelsOverlay(packageName)
         }
     }
 
-    private fun hasExceededCurrentPeriod(packageName: String): Boolean {
-        val period = ProtectionPreferences.currentPeriod(this, packageName) ?: return true
-        if (period.minutes <= 0) return true
+    private fun hasExceededReelsLimit(packageName: String): Boolean {
+        val period = if (ProtectionPreferences.arePeriodsEnabled(this, packageName)) {
+            ProtectionPreferences.currentPeriod(this, packageName) ?: return false
+        } else null
+        val limit = period?.minutes ?: ProtectionPreferences.getReelsLimitMinutes(this, packageName)
+        if (limit <= 0) return true
+        val usagePeriodId = period?.id ?: "global"
         val used = ProtectionPreferences.getUsedMinutes(
             this,
             packageName,
             LocalDate.now().toString(),
-            period.id
+            usagePeriodId
         )
-        return used >= period.minutes
+        return used >= limit
     }
 
     private fun updateUsage(packageName: String, reelsSurface: Boolean) {
@@ -68,10 +69,17 @@ class MindGuardAccessibilityService : AccessibilityService() {
         }
 
         val since = trackedSince ?: now.also { trackedSince = it }
-        if (!ProtectionPreferences.isReelsEnabled(this, packageName)) return
-        val period = ProtectionPreferences.currentPeriod(this, packageName) ?: return
+        if (!ProtectionPreferences.isReelsEnabled(this, packageName)) {
+            trackedPackage = null
+            trackedSince = null
+            return
+        }
+        val period = if (ProtectionPreferences.arePeriodsEnabled(this, packageName)) {
+            ProtectionPreferences.currentPeriod(this, packageName) ?: return
+        } else null
+        val usagePeriodId = period?.id ?: "global"
         if (java.time.Duration.between(since, now).toMinutes() >= 1) {
-            ProtectionPreferences.addUsedMinute(this, packageName, LocalDate.now().toString(), period.id)
+            ProtectionPreferences.addUsedMinute(this, packageName, LocalDate.now().toString(), usagePeriodId)
             trackedSince = now
         }
     }

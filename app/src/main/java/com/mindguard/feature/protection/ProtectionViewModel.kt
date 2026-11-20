@@ -47,6 +47,7 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
                     name = resolveInfo.loadLabel(packageManager).toString(),
                     icon = resolveInfo.loadIcon(packageManager),
                     isReelsBlocked = ProtectionPreferences.isReelsEnabled(application, applicationInfo.packageName),
+                    reelsBlockDuration = ProtectionPreferences.getReelsLimitMinutes(application, applicationInfo.packageName).toString(),
                     isAppFrozen = ProtectionPreferences.isFrozen(application, applicationInfo.packageName),
                     reelsPeriods = restorePeriods(applicationInfo.packageName),
                     arePeriodsVisible = ProtectionPreferences.arePeriodsEnabled(application, applicationInfo.packageName)
@@ -55,7 +56,9 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
             .sortedBy { it.name.lowercase() }
             .toList()
 
-        val reelApps = installedApps.filter { it.id in reelSupportedPackages }
+        val reelApps = installedApps.filter { app ->
+            app.id in reelSupportedPackages || isLikelyShortVideoApp(app.id, app.name)
+        }
         reelApps.forEach { item ->
             if (ProtectionPreferences.getPeriods(application, item.id).isEmpty()) {
                 persistPeriods(item)
@@ -142,9 +145,11 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun setAppReelsDuration(appId: String, duration: String) {
+        val minutes = duration.filter(Char::isDigit)
+        ProtectionPreferences.setReelsLimitMinutes(getApplication(), appId, minutes.toIntOrNull() ?: 0)
         _uiState.update { state ->
             state.copy(appProtectionItems = state.appProtectionItems.map { item ->
-                if (item.id == appId) item.copy(reelsBlockDuration = duration) else item
+                if (item.id == appId) item.copy(reelsBlockDuration = minutes) else item
             })
         }
     }
@@ -232,7 +237,23 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
             "com.zhiliaoapp.musically",
             "com.ss.android.ugc.trill",
             "com.google.android.youtube",
-            "com.facebook.katana"
+            "com.facebook.katana",
+            "com.snapchat.android",
+            "com.likee.video",
+            "video.like",
+            "com.kwai.video",
+            "com.reddit.frontpage",
+            "com.twitter.android",
+            "com.pinterest"
         )
+
+        private fun isLikelyShortVideoApp(packageName: String, appName: String): Boolean {
+            val value = "$packageName $appName".lowercase()
+            return listOf(
+                "instagram", "youtube", "tiktok", "musical", "facebook", "snapchat",
+                "likee", "kwai", "reels", "shorts", "video", "social", "reddit",
+                "pinterest", "twitter", "x.com"
+            ).any(value::contains)
+        }
     }
 }

@@ -396,6 +396,7 @@ fun AppProtectionSubScreen(
                             }
                         },
                         onReelsDurationSelect = { viewModel.setAppReelsDuration(item.id, it) },
+                        onReelsMinutesChange = { viewModel.setAppReelsDuration(item.id, it) },
                         onFreezeToggle = { enabled ->
                             if (enabled && !viewModel.isAccessibilityServiceEnabled()) {
                                 showAccessibilityDialog = true
@@ -465,6 +466,7 @@ fun ExpandableAppProtectionCard(
     onToggleExpand: () -> Unit,
     onReelsToggle: (Boolean) -> Unit,
     onReelsDurationSelect: (String) -> Unit,
+    onReelsMinutesChange: (String) -> Unit,
     onFreezeToggle: (Boolean) -> Unit,
     onFreezeDurationSelect: (String) -> Unit,
     onPeriodMinutesChange: (String, String) -> Unit,
@@ -472,7 +474,6 @@ fun ExpandableAppProtectionCard(
     onPeriodsToggle: () -> Unit
 ) {
     val durationOptions = listOf("5 دقائق", "10 دقائق", "15 دقيقة", "30 دقيقة", "45 دقيقة", "ساعة", "ساعتان")
-    var reelsDropdownExpanded by remember { mutableStateOf(false) }
     var freezeDropdownExpanded by remember { mutableStateOf(false) }
 
     Card(
@@ -516,16 +517,17 @@ fun ExpandableAppProtectionCard(
                         onCheckedChange = onReelsToggle
                     )
                     if (item.isReelsBlocked) {
-                        CompactDurationSelector(
+                        OutlinedTextField(
                             value = item.reelsBlockDuration,
-                            expanded = reelsDropdownExpanded,
-                            onExpand = { reelsDropdownExpanded = true },
-                            onDismiss = { reelsDropdownExpanded = false },
-                            options = durationOptions,
-                            onSelect = {
-                                onReelsDurationSelect(it)
-                                reelsDropdownExpanded = false
-                            }
+                            onValueChange = onReelsMinutesChange,
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+                            singleLine = true,
+                            label = { Text("مدة Reels بالدقائق") },
+                            placeholder = { Text("مثال: 30") },
+                            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                                keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
+                            ),
+                            shape = RoundedCornerShape(12.dp)
                         )
                     }
 

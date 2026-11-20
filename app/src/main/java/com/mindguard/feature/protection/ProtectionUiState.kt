@@ -28,9 +28,9 @@ data class AppProtectionItemState(
     val name: String,
     val icon: Drawable? = null,
     val isExpanded: Boolean = false,
-    val isReelsBlocked: Boolean = true,
-    val reelsBlockDuration: String = "30 دقيقة",
-    val isAppFrozen: Boolean = true,
+    val isReelsBlocked: Boolean = false,
+    val reelsBlockDuration: String = "30",
+    val isAppFrozen: Boolean = false,
     val appFreezeDuration: String = "ساعة",
     val reelsPeriods: List<ReelsTimePeriod> = defaultReelsPeriods(),
     val arePeriodsVisible: Boolean = false

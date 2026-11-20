@@ -16,6 +16,7 @@ object ProtectionPreferences {
 
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     private fun reelsKey(packageName: String) = "reels_$packageName"
+    private fun reelsLimitKey(packageName: String) = "reels_limit_minutes_$packageName"
     private fun freezeKey(packageName: String) = "freeze_$packageName"
     private fun periodsEnabledKey(packageName: String) = "periods_enabled_$packageName"
     private fun periodsKey(packageName: String) = "periods_$packageName"
@@ -31,6 +32,13 @@ object ProtectionPreferences {
 
     fun isReelsEnabled(context: Context, packageName: String) =
         prefs(context).getBoolean(reelsKey(packageName), false)
+
+    fun setReelsLimitMinutes(context: Context, packageName: String, minutes: Int) {
+        prefs(context).edit().putInt(reelsLimitKey(packageName), minutes.coerceAtLeast(0)).apply()
+    }
+
+    fun getReelsLimitMinutes(context: Context, packageName: String): Int =
+        prefs(context).getInt(reelsLimitKey(packageName), 30)
 
     fun isFrozen(context: Context, packageName: String) =
         prefs(context).getBoolean(freezeKey(packageName), false)
