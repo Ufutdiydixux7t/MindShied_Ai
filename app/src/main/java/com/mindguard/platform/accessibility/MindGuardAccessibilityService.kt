@@ -21,6 +21,7 @@ class MindGuardAccessibilityService : AccessibilityService() {
     private var trackedSince: LocalDateTime? = null
     private var lastFrozenActionAt = 0L
     private var activeShortVideoPackage: String? = null
+    private var overlayTargetPackage: String? = null
     private var reelsOverlay: View? = null
 
     override fun onServiceConnected() {
@@ -167,6 +168,7 @@ class MindGuardAccessibilityService : AccessibilityService() {
 
     private fun showReelsOverlay(packageName: String) {
         if (reelsOverlay != null) return
+        overlayTargetPackage = packageName
         val windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -205,8 +207,13 @@ class MindGuardAccessibilityService : AccessibilityService() {
                 trackedPackage = null
                 trackedSince = null
                 activeShortVideoPackage = null
-                // Back returns from Shorts/Reels to the target app's normal home/feed.
-                performGlobalAction(GLOBAL_ACTION_BACK)
+                val returnedToHome = if (overlayTargetPackage == YOUTUBE_PACKAGE) {
+                    clickHomeInCurrentWindow()
+                } else false
+                overlayTargetPackage = null
+                // If the current YouTube build hides its Home node, use the
+                // normal system Back action as the safe fallback.
+                if (!returnedToHome) performGlobalAction(GLOBAL_ACTION_BACK)
             }
         }
 
@@ -232,16 +239,37 @@ class MindGuardAccessibilityService : AccessibilityService() {
         reelsOverlay = null
     }
 
+    private fun clickHomeInCurrentWindow(): Boolean {
+        val root = rootInActiveWindow ?: return false
+        return clickHomeNode(root, 0)
+    }
+
+    private fun clickHomeNode(node: AccessibilityNodeInfo, depth: Int): Boolean {
+        if (depth > 20) return false
+        val label = "${node.text ?: ""} ${node.contentDescription ?: ""}".lowercase()
+        val isHome = listOf("home", "الرئيسية", "الصفحة الرئيسية").any(label::contains)
+        if (isHome && node.isVisibleToUser && node.isClickable) {
+            return node.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+        }
+        for (index in 0 until node.childCount) {
+            val child = node.getChild(index) ?: continue
+            if (clickHomeNode(child, depth + 1)) return true
+        }
+        return false
+    }
+
     override fun onInterrupt() {
         removeReelsOverlay()
         trackedPackage = null
         trackedSince = null
         activeShortVideoPackage = null
+        overlayTargetPackage = null
     }
 
     override fun onDestroy() {
         removeReelsOverlay()
         activeShortVideoPackage = null
+        overlayTargetPackage = null
         super.onDestroy()
     }
 
