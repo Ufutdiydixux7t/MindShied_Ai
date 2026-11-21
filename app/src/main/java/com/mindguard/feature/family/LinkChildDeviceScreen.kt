@@ -137,6 +137,7 @@ fun LinkChildDeviceScreen(
                             .padding(12.dp),
                         contentAlignment = Alignment.Center
                     ) {
+                        val qrColor = MaterialTheme.colorScheme.onSurface
                         // Realistic QR Code Canvas drawing
                         Canvas(modifier = Modifier.fillMaxSize()) {
                             val canvasWidth = size.width
@@ -155,7 +156,7 @@ fun LinkChildDeviceScreen(
                                         val hash = ((x * 31 + y * 17 + seed) % 3) == 0L
                                         if (hash) {
                                             drawRect(
-                                                color = MaterialTheme.colorScheme.onSurface,
+                                                color = qrColor,
                                                 topLeft = Offset(x * moduleSize, y * moduleSize),
                                                 size = Size(moduleSize, moduleSize)
                                             )
@@ -170,7 +171,7 @@ fun LinkChildDeviceScreen(
                                 val coreSize = 3 * moduleSize
 
                                 drawRect(
-                                    color = MaterialTheme.colorScheme.onSurface,
+                                    color = qrColor,
                                     topLeft = Offset(startX, startY),
                                     size = Size(outerSize, outerSize)
                                 )
@@ -180,7 +181,7 @@ fun LinkChildDeviceScreen(
                                     size = Size(innerSize, innerSize)
                                 )
                                 drawRect(
-                                    color = MaterialTheme.colorScheme.onSurface,
+                                    color = qrColor,
                                     topLeft = Offset(startX + 2 * moduleSize, startY + 2 * moduleSize),
                                     size = Size(coreSize, coreSize)
                                 )

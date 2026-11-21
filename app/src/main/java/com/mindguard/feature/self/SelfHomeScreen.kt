@@ -122,10 +122,11 @@ fun DailyReelsCard(used: Int, limit: Int) {
                 )
             }
 
+            val surfaceVariantColor = MaterialTheme.colorScheme.surfaceVariant
             Box(contentAlignment = Alignment.Center, modifier = Modifier.size(80.dp)) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     drawCircle(
-                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        color = surfaceVariantColor,
                         style = Stroke(width = 8.dp.toPx())
                     )
                 }
