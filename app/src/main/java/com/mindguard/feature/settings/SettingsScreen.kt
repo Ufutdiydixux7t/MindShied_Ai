@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.mindguard.core.components.AppTopBar
-import com.mindguard.core.theme.DarkBlue
 
 enum class MoreSubScreen {
     Main,
@@ -84,7 +83,7 @@ fun SettingsScreen(
                         text = "الإعدادات",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = DarkBlue,
+                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.padding(top = 4.dp)
                     )
 
@@ -101,49 +100,49 @@ fun SettingsScreen(
                                 icon = Icons.Outlined.Settings,
                                 onClick = { currentSubScreen = MoreSubScreen.GeneralSettings }
                             )
-                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = Color(0xFFF1F5F9))
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
 
                             MoreSettingsRow(
                                 title = "الحماية",
                                 icon = Icons.Outlined.Shield,
                                 onClick = { onNavigateToTab(2) }
                             )
-                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = Color(0xFFF1F5F9))
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
 
                             MoreSettingsRow(
                                 title = "التطبيقات",
                                 icon = Icons.Outlined.GridView,
                                 onClick = { currentSubScreen = MoreSubScreen.AppsPlaceholder }
                             )
-                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = Color(0xFFF1F5F9))
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
 
                             MoreSettingsRow(
                                 title = "الإشعارات",
                                 icon = Icons.Outlined.Notifications,
                                 onClick = { currentSubScreen = MoreSubScreen.NotificationsPlaceholder }
                             )
-                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = Color(0xFFF1F5F9))
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
 
                             MoreSettingsRow(
                                 title = "مشاركة التطبيق",
                                 icon = Icons.Outlined.Share,
                                 onClick = { currentSubScreen = MoreSubScreen.ShareAppPlaceholder }
                             )
-                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = Color(0xFFF1F5F9))
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
 
                             MoreSettingsRow(
                                 title = "الخصوصية",
                                 icon = Icons.Outlined.Lock,
                                 onClick = { currentSubScreen = MoreSubScreen.PrivacyPlaceholder }
                             )
-                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = Color(0xFFF1F5F9))
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
 
                             MoreSettingsRow(
                                 title = "الأمان و PIN",
                                 icon = Icons.Outlined.GppGood,
                                 onClick = { currentSubScreen = MoreSubScreen.SecurityPinPlaceholder }
                             )
-                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = Color(0xFFF1F5F9))
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
 
                             MoreSettingsRow(
                                 title = "العائلة",
@@ -233,7 +232,7 @@ fun ProfileHeaderCard(
             Icon(
                 imageVector = Icons.Default.ChevronLeft,
                 contentDescription = null,
-                tint = DarkBlue,
+                tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(24.dp)
             )
 
@@ -254,7 +253,7 @@ fun ProfileHeaderCard(
                 Text(
                     text = email,
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp
                 )
             }
@@ -279,7 +278,7 @@ fun ProfileHeaderCard(
                         Icon(
                             imageVector = Icons.Default.Person,
                             contentDescription = null,
-                            tint = Color.Gray,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(10.dp)
                         )
                     }
@@ -290,7 +289,7 @@ fun ProfileHeaderCard(
                         .size(18.dp)
                         .offset(x = 2.dp, y = (-2).dp),
                     shape = CircleShape,
-                    color = DarkBlue,
+                    color = MaterialTheme.colorScheme.onSurface,
                     border = androidx.compose.foundation.BorderStroke(1.5.dp, Color.White)
                 ) {
                     Icon(
@@ -321,7 +320,7 @@ fun MoreSettingsRow(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = DarkBlue,
+            tint = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.size(24.dp)
         )
 
@@ -338,7 +337,7 @@ fun MoreSettingsRow(
         Icon(
             imageVector = Icons.Default.ChevronLeft,
             contentDescription = null,
-            tint = Color.Gray,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(20.dp)
         )
     }

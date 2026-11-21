@@ -53,15 +53,15 @@ fun BottomNavigationBar(
                 .widthIn(max = 420.dp)
                 .shadow(16.dp, barShape, clip = false)
                 .clip(barShape)
-                .background(Color.White, barShape)
-                .border(BorderStroke(1.dp, Primary.copy(alpha = 0.16f)), barShape)
+                .background(MaterialTheme.colorScheme.surface, barShape)
+                .border(BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)), barShape)
         ) {
             NavigationBar(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(68.dp),
                 containerColor = Color.Transparent,
-                contentColor = Primary,
+                contentColor = MaterialTheme.colorScheme.primary,
                 tonalElevation = 0.dp,
                 windowInsets = WindowInsets(0, 0, 0, 0)
             ) {
@@ -107,9 +107,9 @@ fun BottomNavigationBar(
 
 @Composable
 private fun navigationItemColors() = NavigationBarItemDefaults.colors(
-    selectedIconColor = Primary,
-    unselectedIconColor = Color.Gray,
-    selectedTextColor = Primary,
-    unselectedTextColor = Color.Gray,
-    indicatorColor = Primary.copy(alpha = 0.1f)
+    selectedIconColor = MaterialTheme.colorScheme.primary,
+    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    selectedTextColor = MaterialTheme.colorScheme.primary,
+    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
 )

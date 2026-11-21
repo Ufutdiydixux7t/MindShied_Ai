@@ -27,7 +27,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.mindguard.core.theme.DarkBlue
 
 @Composable
 fun AppTopBar(
@@ -52,7 +51,7 @@ fun AppTopBar(
                 Icon(
                     imageVector = Icons.Default.ArrowForward,
                     contentDescription = "رجوع",
-                    tint = DarkBlue
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
@@ -61,7 +60,7 @@ fun AppTopBar(
             text = title,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
-            color = DarkBlue,
+            color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center
         )
 
@@ -75,7 +74,7 @@ fun AppTopBar(
                 Surface(
                     modifier = Modifier.size(40.dp),
                     shape = CircleShape,
-                    color = DarkBlue.copy(alpha = 0.1f)
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
                 ) {
                     if (profileImageUri != null) {
                         AsyncImage(
@@ -90,7 +89,7 @@ fun AppTopBar(
                         Icon(
                             imageVector = Icons.Default.Person,
                             contentDescription = "الصورة الشخصية",
-                            tint = DarkBlue,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(8.dp)
                         )
                     }
@@ -107,14 +106,14 @@ private fun ColumnGreeting(userName: String) {
     ) {
         Text(
             text = "مرحباً، $userName",
-            color = DarkBlue,
+            color = MaterialTheme.colorScheme.onSurface,
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp,
             textAlign = TextAlign.End
         )
         Text(
             text = "حماية ذكية لعقل أكثر صفاءً",
-            color = DarkBlue.copy(alpha = 0.6f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 10.sp,
             textAlign = TextAlign.End
         )

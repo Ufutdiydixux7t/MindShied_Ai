@@ -71,7 +71,9 @@ fun MindShieldAiTheme(
             activity?.window?.let { window ->
                 val scheme = if (darkTheme) DarkColorScheme else LightColorScheme
                 window.statusBarColor = scheme.background.toArgb()
+                window.navigationBarColor = scheme.background.toArgb()
                 WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+                WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = !darkTheme
             }
         }
     }

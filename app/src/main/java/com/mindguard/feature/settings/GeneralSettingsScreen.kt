@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mindguard.core.components.AppTopBar
-import com.mindguard.core.theme.DarkBlue
 import com.mindguard.core.theme.Primary
 
 enum class GeneralSettingsSubScreen {
@@ -75,14 +74,14 @@ fun GeneralSettingsScreen(
                                 icon = Icons.Outlined.Language,
                                 onClick = { currentSubScreen = GeneralSettingsSubScreen.Language }
                             )
-                            HorizontalDivider(modifier = Modifier.padding(horizontal = 14.dp), color = Color(0xFFF1F5F9))
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = 14.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
                             GeneralSettingsSwitchRow(
                                 title = "نصائح الذكاء الاصطناعي",
                                 icon = Icons.Outlined.AutoAwesome,
                                 checked = aiTipsEnabled,
                                 onCheckedChange = { aiTipsEnabled = it }
                             )
-                            HorizontalDivider(modifier = Modifier.padding(horizontal = 14.dp), color = Color(0xFFF1F5F9))
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = 14.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
                             GeneralSettingsSwitchRow(
                                 title = "الوضع الداكن",
                                 icon = Icons.Outlined.DarkMode,
@@ -110,7 +109,7 @@ fun GeneralSettingsScreen(
                                 checked = notificationsEnabled,
                                 onCheckedChange = { notificationsEnabled = it }
                             )
-                            HorizontalDivider(modifier = Modifier.padding(horizontal = 14.dp), color = Color(0xFFF1F5F9))
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = 14.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
                             GeneralSettingsSwitchRow(
                                 title = "التذكيرات اليومية",
                                 icon = Icons.Outlined.CalendarToday,
@@ -137,7 +136,7 @@ fun GeneralSettingsScreen(
                                 icon = Icons.Outlined.Shield,
                                 onClick = { currentSubScreen = GeneralSettingsSubScreen.PrivacyData }
                             )
-                            HorizontalDivider(modifier = Modifier.padding(horizontal = 14.dp), color = Color(0xFFF1F5F9))
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = 14.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
                             GeneralSettingsNavRow(
                                 title = "قفل التطبيق ورقم السري",
                                 icon = Icons.Outlined.Lock,
@@ -163,13 +162,13 @@ fun GeneralSettingsScreen(
                                 icon = Icons.AutoMirrored.Outlined.Help,
                                 onClick = { currentSubScreen = GeneralSettingsSubScreen.HelpSupport }
                             )
-                            HorizontalDivider(modifier = Modifier.padding(horizontal = 14.dp), color = Color(0xFFF1F5F9))
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = 14.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
                             GeneralSettingsNavRow(
                                 title = "دعمنا",
                                 icon = Icons.Outlined.FavoriteBorder,
                                 onClick = { currentSubScreen = GeneralSettingsSubScreen.SupportUs }
                             )
-                            HorizontalDivider(modifier = Modifier.padding(horizontal = 14.dp), color = Color(0xFFF1F5F9))
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = 14.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
                             GeneralSettingsNavRow(
                                 title = "من نحن",
                                 icon = Icons.Outlined.PeopleOutline,
@@ -191,7 +190,7 @@ fun GeneralSettingsScreen(
                             text = "الإصدار 1.0.0",
                             style = MaterialTheme.typography.bodySmall,
                             fontSize = 12.sp,
-                            color = Color.Gray
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -218,7 +217,7 @@ fun GeneralSettingsSectionTitle(title: String) {
         text = title,
         style = MaterialTheme.typography.titleSmall,
         fontWeight = FontWeight.Bold,
-        color = DarkBlue,
+        color = MaterialTheme.colorScheme.onSurface,
         fontSize = 15.sp,
         modifier = Modifier.padding(vertical = 8.dp)
     )
@@ -240,7 +239,7 @@ fun GeneralSettingsNavRow(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = DarkBlue,
+            tint = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.size(20.dp)
         )
 
@@ -259,7 +258,7 @@ fun GeneralSettingsNavRow(
         Icon(
             imageVector = Icons.Default.ChevronLeft,
             contentDescription = null,
-            tint = Color.Gray,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(18.dp)
         )
     }
@@ -281,7 +280,7 @@ fun GeneralSettingsSwitchRow(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = DarkBlue,
+            tint = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.size(20.dp)
         )
 
@@ -301,7 +300,7 @@ fun GeneralSettingsSwitchRow(
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
-                checkedTrackColor = Primary
+                checkedTrackColor = MaterialTheme.colorScheme.primary
             ),
             modifier = Modifier.scale(0.75f)
         )
