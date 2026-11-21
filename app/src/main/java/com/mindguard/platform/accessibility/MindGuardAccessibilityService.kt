@@ -357,38 +357,33 @@ class MindGuardAccessibilityService : AccessibilityService() {
             elevation = 6 * resources.displayMetrics.density
             setOnClickListener {
                 val targetPackage = overlayTargetPackage
+                removeReelsOverlay()
                 resetTrackedReelsSession()
                 activeShortVideoPackage = null
                 suppressReelsUntil = System.currentTimeMillis() + 1500L
                 overlayTargetPackage = null
-                // Open the target app's launcher activity first. This returns
-                // the user to the app home while the overlay is still visible,
-                // then the overlay is removed after the new window is ready.
-                val launchIntent = targetPackage?.let {
-                    packageManager.getLaunchIntentForPackage(it)
-                }
-                if (launchIntent != null) {
-                    launchIntent.addFlags(
-                        android.content.Intent.FLAG_ACTIVITY_NEW_TASK or
-                                android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                                android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
-                    )
-                    val started = runCatching {
-                        startActivity(launchIntent)
-                        true
-                    }.getOrDefault(false)
-                    if (started) {
-                        mainHandler.postDelayed({ removeReelsOverlay() }, 240L)
-                    } else {
-                        removeReelsOverlay()
-                        performGlobalAction(GLOBAL_ACTION_BACK)
+                // Restore the target app window before reading its tree. Then
+                // click its Home control when available, with Back as fallback.
+                mainHandler.postDelayed({
+                    val returnedToHome = clickHomeInCurrentWindow()
+                    if (!returnedToHome) {
+                        val launchIntent = targetPackage?.let {
+                            packageManager.getLaunchIntentForPackage(it)
+                        }
+                        val started = launchIntent?.let {
+                            it.addFlags(
+                                android.content.Intent.FLAG_ACTIVITY_NEW_TASK or
+                                        android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                                        android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
+                            )
+                            runCatching {
+                                startActivity(it)
+                                true
+                            }.getOrDefault(false)
+                        } ?: false
+                        if (!started) performGlobalAction(GLOBAL_ACTION_BACK)
                     }
-                } else {
-                    // Keep a safe fallback for packages without a launcher
-                    // activity: dismiss the overlay and navigate back once.
-                    removeReelsOverlay()
-                    performGlobalAction(GLOBAL_ACTION_BACK)
-                }
+                }, 180L)
             }
         }
 
