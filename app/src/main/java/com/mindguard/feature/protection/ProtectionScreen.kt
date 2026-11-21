@@ -287,10 +287,30 @@ fun AppProtectionSubScreen(
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.weight(1f)
                 )
-                TextButton(onClick = { showAddAppDialog = true }) {
-                    Icon(Icons.Default.Add, contentDescription = null, tint = Primary, modifier = Modifier.size(18.dp))
+                TextButton(
+                    onClick = {
+                        val selectedId = selectedAppId
+                        if (selectedId == null) {
+                            showAddAppDialog = true
+                        } else {
+                            viewModel.removeApp(selectedId)
+                            selectedAppId = null
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = if (selectedAppId == null) Icons.Default.Add else Icons.Default.DeleteOutline,
+                        contentDescription = null,
+                        tint = if (selectedAppId == null) Primary else Color(0xFFCC3D55),
+                        modifier = Modifier.size(18.dp)
+                    )
                     Spacer(modifier = Modifier.width(3.dp))
-                    Text("إضافة تطبيق", color = Primary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    Text(
+                        text = if (selectedAppId == null) "إضافة تطبيق" else "إزالة التطبيق",
+                        color = if (selectedAppId == null) Primary else Color(0xFFCC3D55),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp
+                    )
                 }
             }
 
@@ -461,9 +481,9 @@ fun ExpandableAppProtectionCard(
                     modifier = Modifier.weight(1f)
                 )
                 Icon(
-                    imageVector = if (item.isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    imageVector = if (isSelected) Icons.Default.CheckCircle else if (item.isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                     contentDescription = null,
-                    tint = Color(0xFF0B1652),
+                    tint = if (isSelected) Color(0xFF2E9B67) else Color(0xFF0B1652),
                     modifier = Modifier.size(24.dp)
                 )
             }

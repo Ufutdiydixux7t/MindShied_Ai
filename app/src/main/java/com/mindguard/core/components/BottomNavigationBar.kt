@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,29 +22,29 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.mindguard.core.theme.Primary
 
 @Composable
 fun BottomNavigationBar(selectedTab: Int, onTabSelected: (Int) -> Unit) {
+    val barShape = RoundedCornerShape(50)
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+            .padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 5.dp),
         contentAlignment = Alignment.Center
     ) {
-        Surface(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .widthIn(max = 420.dp)
-                .clip(RoundedCornerShape(50))
-                .border(BorderStroke(1.dp, Primary.copy(alpha = 0.16f)), RoundedCornerShape(50)),
-            shape = RoundedCornerShape(50),
-            color = Color.White,
-            shadowElevation = 16.dp,
-            tonalElevation = 3.dp
+                .shadow(16.dp, barShape, clip = false)
+                .clip(barShape)
+                .background(Color.White, barShape)
+                .border(BorderStroke(1.dp, Primary.copy(alpha = 0.16f)), barShape)
         ) {
             NavigationBar(
                 modifier = Modifier
