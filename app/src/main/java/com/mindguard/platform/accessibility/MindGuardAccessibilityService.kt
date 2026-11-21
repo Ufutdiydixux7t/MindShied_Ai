@@ -383,7 +383,7 @@ class MindGuardAccessibilityService : AccessibilityService() {
                         } ?: false
                         if (!started) performGlobalAction(GLOBAL_ACTION_BACK)
                     }
-                }, 180L)
+                }, 40L)
             }
         }
 
