@@ -76,7 +76,7 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
             ProtectionPreferences.isAppAdded(application, it.id) && it.id !in reelApps.map(AppProtectionItemState::id)
         }
         reelApps.forEach { item ->
-            if (ProtectionPreferences.getPeriods(application, item.id).isEmpty()) {
+            if (!ProtectionPreferences.hasSavedPeriods(application, item.id)) {
                 persistPeriods(item)
             }
         }
@@ -90,7 +90,9 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
 
     private fun restorePeriods(appId: String): List<ReelsTimePeriod> {
         val stored = ProtectionPreferences.getPeriods(getApplication(), appId)
-        if (stored.isEmpty()) return defaultPeriods()
+        if (stored.isEmpty() && !ProtectionPreferences.hasSavedPeriods(getApplication(), appId)) {
+            return defaultPeriods()
+        }
         return stored.map { period ->
             ReelsTimePeriod(
                 id = period.id,

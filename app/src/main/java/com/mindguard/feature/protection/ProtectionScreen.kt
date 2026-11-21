@@ -3,7 +3,6 @@ package com.mindguard.feature.protection
 import android.app.TimePickerDialog
 import android.content.Intent
 import android.provider.Settings
-import java.util.Calendar
 import java.util.Locale
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
@@ -28,6 +27,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -35,6 +35,7 @@ import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -235,7 +236,7 @@ fun ProtectionImageCard(
 
             // Left Chevron Arrow < (Appears on the LEFT in RTL)
             Icon(
-                imageVector = Icons.Default.KeyboardArrowRight,
+                imageVector = Icons.Default.KeyboardArrowLeft,
                 contentDescription = null,
                 tint = Color(0xFF64748B),
                 modifier = Modifier.size(24.dp)
@@ -258,28 +259,27 @@ fun AppProtectionSubScreen(
     var showAccessibilityDialog by remember { mutableStateOf(false) }
     var showUsageStatsDialog by remember { mutableStateOf(false) }
     var selectedAppIds by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var periodDialogAppId by remember { mutableStateOf<String?>(null) }
+    var periodStartTime by remember { mutableStateOf("08:00") }
+    var periodEndTime by remember { mutableStateOf("12:00") }
+    var expandedFreezeAppId by remember { mutableStateOf<String?>(null) }
 
     fun formatTime(hour: Int, minute: Int): String =
         String.format(Locale.US, "%02d:%02d", hour, minute)
 
-    fun addPeriodWithTime(appId: String) {
-        val now = Calendar.getInstance()
-        TimePickerDialog(context, { _, hour, minute ->
-            val startTime = formatTime(hour, minute)
-            val endDialog = TimePickerDialog(context, { _, endHour, endMinute ->
-                viewModel.addReelsPeriod(appId, startTime, formatTime(endHour, endMinute))
-            }, now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), true)
-            endDialog.setTitle("وقت نهاية الفترة")
-            endDialog.show()
-        }, now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), true).apply {
-            setTitle("وقت بداية الفترة")
-        }.show()
+    fun choosePeriodTime(isStart: Boolean) {
+        val initial = (if (isStart) periodStartTime else periodEndTime).split(":")
+        val dialog = TimePickerDialog(context, { _, hour, minute ->
+            val formatted = formatTime(hour, minute)
+            if (isStart) periodStartTime = formatted else periodEndTime = formatted
+        }, initial[0].toInt(), initial[1].toInt(), true)
+        dialog.setTitle(if (isStart) "وقت بداية الفترة" else "وقت نهاية الفترة")
+        dialog.show()
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
             .pointerInput(selectedAppIds) {
                 awaitPointerEventScope {
                     while (true) {
@@ -287,6 +287,8 @@ fun AppProtectionSubScreen(
                         val change = event.changes.firstOrNull()
                         if (change?.changedToUpIgnoreConsumed() == true) {
                             selectedAppIds = emptySet()
+                            expandedFreezeAppId = null
+                            viewModel.collapseAllApps()
                         }
                     }
                 }
@@ -309,6 +311,7 @@ fun AppProtectionSubScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
@@ -371,6 +374,7 @@ fun AppProtectionSubScreen(
                         item = item,
                         onToggleExpand = {
                             selectedAppIds = emptySet()
+                            expandedFreezeAppId = null
                             viewModel.toggleAppExpansion(item.id)
                         },
                         isSelected = item.id in selectedAppIds,
@@ -398,8 +402,14 @@ fun AppProtectionSubScreen(
                         onPeriodMinutesChange = { periodId, minutes ->
                             viewModel.updateReelsPeriodMinutes(item.id, periodId, minutes)
                         },
-                        onAddPeriod = { addPeriodWithTime(item.id) },
+                        onAddPeriod = {
+                            periodStartTime = "08:00"
+                            periodEndTime = "12:00"
+                            periodDialogAppId = item.id
+                        },
                         onDeletePeriod = { periodId -> viewModel.deleteReelsPeriod(item.id, periodId) },
+                        freezeDropdownExpanded = expandedFreezeAppId == item.id,
+                        onFreezeDropdownChange = { expandedFreezeAppId = if (it) item.id else null },
                         onPeriodsToggle = { viewModel.togglePeriodsVisibility(item.id) }
                     )
                 }
@@ -468,6 +478,42 @@ fun AppProtectionSubScreen(
             }
         )
     }
+
+    if (periodDialogAppId != null) {
+        AlertDialog(
+            onDismissRequest = { periodDialogAppId = null },
+            title = { Text("تحديد الفترة") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlinedButton(
+                        onClick = { choosePeriodTime(true) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("البداية: $periodStartTime", modifier = Modifier.weight(1f), textAlign = TextAlign.Start)
+                        Icon(Icons.Outlined.Schedule, contentDescription = null)
+                    }
+                    OutlinedButton(
+                        onClick = { choosePeriodTime(false) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("النهاية: $periodEndTime", modifier = Modifier.weight(1f), textAlign = TextAlign.Start)
+                        Icon(Icons.Outlined.Schedule, contentDescription = null)
+                    }
+                }
+            },
+            confirmButton = {
+                Button(onClick = {
+                    periodDialogAppId?.let { appId ->
+                        viewModel.addReelsPeriod(appId, periodStartTime, periodEndTime)
+                    }
+                    periodDialogAppId = null
+                }) { Text("حفظ الفترة") }
+            },
+            dismissButton = {
+                TextButton(onClick = { periodDialogAppId = null }) { Text("إلغاء") }
+            }
+        )
+    }
 }
 
 @Composable
@@ -484,10 +530,11 @@ fun ExpandableAppProtectionCard(
     onPeriodMinutesChange: (String, String) -> Unit,
     onAddPeriod: () -> Unit,
     onDeletePeriod: (String) -> Unit,
+    freezeDropdownExpanded: Boolean,
+    onFreezeDropdownChange: (Boolean) -> Unit,
     onPeriodsToggle: () -> Unit
 ) {
     val durationOptions = listOf("5 دقائق", "10 دقائق", "15 دقيقة", "30 دقيقة", "45 دقيقة", "ساعة", "ساعتان")
-    var freezeDropdownExpanded by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
@@ -542,7 +589,7 @@ fun ExpandableAppProtectionCard(
                     modifier = Modifier.weight(1f)
                 )
                 Icon(
-                    imageVector = if (item.isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    imageVector = if (item.isExpanded) Icons.Default.KeyboardArrowLeft else Icons.Default.KeyboardArrowRight,
                     contentDescription = null,
                     tint = Color(0xFF0B1652),
                     modifier = Modifier.size(24.dp)
@@ -644,12 +691,12 @@ fun ExpandableAppProtectionCard(
                         CompactDurationSelector(
                             value = item.appFreezeDuration,
                             expanded = freezeDropdownExpanded,
-                            onExpand = { freezeDropdownExpanded = true },
-                            onDismiss = { freezeDropdownExpanded = false },
+                            onExpand = { onFreezeDropdownChange(true) },
+                            onDismiss = { onFreezeDropdownChange(false) },
                             options = durationOptions,
                             onSelect = {
                                 onFreezeDurationSelect(it)
-                                freezeDropdownExpanded = false
+                                onFreezeDropdownChange(false)
                             }
                         )
                     }
@@ -679,6 +726,7 @@ private fun ProtectionSwitchRow(
             modifier = Modifier.weight(1f)
         )
         Switch(
+            modifier = Modifier.scale(0.86f),
             checked = checked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
