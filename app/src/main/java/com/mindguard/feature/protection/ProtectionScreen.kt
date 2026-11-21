@@ -668,7 +668,7 @@ fun ExpandableAppProtectionCard(
                             keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                                 keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
                             ),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(22.dp)
                         )
                         if (!canEditReelsDuration) {
                             Text(
@@ -697,7 +697,7 @@ fun ExpandableAppProtectionCard(
                             Card(
                                 modifier = Modifier.fillMaxWidth().padding(vertical = 1.dp),
                                 colors = CardDefaults.cardColors(containerColor = Color(0xFFF7F9FC)),
-                                shape = RoundedCornerShape(10.dp),
+                                shape = RoundedCornerShape(20.dp),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                             ) {
                                 Row(
@@ -719,7 +719,7 @@ fun ExpandableAppProtectionCard(
                                         keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                                             keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
                                         ),
-                                        shape = RoundedCornerShape(10.dp)
+                                        shape = RoundedCornerShape(20.dp)
                                     )
                                     IconButton(
                                         onClick = { onDeletePeriod(period.id) },
@@ -814,7 +814,7 @@ private fun CompactDurationSelector(
         OutlinedButton(
             onClick = onExpand,
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(22.dp),
             border = BorderStroke(1.dp, Color(0xFFD5DAE4)),
             contentPadding = PaddingValues(horizontal = 14.dp, vertical = 2.dp)
         ) {
@@ -844,7 +844,7 @@ fun AppBrandIconBadge(appId: String, appName: String, icon: android.graphics.dra
 
     Surface(
         modifier = Modifier.size(36.dp),
-        shape = RoundedCornerShape(10.dp),
+        shape = RoundedCornerShape(20.dp),
         color = if (icon == null) bgColor else Color.Transparent
     ) {
         if (icon != null) {
@@ -938,7 +938,7 @@ fun ContentProtectionSubScreen(
                                     containerColor = if (isSelected) Primary else Color(0xFFF1F5F9),
                                     contentColor = if (isSelected) Color.White else TextDark
                                 ),
-                                shape = RoundedCornerShape(12.dp)
+                                shape = RoundedCornerShape(22.dp)
                             ) {
                                 Text(label, fontWeight = FontWeight.Bold)
                             }
@@ -1091,7 +1091,7 @@ fun SettingsLockSubScreen(
                     Button(
                         onClick = { viewModel.updatePinCode("4321") },
                         colors = ButtonDefaults.buttonColors(containerColor = Primary.copy(alpha = 0.1f), contentColor = Primary),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(22.dp)
                     ) {
                         Text("تغيير الرمز", fontWeight = FontWeight.Bold)
                     }
@@ -1325,7 +1325,7 @@ fun AdvancedSettingsSubScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Primary),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             shape = RoundedCornerShape(14.dp),
             contentPadding = PaddingValues(vertical = 14.dp)
         ) {
@@ -1359,7 +1359,7 @@ fun AdvancedSettingsSubScreen(
                             showDurationLockConfirmation = false
                             viewModel.setBlockDurationEditMode(BlockDurationEditMode.ALLOW_AFTER_TWO_DAYS)
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
                         Text("تفعيل")
                     }
@@ -1414,7 +1414,7 @@ fun SubScreenToggleCard(
         ) {
             Surface(
                 modifier = Modifier.size(42.dp),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(22.dp),
                 color = Color(0xFFEBF3FE)
             ) {
                 Icon(
@@ -1471,7 +1471,7 @@ fun PermissionStatusRow(
     ) {
         Text(title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
         Surface(
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(22.dp),
             color = if (isGranted) Success.copy(alpha = 0.12f) else Color.Red.copy(alpha = 0.12f)
         ) {
             Text(

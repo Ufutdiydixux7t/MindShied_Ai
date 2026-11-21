@@ -92,7 +92,7 @@ fun RegisterScreen(
                     onValueChange = { fullName = it },
                     label = { Text("الاسم الكامل") },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(22.dp),
                     leadingIcon = {
                         Icon(Icons.Default.Person, contentDescription = null, tint = Secondary)
                     },
@@ -106,7 +106,7 @@ fun RegisterScreen(
                     onValueChange = { email = it },
                     label = { Text("البريد الإلكتروني") },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(22.dp),
                     leadingIcon = {
                         Icon(Icons.Default.Email, contentDescription = null, tint = Secondary)
                     },
@@ -121,7 +121,7 @@ fun RegisterScreen(
                     onValueChange = { phone = it },
                     label = { Text("رقم الهاتف — اختياري") },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(22.dp),
                     leadingIcon = {
                         Icon(Icons.Default.Phone, contentDescription = null, tint = Secondary)
                     },
@@ -136,7 +136,7 @@ fun RegisterScreen(
                     onValueChange = { password = it },
                     label = { Text("كلمة المرور") },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(22.dp),
                     leadingIcon = {
                         Icon(Icons.Default.Lock, contentDescription = null, tint = Secondary)
                     },
@@ -158,7 +158,7 @@ fun RegisterScreen(
                     onValueChange = { confirmPassword = it },
                     label = { Text("تأكيد كلمة المرور") },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(22.dp),
                     leadingIcon = {
                         Icon(Icons.Default.LockReset, contentDescription = null, tint = Secondary)
                     },
@@ -180,7 +180,7 @@ fun RegisterScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(22.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = DarkBlue)
                 ) {
                     Text(

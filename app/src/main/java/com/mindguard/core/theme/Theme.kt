@@ -11,6 +11,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Shapes
 import androidx.core.view.WindowCompat
 
 private val LightColorScheme = lightColorScheme(
@@ -32,10 +35,10 @@ private val LightColorScheme = lightColorScheme(
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFF8AB4F8),
-    onPrimary = Color(0xFF062E6F),
-    primaryContainer = Color(0xFF174A9C),
-    onPrimaryContainer = Color(0xFFD9E6FF),
+    primary = Color(0xFF2D5A94),
+    onPrimary = Color.White,
+    primaryContainer = Color(0xFF193A63),
+    onPrimaryContainer = Color(0xFFDCE8F8),
     secondary = Color(0xFFB8C7E0),
     onSecondary = Color(0xFF223044),
     secondaryContainer = Color(0xFF35465F),
@@ -81,6 +84,12 @@ fun MindShieldAiTheme(
     MaterialTheme(
         colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme,
         typography = Typography,
+        shapes = Shapes(
+            small = RoundedCornerShape(14.dp),
+            medium = RoundedCornerShape(20.dp),
+            large = RoundedCornerShape(26.dp),
+            extraLarge = RoundedCornerShape(32.dp)
+        ),
         content = content
     )
 }

@@ -163,7 +163,7 @@ fun LoginScreen(
                     onValueChange = { email = it },
                     placeholder = { Text("البريد الإلكتروني", color = Color.Gray) },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(22.dp),
                     trailingIcon = {
                         Icon(Icons.Default.Email, contentDescription = null, tint = Secondary)
                     },
@@ -185,7 +185,7 @@ fun LoginScreen(
                     onValueChange = { password = it },
                     placeholder = { Text("كلمة المرور", color = Color.Gray) },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(22.dp),
                     trailingIcon = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             val icon = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
@@ -254,7 +254,7 @@ fun LoginScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(22.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = DarkBlue)
                 ) {
                     Text(

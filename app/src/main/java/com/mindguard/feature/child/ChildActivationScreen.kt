@@ -199,7 +199,7 @@ fun ChildActivationScreen(
                             ) {
                                 Surface(
                                     modifier = Modifier.size(64.dp),
-                                    shape = RoundedCornerShape(16.dp),
+                                    shape = RoundedCornerShape(22.dp),
                                     color = Primary.copy(alpha = 0.1f)
                                 ) {
                                     Icon(
@@ -306,8 +306,8 @@ fun ChildActivationScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(54.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                            shape = RoundedCornerShape(22.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                         ) {
                             Icon(Icons.Default.QrCodeScanner, contentDescription = null, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(8.dp))
@@ -360,7 +360,7 @@ fun ChildActivationScreen(
                                 onValueChange = { if (it.length <= 6) manualCode = it },
                                 label = { Text("رمز الاقتران (مثل: 482731)") },
                                 modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(16.dp),
+                                shape = RoundedCornerShape(22.dp),
                                 leadingIcon = {
                                     Icon(Icons.Default.Lock, contentDescription = null, tint = Primary)
                                 },
@@ -376,7 +376,7 @@ fun ChildActivationScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(54.dp),
-                                shape = RoundedCornerShape(16.dp),
+                                shape = RoundedCornerShape(22.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = DarkBlue)
                             ) {
                                 Text(

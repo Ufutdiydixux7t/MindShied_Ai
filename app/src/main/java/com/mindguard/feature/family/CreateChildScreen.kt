@@ -165,7 +165,7 @@ fun CreateChildScreen(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-                    shape = RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(22.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -186,7 +186,7 @@ fun CreateChildScreen(
                             label = { Text("اسم الطفل", fontSize = 13.sp) },
                             placeholder = { Text("مثال: آدم", fontSize = 13.sp) },
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(22.dp),
                             leadingIcon = {
                                 Icon(Icons.Default.Person, contentDescription = null, tint = Primary, modifier = Modifier.size(18.dp))
                             },
@@ -206,7 +206,7 @@ fun CreateChildScreen(
                             label = { Text("العمر", fontSize = 13.sp) },
                             placeholder = { Text("مثال: ١٠ سنوات", fontSize = 13.sp) },
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(22.dp),
                             leadingIcon = {
                                 Icon(Icons.Default.Cake, contentDescription = null, tint = Primary, modifier = Modifier.size(18.dp))
                             },
@@ -332,7 +332,7 @@ fun RuleToggleCard(
         ) {
             Surface(
                 modifier = Modifier.size(36.dp),
-                shape = RoundedCornerShape(10.dp),
+                shape = RoundedCornerShape(20.dp),
                 color = Color(0xFFF1F5F9)
             ) {
                 Icon(
@@ -414,7 +414,7 @@ fun RuleToggleCardWithChips(
             ) {
                 Surface(
                     modifier = Modifier.size(36.dp),
-                    shape = RoundedCornerShape(10.dp),
+                    shape = RoundedCornerShape(20.dp),
                     color = Color(0xFFF1F5F9)
                 ) {
                     Icon(
