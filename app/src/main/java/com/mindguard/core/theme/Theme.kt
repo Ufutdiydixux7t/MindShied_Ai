@@ -48,7 +48,7 @@ fun MindShieldAiTheme(
 
         SideEffect {
             activity?.window?.let { window ->
-                window.statusBarColor = colorScheme.background.toArgb()
+                window.statusBarColor = LightColorScheme.background.toArgb()
                 WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
             }
         }
