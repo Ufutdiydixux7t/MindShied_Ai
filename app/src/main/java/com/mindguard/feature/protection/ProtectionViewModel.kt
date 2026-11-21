@@ -182,6 +182,7 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun togglePeriodsVisibility(appId: String) {
+        if (!canEditBlockDuration()) return
         val enabled = _uiState.value.appProtectionItems.firstOrNull { it.id == appId }?.arePeriodsVisible != true
         ProtectionPreferences.setPeriodsEnabled(getApplication(), appId, enabled)
         _uiState.update { state ->
@@ -192,6 +193,7 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun toggleAppReelsBlock(appId: String, enabled: Boolean) {
+        if (!canEditBlockDuration()) return
         ProtectionPreferences.setReelsEnabled(getApplication(), appId, enabled)
         _uiState.update { state ->
             state.copy(appProtectionItems = state.appProtectionItems.map { item ->
@@ -222,6 +224,7 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
         ProtectionPreferences.canEditBlockDuration(getApplication())
 
     fun toggleAppFreeze(appId: String, enabled: Boolean) {
+        if (!canEditBlockDuration()) return
         ProtectionPreferences.setFreezeEnabled(getApplication(), appId, enabled)
         _uiState.update { state ->
             state.copy(appProtectionItems = state.appProtectionItems.map { item ->
@@ -231,6 +234,7 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun setAppFreezeDuration(appId: String, duration: String) {
+        if (!canEditBlockDuration()) return
         _uiState.update { state ->
             state.copy(appProtectionItems = state.appProtectionItems.map { item ->
                 if (item.id == appId) item.copy(appFreezeDuration = duration) else item
@@ -239,6 +243,7 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun updateReelsPeriodMinutes(appId: String, periodId: String, minutes: String) {
+        if (!canEditBlockDuration()) return
         _uiState.update { state ->
             val updatedState = state.copy(appProtectionItems = state.appProtectionItems.map { item ->
                 if (item.id != appId) item else item.copy(
@@ -253,6 +258,7 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun addReelsPeriod(appId: String, startTime: String, endTime: String) {
+        if (!canEditBlockDuration()) return
         _uiState.update { state ->
             val updatedState = state.copy(appProtectionItems = state.appProtectionItems.map { item ->
                 if (item.id != appId) item else item.copy(
@@ -271,6 +277,7 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun deleteReelsPeriod(appId: String, periodId: String) {
+        if (!canEditBlockDuration()) return
         _uiState.update { state ->
             val updatedState = state.copy(appProtectionItems = state.appProtectionItems.map { item ->
                 if (item.id != appId) item else item.copy(

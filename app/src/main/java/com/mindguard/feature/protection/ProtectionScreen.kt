@@ -421,38 +421,61 @@ fun AppProtectionSubScreen(
                         },
                         onLongPress = { selectedAppIds = selectedAppIds + item.id },
                         onReelsToggle = { enabled ->
-                            if (enabled && !viewModel.isAccessibilityServiceEnabled()) {
-                                showAccessibilityDialog = true
-                            } else {
-                                viewModel.toggleAppReelsBlock(item.id, enabled)
-                                if (enabled && !viewModel.isUsageStatsAccessEnabled()) {
-                                    showUsageStatsDialog = true
+                            if (viewModel.canEditBlockDuration()) {
+                                if (enabled && !viewModel.isAccessibilityServiceEnabled()) {
+                                    showAccessibilityDialog = true
+                                } else {
+                                    viewModel.toggleAppReelsBlock(item.id, enabled)
+                                    if (enabled && !viewModel.isUsageStatsAccessEnabled()) {
+                                        showUsageStatsDialog = true
+                                    }
                                 }
                             }
                         },
-                        onReelsDurationSelect = { viewModel.setAppReelsDuration(item.id, it) },
-                        onReelsMinutesChange = { viewModel.setAppReelsDuration(item.id, it) },
+                        onReelsDurationSelect = {
+                            if (viewModel.canEditBlockDuration()) viewModel.setAppReelsDuration(item.id, it)
+                        },
+                        onReelsMinutesChange = {
+                            if (viewModel.canEditBlockDuration()) viewModel.setAppReelsDuration(item.id, it)
+                        },
                         canEditReelsDuration = viewModel.canEditBlockDuration(),
+                        canEditProtectionSettings = viewModel.canEditBlockDuration(),
                         onFreezeToggle = { enabled ->
-                            if (enabled && !viewModel.isAccessibilityServiceEnabled()) {
-                                showAccessibilityDialog = true
-                            } else {
-                                viewModel.toggleAppFreeze(item.id, enabled)
+                            if (viewModel.canEditBlockDuration()) {
+                                if (enabled && !viewModel.isAccessibilityServiceEnabled()) {
+                                    showAccessibilityDialog = true
+                                } else {
+                                    viewModel.toggleAppFreeze(item.id, enabled)
+                                }
                             }
                         },
-                        onFreezeDurationSelect = { viewModel.setAppFreezeDuration(item.id, it) },
+                        onFreezeDurationSelect = {
+                            if (viewModel.canEditBlockDuration()) viewModel.setAppFreezeDuration(item.id, it)
+                        },
                         onPeriodMinutesChange = { periodId, minutes ->
-                            viewModel.updateReelsPeriodMinutes(item.id, periodId, minutes)
+                            if (viewModel.canEditBlockDuration()) {
+                                viewModel.updateReelsPeriodMinutes(item.id, periodId, minutes)
+                            }
                         },
                         onAddPeriod = {
-                            periodStartTime = "08:00"
-                            periodEndTime = "12:00"
-                            periodDialogAppId = item.id
+                            if (viewModel.canEditBlockDuration()) {
+                                periodStartTime = "08:00"
+                                periodEndTime = "12:00"
+                                periodDialogAppId = item.id
+                            }
                         },
-                        onDeletePeriod = { periodId -> viewModel.deleteReelsPeriod(item.id, periodId) },
+                        onDeletePeriod = { periodId ->
+                            if (viewModel.canEditBlockDuration()) {
+                                viewModel.deleteReelsPeriod(item.id, periodId)
+                            }
+                        },
                         freezeDropdownExpanded = expandedFreezeAppId == item.id,
                         onFreezeDropdownChange = { expandedFreezeAppId = if (it) item.id else null },
-                        onPeriodsToggle = { viewModel.togglePeriodsVisibility(item.id) }
+                        onPeriodsToggle = {
+                            if (viewModel.canEditBlockDuration()) {
+                                viewModel.togglePeriodsVisibility(item.id)
+                            }
+                        }
                     )
                 }
             }
@@ -569,6 +592,7 @@ fun ExpandableAppProtectionCard(
     onReelsDurationSelect: (String) -> Unit,
     onReelsMinutesChange: (String) -> Unit,
     canEditReelsDuration: Boolean,
+    canEditProtectionSettings: Boolean,
     onFreezeToggle: (Boolean) -> Unit,
     onFreezeDurationSelect: (String) -> Unit,
     onPeriodMinutesChange: (String, String) -> Unit,
@@ -654,6 +678,7 @@ fun ExpandableAppProtectionCard(
                     ProtectionSwitchRow(
                         label = "حظر الريلز",
                         checked = item.isReelsBlocked,
+                        enabled = canEditProtectionSettings,
                         onCheckedChange = onReelsToggle
                     )
                     if (item.isReelsBlocked) {
@@ -661,7 +686,7 @@ fun ExpandableAppProtectionCard(
                             value = item.reelsBlockDuration,
                             onValueChange = onReelsMinutesChange,
                             enabled = canEditReelsDuration,
-                            modifier = Modifier.fillMaxWidth().height(54.dp).padding(bottom = 8.dp),
+                            modifier = Modifier.fillMaxWidth().height(64.dp).padding(bottom = 8.dp),
                             singleLine = true,
                             textStyle = LocalTextStyle.current.copy(
                                 color = MaterialTheme.colorScheme.onSurface
@@ -688,6 +713,7 @@ fun ExpandableAppProtectionCard(
                     ProtectionSwitchRow(
                         label = "الفترات",
                         checked = item.arePeriodsVisible,
+                        enabled = canEditProtectionSettings,
                         onCheckedChange = { onPeriodsToggle() }
                     )
                     if (item.arePeriodsVisible) {
@@ -717,7 +743,8 @@ fun ExpandableAppProtectionCard(
                                     OutlinedTextField(
                                         value = period.minutes,
                                         onValueChange = { onPeriodMinutesChange(period.id, it) },
-                                        modifier = Modifier.width(68.dp).height(48.dp),
+                                        enabled = canEditProtectionSettings,
+                                        modifier = Modifier.width(88.dp).height(58.dp),
                                         singleLine = true,
                                         textStyle = LocalTextStyle.current.copy(
                                             color = MaterialTheme.colorScheme.onSurface
@@ -731,6 +758,7 @@ fun ExpandableAppProtectionCard(
                                     )
                                     IconButton(
                                         onClick = { onDeletePeriod(period.id) },
+                                        enabled = canEditProtectionSettings,
                                         modifier = Modifier.size(30.dp)
                                     ) {
                                         Icon(
@@ -743,7 +771,11 @@ fun ExpandableAppProtectionCard(
                                 }
                             }
                         }
-                        TextButton(onClick = onAddPeriod, contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)) {
+                        TextButton(
+                            onClick = onAddPeriod,
+                            enabled = canEditProtectionSettings,
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                        ) {
                             Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
                             Text("إضافة فترة", fontSize = 11.sp)
@@ -754,6 +786,7 @@ fun ExpandableAppProtectionCard(
                     ProtectionSwitchRow(
                         label = "تجميد التطبيق",
                         checked = item.isAppFrozen,
+                        enabled = canEditProtectionSettings,
                         onCheckedChange = onFreezeToggle
                     )
                     if (item.isAppFrozen) {
@@ -763,6 +796,7 @@ fun ExpandableAppProtectionCard(
                             onExpand = { onFreezeDropdownChange(true) },
                             onDismiss = { onFreezeDropdownChange(false) },
                             options = durationOptions,
+                            enabled = canEditProtectionSettings,
                             onSelect = {
                                 onFreezeDurationSelect(it)
                                 onFreezeDropdownChange(false)
@@ -780,6 +814,7 @@ fun ExpandableAppProtectionCard(
 private fun ProtectionSwitchRow(
     label: String,
     checked: Boolean,
+    enabled: Boolean = true,
     onCheckedChange: (Boolean) -> Unit
 ) {
     Row(
@@ -797,6 +832,7 @@ private fun ProtectionSwitchRow(
         Switch(
             modifier = Modifier.scale(0.86f),
             checked = checked,
+            enabled = enabled,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
@@ -828,6 +864,7 @@ private fun protectionNumberFieldColors() = OutlinedTextFieldDefaults.colors(
 private fun CompactDurationSelector(
     value: String,
     expanded: Boolean,
+    enabled: Boolean = true,
     onExpand: () -> Unit,
     onDismiss: () -> Unit,
     options: List<String>,
@@ -836,6 +873,7 @@ private fun CompactDurationSelector(
     Box(modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)) {
         OutlinedButton(
             onClick = onExpand,
+            enabled = enabled,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(22.dp),
             border = BorderStroke(1.dp, Color(0xFFD5DAE4)),
@@ -1340,25 +1378,6 @@ fun AdvancedSettingsSubScreen(
             )
 
             Spacer(modifier = Modifier.height(24.dp))
-        }
-
-        // Bottom Action Button: حفظ الإعدادات
-        Button(
-            onClick = onBack,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-            shape = RoundedCornerShape(14.dp),
-            contentPadding = PaddingValues(vertical = 14.dp)
-        ) {
-            Text(
-                text = "حفظ الإعدادات",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                color = Color.White
-            )
         }
 
         if (showDurationLockConfirmation) {
