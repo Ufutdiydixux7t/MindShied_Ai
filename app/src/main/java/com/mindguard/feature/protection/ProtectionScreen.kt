@@ -8,6 +8,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -25,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
@@ -252,6 +254,9 @@ fun AppProtectionSubScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = { selectedAppId = null })
+            }
     ) {
         AppTopBar(title = "حماية التطبيقات", onBack = onBack)
         Column(
@@ -331,7 +336,10 @@ fun AppProtectionSubScreen(
                 uiState.appProtectionItems.forEach { item ->
                     ExpandableAppProtectionCard(
                         item = item,
-                        onToggleExpand = { viewModel.toggleAppExpansion(item.id) },
+                        onToggleExpand = {
+                            selectedAppId = null
+                            viewModel.toggleAppExpansion(item.id)
+                        },
                         isSelected = selectedAppId == item.id,
                         onLongPress = { selectedAppId = item.id },
                         onReelsToggle = { enabled ->

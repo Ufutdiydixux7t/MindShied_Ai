@@ -101,18 +101,20 @@ fun AppTopBar(
 @Composable
 private fun ColumnGreeting(userName: String) {
     androidx.compose.foundation.layout.Column(
-        horizontalAlignment = Alignment.Start
+        horizontalAlignment = Alignment.End
     ) {
         Text(
             text = "مرحباً، $userName",
             color = DarkBlue,
             fontWeight = FontWeight.Bold,
-            fontSize = 14.sp
+            fontSize = 14.sp,
+            textAlign = TextAlign.End
         )
         Text(
             text = "حماية ذكية لعقل أكثر صفاءً",
             color = DarkBlue.copy(alpha = 0.6f),
-            fontSize = 10.sp
+            fontSize = 10.sp,
+            textAlign = TextAlign.End
         )
     }
 }
