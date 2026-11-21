@@ -7,6 +7,14 @@
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
+    <!-- Android 11+ package visibility: allow listing launchable apps. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
+
     <application
         android:name=".MindShieldAiApplication"
         android:allowBackup="true"

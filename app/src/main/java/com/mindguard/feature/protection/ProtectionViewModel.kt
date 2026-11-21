@@ -375,7 +375,9 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
             "com.zhiliaoapp.musically",
             "com.ss.android.ugc.trill",
             "com.google.android.youtube",
-            "com.facebook.katana"
+            "com.facebook.katana",
+            "com.instagram.lite",
+            "com.facebook.lite"
         )
 
     }
