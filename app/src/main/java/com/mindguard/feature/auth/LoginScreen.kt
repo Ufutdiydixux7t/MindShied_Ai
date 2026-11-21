@@ -79,7 +79,7 @@ fun LoginScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Image(
-                    painter = painterResource(id = R.mipmap.ic_launcher),
+                    painter = painterResource(id = R.drawable.ic_app_logo),
                     contentDescription = null,
                     modifier = Modifier.size(320.dp),
                     alpha = 0.05f
@@ -124,7 +124,7 @@ fun LoginScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Image(
-                            painter = painterResource(id = R.mipmap.ic_launcher),
+                            painter = painterResource(id = R.drawable.ic_app_logo),
                             contentDescription = "MindGuard Logo",
                             modifier = Modifier
                                 .fillMaxSize()
