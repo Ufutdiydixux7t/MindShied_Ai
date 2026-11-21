@@ -30,6 +30,7 @@ import com.mindguard.core.theme.Primary
 @Composable
 fun BottomNavigationBar(
     modifier: Modifier = Modifier,
+    liftedForShortContent: Boolean = false,
     selectedTab: Int,
     onTabSelected: (Int) -> Unit
 ) {
@@ -38,7 +39,12 @@ fun BottomNavigationBar(
         modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 5.dp),
+            .padding(
+                start = 12.dp,
+                end = 12.dp,
+                top = 8.dp,
+                bottom = if (liftedForShortContent) 18.dp else 5.dp
+            ),
         contentAlignment = Alignment.Center
     ) {
         Box(

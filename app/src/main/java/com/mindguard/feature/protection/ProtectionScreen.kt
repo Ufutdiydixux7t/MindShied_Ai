@@ -51,7 +51,8 @@ import com.mindguard.core.theme.TextGray
 
 @Composable
 fun ProtectionScreen(
-    viewModel: ProtectionViewModel = viewModel()
+    viewModel: ProtectionViewModel = viewModel(),
+    onSubScreenVisibilityChange: (Boolean) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -61,6 +62,10 @@ fun ProtectionScreen(
 
     LaunchedEffect(Unit) {
         viewModel.loadInstalledApps()
+    }
+
+    LaunchedEffect(uiState.activeSubScreen) {
+        onSubScreenVisibilityChange(uiState.activeSubScreen == null)
     }
 
     DisposableEffect(Unit) {

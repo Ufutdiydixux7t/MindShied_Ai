@@ -48,9 +48,14 @@ fun SettingsScreen(
     navController: NavController? = null,
     profileImageUri: Uri? = null,
     darkThemeEnabled: Boolean = false,
-    onDarkThemeChange: (Boolean) -> Unit = {}
+    onDarkThemeChange: (Boolean) -> Unit = {},
+    onSubScreenVisibilityChange: (Boolean) -> Unit = {}
 ) {
     var currentSubScreen by remember { mutableStateOf(MoreSubScreen.Main) }
+
+    LaunchedEffect(currentSubScreen) {
+        onSubScreenVisibilityChange(currentSubScreen == MoreSubScreen.Main)
+    }
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         when (currentSubScreen) {

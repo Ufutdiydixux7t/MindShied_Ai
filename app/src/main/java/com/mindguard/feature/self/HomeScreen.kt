@@ -36,7 +36,15 @@ fun HomeScreen(
     onDarkThemeChange: (Boolean) -> Unit = {}
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
+    var showBottomBar by remember { mutableStateOf(true) }
     val isHome = selectedTab == 0
+    val isScrollableMainScreen = selectedTab == 0 || selectedTab == 1 || selectedTab == 2 || selectedTab == 4
+
+    LaunchedEffect(selectedTab) {
+        if (selectedTab != 2 && selectedTab != 4) {
+            showBottomBar = true
+        }
+    }
 
     BackHandler(enabled = selectedTab != 0) {
         selectedTab = 0
@@ -80,7 +88,9 @@ fun HomeScreen(
                         when (selectedTab) {
                             0 -> SelfHomeScreen()
                             1 -> UsageScreen()
-                            2 -> ProtectionScreen()
+                            2 -> ProtectionScreen(
+                                onSubScreenVisibilityChange = { showBottomBar = it }
+                            )
                             3 -> ParentHomeScreen()
                             4 -> SettingsScreen(
                                 onLogout = {
@@ -92,17 +102,21 @@ fun HomeScreen(
                                 navController = navController,
                                 profileImageUri = profileImageUri,
                                 darkThemeEnabled = darkThemeEnabled,
-                                onDarkThemeChange = onDarkThemeChange
+                                onDarkThemeChange = onDarkThemeChange,
+                                onSubScreenVisibilityChange = { showBottomBar = it }
                             )
                         }
                     }
                 }
 
-                BottomNavigationBar(
-                    modifier = Modifier.align(Alignment.BottomCenter),
-                    selectedTab = selectedTab,
-                    onTabSelected = { selectedTab = it }
-                )
+                if (showBottomBar) {
+                    BottomNavigationBar(
+                        modifier = Modifier.align(Alignment.BottomCenter),
+                        liftedForShortContent = !isScrollableMainScreen,
+                        selectedTab = selectedTab,
+                        onTabSelected = { selectedTab = it }
+                    )
+                }
             }
         }
     }
