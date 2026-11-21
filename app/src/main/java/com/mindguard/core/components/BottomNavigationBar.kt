@@ -47,7 +47,7 @@ fun BottomNavigationBar(
                 .widthIn(max = 420.dp)
                 .shadow(16.dp, barShape, clip = false)
                 .clip(barShape)
-                .background(Color.White.copy(alpha = 0.86f), barShape)
+                .background(Color.White, barShape)
                 .border(BorderStroke(1.dp, Primary.copy(alpha = 0.16f)), barShape)
         ) {
             NavigationBar(
