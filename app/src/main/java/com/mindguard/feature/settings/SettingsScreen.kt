@@ -198,6 +198,9 @@ fun SettingsScreen(
                         }
                     }
 
+                    // مساحة تمرير تسمح برفع آخر بطاقة خلف الشريط العائم.
+                    Spacer(modifier = Modifier.height(96.dp))
+
                 }
                     SettingsScrollbar(
                         scrollState = settingsScrollState,
