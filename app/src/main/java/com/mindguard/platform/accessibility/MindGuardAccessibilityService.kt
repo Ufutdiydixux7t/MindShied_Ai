@@ -357,22 +357,38 @@ class MindGuardAccessibilityService : AccessibilityService() {
             elevation = 6 * resources.displayMetrics.density
             setOnClickListener {
                 val targetPackage = overlayTargetPackage
-                removeReelsOverlay()
                 resetTrackedReelsSession()
                 activeShortVideoPackage = null
                 suppressReelsUntil = System.currentTimeMillis() + 1500L
                 overlayTargetPackage = null
-                // Let WindowManager restore YouTube's window before reading
-                // its accessibility tree. Otherwise rootInActiveWindow may
-                // still point to the overlay and the button appears stuck.
-                mainHandler.postDelayed({
-                    val returnedToHome = if (targetPackage == YOUTUBE_PACKAGE) {
-                        clickHomeInCurrentWindow()
-                    } else false
-                    // If this YouTube build does not expose a clickable Home
-                    // node, one normal Back returns from Shorts to YouTube.
-                    if (!returnedToHome) performGlobalAction(GLOBAL_ACTION_BACK)
-                }, 180L)
+                // Open the target app's launcher activity first. This returns
+                // the user to the app home while the overlay is still visible,
+                // then the overlay is removed after the new window is ready.
+                val launchIntent = targetPackage?.let {
+                    packageManager.getLaunchIntentForPackage(it)
+                }
+                if (launchIntent != null) {
+                    launchIntent.addFlags(
+                        android.content.Intent.FLAG_ACTIVITY_NEW_TASK or
+                                android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                                android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    )
+                    val started = runCatching {
+                        startActivity(launchIntent)
+                        true
+                    }.getOrDefault(false)
+                    if (started) {
+                        mainHandler.postDelayed({ removeReelsOverlay() }, 240L)
+                    } else {
+                        removeReelsOverlay()
+                        performGlobalAction(GLOBAL_ACTION_BACK)
+                    }
+                } else {
+                    // Keep a safe fallback for packages without a launcher
+                    // activity: dismiss the overlay and navigate back once.
+                    removeReelsOverlay()
+                    performGlobalAction(GLOBAL_ACTION_BACK)
+                }
             }
         }
 
