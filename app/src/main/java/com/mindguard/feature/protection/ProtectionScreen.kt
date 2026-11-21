@@ -1106,13 +1106,10 @@ fun AdvancedSettingsSubScreen(
     ) {
         viewModel.refreshPreventUninstallState()
     }
-    val beigeBackground = Color(0xFFF7F1E8)
-    val burgundy = Color(0xFF7A1F3D)
-
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(beigeBackground)
+            .background(MaterialTheme.colorScheme.background)
             .padding(bottom = 20.dp)
     ) {
         AppTopBar(title = "الحماية المتقدمة", onBack = onBack)
@@ -1129,7 +1126,7 @@ fun AdvancedSettingsSubScreen(
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp,
-                color = burgundy,
+                color = Primary,
                 textAlign = TextAlign.Right
             )
 
@@ -1150,11 +1147,11 @@ fun AdvancedSettingsSubScreen(
                     .fillMaxWidth()
                     .clickable { viewModel.setBlockDurationEditMode(BlockDurationEditMode.ALLOWED_NOW) },
                 colors = CardDefaults.cardColors(
-                    containerColor = if (isOption1Selected) Color(0xFFF3E4E8) else Color.White.copy(alpha = 0.82f)
+                    containerColor = if (isOption1Selected) Color(0xFFEFF6FF) else Color.White.copy(alpha = 0.82f)
                 ),
                 border = androidx.compose.foundation.BorderStroke(
                     width = if (isOption1Selected) 1.5.dp else 1.dp,
-                    color = if (isOption1Selected) burgundy else Color(0xFFE4D7D0)
+                    color = if (isOption1Selected) Primary else Color(0xFFE2E8F0)
                 ),
                 shape = RoundedCornerShape(18.dp)
             ) {
@@ -1167,12 +1164,12 @@ fun AdvancedSettingsSubScreen(
                     Surface(
                         modifier = Modifier.size(46.dp),
                         shape = CircleShape,
-                        color = Color(0xFFF3E4E8)
+                        color = Color(0xFFEFF6FF)
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.AccessTime,
                             contentDescription = null,
-                            tint = burgundy,
+                            tint = Primary,
                             modifier = Modifier.padding(11.dp)
                         )
                     }
@@ -1199,7 +1196,7 @@ fun AdvancedSettingsSubScreen(
                     RadioButton(
                         selected = isOption1Selected,
                         onClick = { viewModel.setBlockDurationEditMode(BlockDurationEditMode.ALLOWED_NOW) },
-                        colors = RadioButtonDefaults.colors(selectedColor = burgundy)
+                        colors = RadioButtonDefaults.colors(selectedColor = Primary)
                     )
                 }
             }
@@ -1211,11 +1208,11 @@ fun AdvancedSettingsSubScreen(
                     .fillMaxWidth()
                     .clickable { showDurationLockConfirmation = true },
                 colors = CardDefaults.cardColors(
-                    containerColor = if (isOption2Selected) Color(0xFFF3E4E8) else Color.White.copy(alpha = 0.82f)
+                    containerColor = if (isOption2Selected) Color(0xFFEFF6FF) else Color.White.copy(alpha = 0.82f)
                 ),
                 border = androidx.compose.foundation.BorderStroke(
                     width = if (isOption2Selected) 1.5.dp else 1.dp,
-                    color = if (isOption2Selected) burgundy else Color(0xFFE4D7D0)
+                    color = if (isOption2Selected) Primary else Color(0xFFE2E8F0)
                 ),
                 shape = RoundedCornerShape(18.dp)
             ) {
@@ -1228,12 +1225,12 @@ fun AdvancedSettingsSubScreen(
                     Surface(
                         modifier = Modifier.size(46.dp),
                         shape = CircleShape,
-                        color = Color(0xFFF3E4E8)
+                        color = Color(0xFFEFF6FF)
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Lock,
                             contentDescription = null,
-                            tint = burgundy,
+                            tint = Primary,
                             modifier = Modifier.padding(11.dp)
                         )
                     }
@@ -1261,7 +1258,7 @@ fun AdvancedSettingsSubScreen(
                     RadioButton(
                         selected = isOption2Selected,
                         onClick = { showDurationLockConfirmation = true },
-                        colors = RadioButtonDefaults.colors(selectedColor = burgundy)
+                        colors = RadioButtonDefaults.colors(selectedColor = Primary)
                     )
                 }
             }
@@ -1275,7 +1272,7 @@ fun AdvancedSettingsSubScreen(
                 icon = Icons.Outlined.AdminPanelSettings,
                 checked = uiState.isPreventUninstallActive,
                 containerColor = Color.White.copy(alpha = 0.82f),
-                checkedTrackColor = burgundy,
+                checkedTrackColor = Primary,
                 onCheckedChange = { enabled ->
                     if (enabled) {
                         if (viewModel.isDeviceAdminActive()) {
@@ -1298,7 +1295,7 @@ fun AdvancedSettingsSubScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = burgundy),
+            colors = ButtonDefaults.buttonColors(containerColor = Primary),
             shape = RoundedCornerShape(14.dp),
             contentPadding = PaddingValues(vertical = 14.dp)
         ) {
@@ -1323,7 +1320,7 @@ fun AdvancedSettingsSubScreen(
                 },
                 dismissButton = {
                     TextButton(onClick = { showDurationLockConfirmation = false }) {
-                        Text("إلغاء", color = burgundy)
+                        Text("إلغاء", color = Primary)
                     }
                 },
                 confirmButton = {
@@ -1332,7 +1329,7 @@ fun AdvancedSettingsSubScreen(
                             showDurationLockConfirmation = false
                             viewModel.setBlockDurationEditMode(BlockDurationEditMode.ALLOW_AFTER_TWO_DAYS)
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = burgundy)
+                        colors = ButtonDefaults.buttonColors(containerColor = Primary)
                     ) {
                         Text("تفعيل")
                     }
@@ -1420,6 +1417,7 @@ fun SubScreenToggleCard(
             Spacer(modifier = Modifier.width(10.dp))
 
             Switch(
+                modifier = Modifier.scale(0.86f),
                 checked = checked,
                 onCheckedChange = onCheckedChange,
                 colors = SwitchDefaults.colors(

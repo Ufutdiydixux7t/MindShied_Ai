@@ -28,10 +28,14 @@ import androidx.compose.ui.unit.dp
 import com.mindguard.core.theme.Primary
 
 @Composable
-fun BottomNavigationBar(selectedTab: Int, onTabSelected: (Int) -> Unit) {
+fun BottomNavigationBar(
+    modifier: Modifier = Modifier,
+    selectedTab: Int,
+    onTabSelected: (Int) -> Unit
+) {
     val barShape = RoundedCornerShape(50)
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
             .padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 5.dp),
@@ -43,7 +47,7 @@ fun BottomNavigationBar(selectedTab: Int, onTabSelected: (Int) -> Unit) {
                 .widthIn(max = 420.dp)
                 .shadow(16.dp, barShape, clip = false)
                 .clip(barShape)
-                .background(Color.White, barShape)
+                .background(Color.White.copy(alpha = 0.86f), barShape)
                 .border(BorderStroke(1.dp, Primary.copy(alpha = 0.16f)), barShape)
         ) {
             NavigationBar(
