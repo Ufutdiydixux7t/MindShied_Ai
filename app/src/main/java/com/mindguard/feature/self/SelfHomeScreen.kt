@@ -169,6 +169,9 @@ private fun ManualProtectionStatusCard(
 
 @Composable
 private fun ProtectedAppRemainingCard(app: HomeProtectedAppState) {
+    val remainingSeconds = app.remainingSeconds
+    val limitSeconds = app.limitSeconds
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -222,7 +225,7 @@ private fun ProtectedAppRemainingCard(app: HomeProtectedAppState) {
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Right
                 )
-            } else if (app.remainingSeconds != null && app.limitSeconds != null) {
+            } else if (remainingSeconds != null && limitSeconds != null) {
                 LinearProgressIndicator(
                     progress = { app.progress },
                     modifier = Modifier
@@ -237,12 +240,12 @@ private fun ProtectedAppRemainingCard(app: HomeProtectedAppState) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "المستخدم ${formatMinutes(app.usedSeconds)} من ${formatMinutes(app.limitSeconds)}",
+                        text = "المستخدم ${formatMinutes(app.usedSeconds)} من ${formatMinutes(limitSeconds)}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "متبقي ${formatMinutes(app.remainingSeconds)}",
+                        text = "متبقي ${formatMinutes(remainingSeconds)}",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
                         color = Primary
@@ -293,10 +296,10 @@ private fun EmptyProtectionCard() {
 @Composable
 private fun DailyAdviceCard(apps: List<HomeProtectedAppState>) {
     val advice = when {
-        apps.any { it.remainingSeconds != null && it.remainingSeconds!! <= 60 } ->
+        apps.any { app -> app.remainingSeconds?.let { it <= 60 } == true } ->
             "اقترب وقت المشاهدة من الانتهاء. خذ استراحة قصيرة قبل الانتقال إلى تطبيق آخر."
         apps.any { it.usedSeconds >= 15 * 60 } ->
-            "الاستخدام المتواصل للمقاطع القصيرة قد يؤثر في التركيز والنوم. حاول أخذ فواصل قصيرة."
+            "الاستخدام المتواصل للمقاطع القصيرة قد تؤثر في التركيز والنوم. حاول أخذ فواصل قصيرة."
         apps.isNotEmpty() ->
             "حافظ على استخدام متوازن للمقاطع القصيرة، واجعل وقتك اليومي أكثر وعياً."
         else ->
