@@ -665,6 +665,7 @@ fun ExpandableAppProtectionCard(
                             singleLine = true,
                             label = { Text("مدة Reels بالدقائق") },
                             placeholder = { Text("مثال: 30") },
+                            colors = protectionNumberFieldColors(),
                             keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                                 keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
                             ),
@@ -716,6 +717,7 @@ fun ExpandableAppProtectionCard(
                                         modifier = Modifier.width(68.dp).height(48.dp),
                                         singleLine = true,
                                         label = { Text("دقائق", fontSize = 8.sp) },
+                                        colors = protectionNumberFieldColors(),
                                         keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                                             keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
                                         ),
@@ -802,6 +804,21 @@ private fun ProtectionSwitchRow(
 }
 
 @Composable
+private fun protectionNumberFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+    disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+    focusedBorderColor = MaterialTheme.colorScheme.primary,
+    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+    disabledBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+    focusedLabelColor = MaterialTheme.colorScheme.primary,
+    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    cursorColor = MaterialTheme.colorScheme.primary
+)
+
+@Composable
 private fun CompactDurationSelector(
     value: String,
     expanded: Boolean,
@@ -818,8 +835,8 @@ private fun CompactDurationSelector(
             border = BorderStroke(1.dp, Color(0xFFD5DAE4)),
             contentPadding = PaddingValues(horizontal = 14.dp, vertical = 2.dp)
         ) {
-            Text("المدة: $value", modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Start, color = TextDark)
-            Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = TextGray)
+            Text("المدة: $value", modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Start, color = MaterialTheme.colorScheme.onSurface)
+            Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         DropdownMenu(expanded = expanded, onDismissRequest = onDismiss) {
             options.forEach { option ->

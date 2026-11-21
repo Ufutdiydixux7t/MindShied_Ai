@@ -52,6 +52,7 @@ fun SettingsScreen(
     onSubScreenVisibilityChange: (Boolean) -> Unit = {}
 ) {
     var currentSubScreen by remember { mutableStateOf(MoreSubScreen.Main) }
+    val settingsScrollState = rememberScrollState()
 
     BackHandler(enabled = currentSubScreen != MoreSubScreen.Main) {
         currentSubScreen = MoreSubScreen.Main
@@ -64,12 +65,13 @@ fun SettingsScreen(
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         when (currentSubScreen) {
             MoreSubScreen.Main -> {
-                Column(
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(MaterialTheme.colorScheme.background)
                         .padding(horizontal = 20.dp)
-                        .verticalScroll(rememberScrollState()),
+                        .verticalScroll(settingsScrollState),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     AppTopBar(title = "الإعدادات")
@@ -195,7 +197,12 @@ fun SettingsScreen(
                             )
                         }
                     }
+
                 }
+                    SettingsScrollbar(
+                        scrollState = settingsScrollState,
+                        modifier = Modifier.align(Alignment.CenterEnd)
+                    )
             }
 
             MoreSubScreen.GeneralSettings -> GeneralSettingsScreen(
@@ -210,6 +217,41 @@ fun SettingsScreen(
             MoreSubScreen.PrivacyPlaceholder -> PlaceholderMoreScreen(title = "الخصوصية", onBack = { currentSubScreen = MoreSubScreen.Main })
             MoreSubScreen.SecurityPinPlaceholder -> PlaceholderMoreScreen(title = "الأمان و PIN", onBack = { currentSubScreen = MoreSubScreen.Main })
         }
+    }
+}
+
+@Composable
+private fun SettingsScrollbar(
+    scrollState: androidx.compose.foundation.ScrollState,
+    modifier: Modifier = Modifier
+) {
+    if (scrollState.maxValue <= 0) return
+
+    BoxWithConstraints(
+        modifier = modifier
+            .fillMaxHeight()
+            .width(6.dp)
+            .padding(vertical = 8.dp)
+    ) {
+        val thumbFraction = 0.28f
+        val travelFraction = 1f - thumbFraction
+        val progress = scrollState.value.toFloat() / scrollState.maxValue.toFloat()
+
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(4.dp)
+                .clip(RoundedCornerShape(50))
+                .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.18f))
+        )
+        Box(
+            modifier = Modifier
+                .width(4.dp)
+                .height(maxHeight * thumbFraction)
+                .offset(y = maxHeight * (progress * travelFraction))
+                .clip(RoundedCornerShape(50))
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.75f))
+        )
     }
 }
 
