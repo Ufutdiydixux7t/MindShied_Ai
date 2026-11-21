@@ -334,10 +334,6 @@ fun AppProtectionSubScreen(
                         onToggleExpand = { viewModel.toggleAppExpansion(item.id) },
                         isSelected = selectedAppId == item.id,
                         onLongPress = { selectedAppId = item.id },
-                        onRemove = {
-                            viewModel.removeApp(item.id)
-                            selectedAppId = null
-                        },
                         onReelsToggle = { enabled ->
                             if (enabled && !viewModel.isAccessibilityServiceEnabled()) {
                                 showAccessibilityDialog = true
@@ -438,7 +434,6 @@ fun ExpandableAppProtectionCard(
     onToggleExpand: () -> Unit,
     isSelected: Boolean,
     onLongPress: () -> Unit,
-    onRemove: () -> Unit,
     onReelsToggle: (Boolean) -> Unit,
     onReelsDurationSelect: (String) -> Unit,
     onReelsMinutesChange: (String) -> Unit,
@@ -455,10 +450,12 @@ fun ExpandableAppProtectionCard(
         modifier = Modifier
             .fillMaxWidth()
             .then(
-                if (isSelected) Modifier.border(1.dp, Color(0xFFCC3D55), RoundedCornerShape(24.dp))
+                if (isSelected) Modifier.border(1.dp, Primary, RoundedCornerShape(24.dp))
                 else Modifier
             ),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) Color(0xFFE8F1FF) else Color.White
+        ),
         shape = RoundedCornerShape(24.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -483,22 +480,9 @@ fun ExpandableAppProtectionCard(
                 Icon(
                     imageVector = if (isSelected) Icons.Default.CheckCircle else if (item.isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                     contentDescription = null,
-                    tint = if (isSelected) Color(0xFF2E9B67) else Color(0xFF0B1652),
+                    tint = if (isSelected) Primary else Color(0xFF0B1652),
                     modifier = Modifier.size(24.dp)
                 )
-            }
-
-            AnimatedVisibility(visible = isSelected) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(onClick = onRemove) {
-                        Icon(Icons.Default.DeleteOutline, contentDescription = null, tint = Color(0xFFCC3D55))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("إزالة التطبيق", color = Color(0xFFCC3D55), fontWeight = FontWeight.Bold)
-                    }
-                }
             }
 
             AnimatedVisibility(visible = item.isExpanded) {
