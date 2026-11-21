@@ -1,6 +1,7 @@
 package com.mindguard.feature.self
 
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -30,14 +31,12 @@ fun HomeScreen(
     var selectedTab by remember { mutableIntStateOf(0) }
     val isHome = selectedTab == 0
 
+    BackHandler(enabled = selectedTab != 0) {
+        selectedTab = 0
+    }
+
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         Scaffold(
-            bottomBar = {
-                BottomNavigationBar(
-                    selectedTab = selectedTab,
-                    onTabSelected = { selectedTab = it }
-                )
-            },
             containerColor = MaterialTheme.colorScheme.background
         ) { paddingValues ->
             Column(
@@ -45,41 +44,54 @@ fun HomeScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-                if (selectedTab != 2 && selectedTab != 4) {
-                    AppTopBar(
-                        title = when (selectedTab) {
-                            0 -> "الرئيسية"
-                            1 -> "الإحصائيات"
-                            3 -> "العائلة"
-                            else -> ""
-                        },
-                        userName = if (isHome) userName else null,
-                        profileImageUri = if (isHome) profileImageUri else null
-                    )
-                }
-
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.surface,
-                    shape = if (isHome) RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp) else RoundedCornerShape(0.dp)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
                 ) {
-                    when (selectedTab) {
-                        0 -> SelfHomeScreen()
-                        1 -> UsageScreen()
-                        2 -> ProtectionScreen()
-                        3 -> ParentHomeScreen()
-                        4 -> SettingsScreen(
-                            onLogout = {
-                                navController?.navigate("login") {
-                                    popUpTo("login") { inclusive = true }
-                                }
+                    if (selectedTab != 2 && selectedTab != 4) {
+                        AppTopBar(
+                            title = when (selectedTab) {
+                                0 -> "الرئيسية"
+                                1 -> "الإحصائيات"
+                                3 -> "العائلة"
+                                else -> ""
                             },
-                            onNavigateToTab = { selectedTab = it },
-                            navController = navController,
-                            profileImageUri = profileImageUri
+                            userName = if (isHome) userName else null,
+                            profileImageUri = if (isHome) profileImageUri else null
                         )
                     }
+
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        color = MaterialTheme.colorScheme.surface,
+                        shape = if (isHome) RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp) else RoundedCornerShape(0.dp)
+                    ) {
+                        when (selectedTab) {
+                            0 -> SelfHomeScreen()
+                            1 -> UsageScreen()
+                            2 -> ProtectionScreen()
+                            3 -> ParentHomeScreen()
+                            4 -> SettingsScreen(
+                                onLogout = {
+                                    navController?.navigate("login") {
+                                        popUpTo("login") { inclusive = true }
+                                    }
+                                },
+                                onNavigateToTab = { selectedTab = it },
+                                navController = navController,
+                                profileImageUri = profileImageUri
+                            )
+                        }
+                    }
                 }
+
+                BottomNavigationBar(
+                    selectedTab = selectedTab,
+                    onTabSelected = { selectedTab = it }
+                )
             }
         }
     }

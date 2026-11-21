@@ -223,17 +223,29 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    fun addReelsPeriod(appId: String) {
+    fun addReelsPeriod(appId: String, startTime: String, endTime: String) {
         _uiState.update { state ->
             val updatedState = state.copy(appProtectionItems = state.appProtectionItems.map { item ->
                 if (item.id != appId) item else item.copy(
                     reelsPeriods = item.reelsPeriods + ReelsTimePeriod(
                         id = "period_${item.reelsPeriods.size + 1}",
                         name = "فترة جديدة",
-                        startTime = "22:00",
-                        endTime = "23:59",
+                        startTime = startTime,
+                        endTime = endTime,
                         minutes = "10"
                     )
+                )
+            })
+            updatedState.appProtectionItems.firstOrNull { it.id == appId }?.let { persistPeriods(it) }
+            updatedState
+        }
+    }
+
+    fun deleteReelsPeriod(appId: String, periodId: String) {
+        _uiState.update { state ->
+            val updatedState = state.copy(appProtectionItems = state.appProtectionItems.map { item ->
+                if (item.id != appId) item else item.copy(
+                    reelsPeriods = item.reelsPeriods.filterNot { it.id == periodId }
                 )
             })
             updatedState.appProtectionItems.firstOrNull { it.id == appId }?.let { persistPeriods(it) }

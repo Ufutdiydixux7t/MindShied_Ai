@@ -1,14 +1,17 @@
 package com.mindguard.feature.protection
 
+import android.app.TimePickerDialog
 import android.content.Intent
 import android.provider.Settings
+import java.util.Calendar
+import java.util.Locale
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -27,6 +30,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
@@ -46,6 +51,10 @@ fun ProtectionScreen(
     viewModel: ProtectionViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    BackHandler(enabled = uiState.activeSubScreen != null) {
+        viewModel.navigateBack()
+    }
 
     LaunchedEffect(Unit) {
         viewModel.loadInstalledApps()
@@ -226,7 +235,7 @@ fun ProtectionImageCard(
 
             // Left Chevron Arrow < (Appears on the LEFT in RTL)
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                imageVector = Icons.Default.KeyboardArrowRight,
                 contentDescription = null,
                 tint = Color(0xFF64748B),
                 modifier = Modifier.size(24.dp)
@@ -248,14 +257,39 @@ fun AppProtectionSubScreen(
     var showAddAppDialog by remember { mutableStateOf(false) }
     var showAccessibilityDialog by remember { mutableStateOf(false) }
     var showUsageStatsDialog by remember { mutableStateOf(false) }
-    var selectedAppId by remember { mutableStateOf<String?>(null) }
+    var selectedAppIds by remember { mutableStateOf<Set<String>>(emptySet()) }
+
+    fun formatTime(hour: Int, minute: Int): String =
+        String.format(Locale.US, "%02d:%02d", hour, minute)
+
+    fun addPeriodWithTime(appId: String) {
+        val now = Calendar.getInstance()
+        TimePickerDialog(context, { _, hour, minute ->
+            val startTime = formatTime(hour, minute)
+            val endDialog = TimePickerDialog(context, { _, endHour, endMinute ->
+                viewModel.addReelsPeriod(appId, startTime, formatTime(endHour, endMinute))
+            }, now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), true)
+            endDialog.setTitle("وقت نهاية الفترة")
+            endDialog.show()
+        }, now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), true).apply {
+            setTitle("وقت بداية الفترة")
+        }.show()
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .pointerInput(Unit) {
-                detectTapGestures(onTap = { selectedAppId = null })
+            .pointerInput(selectedAppIds) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Final)
+                        val change = event.changes.firstOrNull()
+                        if (change?.changedToUpIgnoreConsumed() == true) {
+                            selectedAppIds = emptySet()
+                        }
+                    }
+                }
             }
     ) {
         AppTopBar(title = "حماية التطبيقات", onBack = onBack)
@@ -294,25 +328,24 @@ fun AppProtectionSubScreen(
                 )
                 TextButton(
                     onClick = {
-                        val selectedId = selectedAppId
-                        if (selectedId == null) {
+                        if (selectedAppIds.isEmpty()) {
                             showAddAppDialog = true
                         } else {
-                            viewModel.removeApp(selectedId)
-                            selectedAppId = null
+                            selectedAppIds.forEach(viewModel::removeApp)
+                            selectedAppIds = emptySet()
                         }
                     }
                 ) {
                     Icon(
-                        imageVector = if (selectedAppId == null) Icons.Default.Add else Icons.Default.DeleteOutline,
+                        imageVector = if (selectedAppIds.isEmpty()) Icons.Default.Add else Icons.Default.DeleteOutline,
                         contentDescription = null,
-                        tint = if (selectedAppId == null) Primary else Color(0xFFCC3D55),
+                        tint = if (selectedAppIds.isEmpty()) Primary else Color(0xFFCC3D55),
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(3.dp))
                     Text(
-                        text = if (selectedAppId == null) "إضافة تطبيق" else "إزالة التطبيق",
-                        color = if (selectedAppId == null) Primary else Color(0xFFCC3D55),
+                        text = if (selectedAppIds.isEmpty()) "إضافة تطبيق" else "إزالة التطبيق",
+                        color = if (selectedAppIds.isEmpty()) Primary else Color(0xFFCC3D55),
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp
                     )
@@ -337,11 +370,11 @@ fun AppProtectionSubScreen(
                     ExpandableAppProtectionCard(
                         item = item,
                         onToggleExpand = {
-                            selectedAppId = null
+                            selectedAppIds = emptySet()
                             viewModel.toggleAppExpansion(item.id)
                         },
-                        isSelected = selectedAppId == item.id,
-                        onLongPress = { selectedAppId = item.id },
+                        isSelected = item.id in selectedAppIds,
+                        onLongPress = { selectedAppIds = selectedAppIds + item.id },
                         onReelsToggle = { enabled ->
                             if (enabled && !viewModel.isAccessibilityServiceEnabled()) {
                                 showAccessibilityDialog = true
@@ -365,7 +398,8 @@ fun AppProtectionSubScreen(
                         onPeriodMinutesChange = { periodId, minutes ->
                             viewModel.updateReelsPeriodMinutes(item.id, periodId, minutes)
                         },
-                        onAddPeriod = { viewModel.addReelsPeriod(item.id) },
+                        onAddPeriod = { addPeriodWithTime(item.id) },
+                        onDeletePeriod = { periodId -> viewModel.deleteReelsPeriod(item.id, periodId) },
                         onPeriodsToggle = { viewModel.togglePeriodsVisibility(item.id) }
                     )
                 }
@@ -449,6 +483,7 @@ fun ExpandableAppProtectionCard(
     onFreezeDurationSelect: (String) -> Unit,
     onPeriodMinutesChange: (String, String) -> Unit,
     onAddPeriod: () -> Unit,
+    onDeletePeriod: (String) -> Unit,
     onPeriodsToggle: () -> Unit
 ) {
     val durationOptions = listOf("5 دقائق", "10 دقائق", "15 دقيقة", "30 دقيقة", "45 دقيقة", "ساعة", "ساعتان")
@@ -464,7 +499,7 @@ fun ExpandableAppProtectionCard(
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) Color(0xFFE8F1FF) else Color.White
         ),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(18.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -472,23 +507,44 @@ fun ExpandableAppProtectionCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .combinedClickable(onClick = onToggleExpand, onLongClick = onLongPress)
-                    .padding(horizontal = 18.dp, vertical = 16.dp),
+                    .padding(horizontal = 14.dp, vertical = 11.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                AppBrandIconBadge(appId = item.id, appName = item.name, icon = item.icon)
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(
+                            if (isSelected) Primary.copy(alpha = 0.16f) else Color.Transparent,
+                            RoundedCornerShape(12.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AppBrandIconBadge(appId = item.id, appName = item.name, icon = item.icon)
+                    if (isSelected) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = "تم التحديد",
+                            tint = Primary,
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .size(17.dp)
+                                .background(Color.White, CircleShape)
+                        )
+                    }
+                }
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = item.name,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
+                    fontSize = 16.sp,
                     color = Color(0xFF0B1652),
                     modifier = Modifier.weight(1f)
                 )
                 Icon(
-                    imageVector = if (isSelected) Icons.Default.CheckCircle else if (item.isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    imageVector = if (item.isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                     contentDescription = null,
-                    tint = if (isSelected) Primary else Color(0xFF0B1652),
+                    tint = Color(0xFF0B1652),
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -505,7 +561,7 @@ fun ExpandableAppProtectionCard(
                         OutlinedTextField(
                             value = item.reelsBlockDuration,
                             onValueChange = onReelsMinutesChange,
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+                            modifier = Modifier.fillMaxWidth().height(54.dp).padding(bottom = 8.dp),
                             singleLine = true,
                             label = { Text("مدة Reels بالدقائق") },
                             placeholder = { Text("مثال: 30") },
@@ -531,39 +587,50 @@ fun ExpandableAppProtectionCard(
                         )
                         item.reelsPeriods.forEach { period ->
                             Card(
-                                modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 1.dp),
                                 colors = CardDefaults.cardColors(containerColor = Color(0xFFF7F9FC)),
-                                shape = RoundedCornerShape(12.dp),
+                                shape = RoundedCornerShape(10.dp),
                                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                             ) {
                                 Row(
-                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp),
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 4.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Icon(Icons.Outlined.Schedule, contentDescription = null, tint = Primary, modifier = Modifier.size(18.dp))
+                                    Icon(Icons.Outlined.Schedule, contentDescription = null, tint = Primary, modifier = Modifier.size(16.dp))
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text(period.name, fontWeight = FontWeight.Bold, fontSize = 12.sp, color = TextDark)
-                                        Text("${period.startTime} - ${period.endTime}", fontSize = 10.sp, color = TextGray)
+                                        Text(period.name, fontWeight = FontWeight.Bold, fontSize = 11.sp, color = TextDark)
+                                        Text("${period.startTime} - ${period.endTime}", fontSize = 9.sp, color = TextGray)
                                     }
                                     OutlinedTextField(
                                         value = period.minutes,
                                         onValueChange = { onPeriodMinutesChange(period.id, it) },
-                                        modifier = Modifier.width(78.dp),
+                                        modifier = Modifier.width(68.dp).height(48.dp),
                                         singleLine = true,
-                                        label = { Text("دقائق", fontSize = 9.sp) },
+                                        label = { Text("دقائق", fontSize = 8.sp) },
                                         keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                                             keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
                                         ),
                                         shape = RoundedCornerShape(10.dp)
                                     )
+                                    IconButton(
+                                        onClick = { onDeletePeriod(period.id) },
+                                        modifier = Modifier.size(30.dp)
+                                    ) {
+                                        Icon(
+                                            Icons.Default.DeleteOutline,
+                                            contentDescription = "حذف الفترة",
+                                            tint = Color(0xFFCC3D55),
+                                            modifier = Modifier.size(17.dp)
+                                        )
+                                    }
                                 }
                             }
                         }
-                        TextButton(onClick = onAddPeriod) {
-                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                        TextButton(onClick = onAddPeriod, contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)) {
+                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("إضافة فترة", fontSize = 12.sp)
+                            Text("إضافة فترة", fontSize = 11.sp)
                         }
                     }
 
@@ -600,13 +667,14 @@ private fun ProtectionSwitchRow(
     onCheckedChange: (Boolean) -> Unit
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyLarge,
+            style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
+            fontSize = 14.sp,
             color = Color(0xFF0B1652),
             modifier = Modifier.weight(1f)
         )
