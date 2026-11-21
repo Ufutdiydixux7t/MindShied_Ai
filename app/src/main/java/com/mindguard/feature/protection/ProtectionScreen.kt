@@ -31,7 +31,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
+import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
@@ -285,10 +285,9 @@ fun AppProtectionSubScreen(
                     while (true) {
                         val event = awaitPointerEvent(PointerEventPass.Final)
                         val change = event.changes.firstOrNull()
-                        if (change?.changedToUpIgnoreConsumed() == true) {
+                        if (change?.changedToUp() == true) {
                             selectedAppIds = emptySet()
                             expandedFreezeAppId = null
-                            viewModel.collapseAllApps()
                         }
                     }
                 }
@@ -589,7 +588,7 @@ fun ExpandableAppProtectionCard(
                     modifier = Modifier.weight(1f)
                 )
                 Icon(
-                    imageVector = if (item.isExpanded) Icons.Default.KeyboardArrowLeft else Icons.Default.KeyboardArrowRight,
+                    imageVector = if (item.isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                     contentDescription = null,
                     tint = Color(0xFF0B1652),
                     modifier = Modifier.size(24.dp)
