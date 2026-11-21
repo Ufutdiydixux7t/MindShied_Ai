@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.changedToUp
+import androidx.compose.ui.input.pointer.consume
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
@@ -625,7 +626,23 @@ fun ExpandableAppProtectionCard(
             }
 
             AnimatedVisibility(visible = item.isExpanded) {
-                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 4.dp)) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 18.dp, vertical = 4.dp)
+                        .pointerInput(Unit) {
+                            awaitPointerEventScope {
+                                while (true) {
+                                    val event = awaitPointerEvent(PointerEventPass.Final)
+                                    event.changes.forEach { change ->
+                                        if (change.pressed || change.changedToUp()) {
+                                            change.consume()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                ) {
                     HorizontalDivider(color = Color(0xFFE7EAF0))
                     ProtectionSwitchRow(
                         label = "حظر الريلز",
