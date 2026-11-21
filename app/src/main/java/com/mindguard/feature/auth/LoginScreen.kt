@@ -157,17 +157,6 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(68.dp))
 
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(28.dp),
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
-                    tonalElevation = 4.dp,
-                    shadowElevation = 8.dp
-                ) {
-                    Column(
-                        modifier = Modifier.padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(0.dp)
-                    ) {
                 // Email / Username Field
                 OutlinedTextField(
                     value = email,
@@ -279,8 +268,6 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                    }
-                }
 
                 // Divider with "أو"
                 Row(

@@ -696,7 +696,8 @@ fun ExpandableAppProtectionCard(
                             modifier = Modifier.fillMaxWidth().height(64.dp).padding(bottom = 8.dp),
                             singleLine = true,
                             textStyle = LocalTextStyle.current.copy(
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontSize = 14.sp
                             ),
                             label = { Text("مدة Reels بالدقائق") },
                             placeholder = { Text("مثال: 30") },
@@ -754,7 +755,8 @@ fun ExpandableAppProtectionCard(
                                         modifier = Modifier.width(88.dp).height(58.dp),
                                         singleLine = true,
                                         textStyle = LocalTextStyle.current.copy(
-                                            color = MaterialTheme.colorScheme.onSurface
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            fontSize = 13.sp
                                         ),
                                         label = { Text("دقائق", fontSize = 8.sp) },
                                         colors = protectionNumberFieldColors(),
@@ -1243,7 +1245,7 @@ fun AdvancedSettingsSubScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = 88.dp)
+                    .height(112.dp)
                     .clickable { viewModel.setBlockDurationEditMode(BlockDurationEditMode.ALLOWED_NOW) },
                 colors = CardDefaults.cardColors(
                     containerColor = if (isOption1Selected) Color(0xFFEFF6FF) else Color.White.copy(alpha = 0.82f)
@@ -1305,7 +1307,7 @@ fun AdvancedSettingsSubScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = 88.dp)
+                    .height(112.dp)
                     .clickable { showDurationLockConfirmation = true },
                 colors = CardDefaults.cardColors(
                     containerColor = if (isOption2Selected) Color(0xFFEFF6FF) else Color.White.copy(alpha = 0.82f)
@@ -1373,6 +1375,8 @@ fun AdvancedSettingsSubScreen(
                 checked = uiState.isPreventUninstallActive,
                 containerColor = Color.White.copy(alpha = 0.82f),
                 checkedTrackColor = Primary,
+                fixedHeight = 112.dp,
+                borderColor = Color(0xFFC9D7EC),
                 onCheckedChange = { enabled ->
                     if (enabled) {
                         if (viewModel.isDeviceAdminActive()) {
@@ -1450,14 +1454,19 @@ fun SubScreenToggleCard(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     containerColor: Color = MaterialTheme.colorScheme.surface,
-    checkedTrackColor: Color = Primary
+    checkedTrackColor: Color = Primary,
+    fixedHeight: androidx.compose.ui.unit.Dp? = null,
+    borderColor: Color = MaterialTheme.colorScheme.outline.copy(alpha = 0.55f)
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 88.dp),
+            .then(
+                if (fixedHeight != null) Modifier.height(fixedHeight)
+                else Modifier.heightIn(min = 88.dp)
+            ),
         colors = CardDefaults.cardColors(containerColor = containerColor),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)),
+        border = BorderStroke(1.dp, borderColor),
         shape = RoundedCornerShape(18.dp)
     ) {
         Row(
