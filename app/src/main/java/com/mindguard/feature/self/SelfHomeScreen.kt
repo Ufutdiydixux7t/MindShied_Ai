@@ -26,9 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.mindguard.core.theme.DarkBlue
 import com.mindguard.core.theme.Primary
-import com.mindguard.core.theme.TextDark
 
 @Composable
 fun SelfHomeScreen() {
@@ -67,7 +65,7 @@ fun SelfHomeScreen() {
 fun ImportantAlertCard(message: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
         shape = RoundedCornerShape(18.dp)
     ) {
         Row(
@@ -79,7 +77,7 @@ fun ImportantAlertCard(message: String) {
             Text(
                 text = message,
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color(0xFFD32F2F),
+                color = MaterialTheme.colorScheme.onErrorContainer,
                 fontWeight = FontWeight.Bold
             )
         }
@@ -93,7 +91,7 @@ fun DailyReelsCard(used: Int, limit: Int) {
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(22.dp)
     ) {
@@ -108,26 +106,26 @@ fun DailyReelsCard(used: Int, limit: Int) {
                     text = "وقت الريلز اليوم",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = DarkBlue
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "$used دقيقة مستخدمة",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = TextDark,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Medium
                 )
                 Text(
                     text = "$remaining دقيقة متبقية",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
             Box(contentAlignment = Alignment.Center, modifier = Modifier.size(80.dp)) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     drawCircle(
-                        color = Color(0xFFF1F5F9),
+                        color = MaterialTheme.colorScheme.surfaceVariant,
                         style = Stroke(width = 8.dp.toPx())
                     )
                 }
@@ -144,7 +142,7 @@ fun DailyReelsCard(used: Int, limit: Int) {
                     text = "${(progress * 100).toInt()}%",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = DarkBlue
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
@@ -158,7 +156,7 @@ fun CurrentPeriodCard(period: CurrentPeriodInfo) {
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(22.dp)
     ) {
@@ -172,12 +170,12 @@ fun CurrentPeriodCard(period: CurrentPeriodInfo) {
                     text = "الفترة الحالية",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = DarkBlue
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "${period.startTime} - ${period.endTime}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -190,7 +188,7 @@ fun CurrentPeriodCard(period: CurrentPeriodInfo) {
                     .height(8.dp)
                     .clip(RoundedCornerShape(4.dp)),
                 color = Primary,
-                trackColor = Color(0xFFF1F5F9)
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -202,7 +200,7 @@ fun CurrentPeriodCard(period: CurrentPeriodInfo) {
                 Text(
                     text = "استخدمت ${period.usedMinutes} من ${period.totalMinutes} دقيقة",
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextDark
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "متبقي $remaining دقائق",
@@ -217,7 +215,7 @@ fun CurrentPeriodCard(period: CurrentPeriodInfo) {
             Text(
                 text = "الفترة القادمة تبدأ في ${period.nextPeriodStartTime}",
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 10.sp
             )
         }
@@ -231,7 +229,7 @@ fun TodayActivitySection(stats: DailyActivityStats) {
             text = "نشاط اليوم",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
-            color = DarkBlue,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(vertical = 8.dp)
         )
 
@@ -251,9 +249,9 @@ fun TodayActivitySection(stats: DailyActivityStats) {
 fun ActivityStatCard(label: String, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         shape = RoundedCornerShape(14.dp),
-        border = BorderStroke(1.dp, Color(0xFFF1F5F9))
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Box(
             modifier = Modifier.padding(12.dp),
@@ -263,7 +261,7 @@ fun ActivityStatCard(label: String, modifier: Modifier = Modifier) {
                 text = label,
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.Medium,
-                color = DarkBlue,
+                color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center
             )
         }
@@ -274,7 +272,7 @@ fun ActivityStatCard(label: String, modifier: Modifier = Modifier) {
 fun AiTipCard(tip: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = DarkBlue),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onSurface),
         shape = RoundedCornerShape(22.dp)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
@@ -282,12 +280,12 @@ fun AiTipCard(tip: String) {
                 Surface(
                     modifier = Modifier.size(32.dp),
                     shape = CircleShape,
-                    color = Color.White.copy(alpha = 0.2f)
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.2f)
                 ) {
                     Icon(
                         imageVector = Icons.Default.AutoAwesome,
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.padding(6.dp)
                     )
                 }
@@ -296,7 +294,7 @@ fun AiTipCard(tip: String) {
                     text = "نصيحة اليوم",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
 
@@ -305,7 +303,7 @@ fun AiTipCard(tip: String) {
             Text(
                 text = tip,
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.White.copy(alpha = 0.9f),
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f),
                 lineHeight = 22.sp
             )
 
@@ -314,7 +312,7 @@ fun AiTipCard(tip: String) {
             Text(
                 text = "نصيحة اليوم",
                 style = MaterialTheme.typography.labelSmall,
-                color = Color.White.copy(alpha = 0.6f)
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f)
             )
         }
     }
@@ -327,13 +325,13 @@ fun AchievementsSection(achievements: List<Achievement>) {
             text = "إنجازات اليوم",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
-            color = DarkBlue,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(vertical = 8.dp)
         )
 
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
             shape = RoundedCornerShape(18.dp)
         ) {
@@ -353,7 +351,7 @@ fun AchievementsSection(achievements: List<Achievement>) {
                         Text(
                             text = achievement.title,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = if (achievement.isCompleted) TextDark else Color.Gray,
+                            color = if (achievement.isCompleted) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = if (achievement.isCompleted) FontWeight.Medium else FontWeight.Normal
                         )
                     }

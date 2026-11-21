@@ -1,5 +1,6 @@
 package com.mindguard.feature.parent
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -16,8 +17,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mindguard.core.theme.DarkBlue
-import com.mindguard.core.theme.Primary
 import com.mindguard.feature.family.CreateChildScreen
 import com.mindguard.feature.family.LinkChildDeviceScreen
 
@@ -33,6 +32,14 @@ fun ParentHomeScreen(
     onSubScreenVisibilityChange: (Boolean) -> Unit = {}
 ) {
     var currentStep by remember { mutableStateOf<FamilyFlowStep>(FamilyFlowStep.List) }
+
+    BackHandler(enabled = currentStep != FamilyFlowStep.List) {
+        currentStep = when (currentStep) {
+            FamilyFlowStep.CreateChild -> FamilyFlowStep.List
+            is FamilyFlowStep.LinkDevice -> FamilyFlowStep.CreateChild
+            FamilyFlowStep.List -> FamilyFlowStep.List
+        }
+    }
 
     LaunchedEffect(currentStep) {
         onSubScreenVisibilityChange(currentStep == FamilyFlowStep.List)
@@ -53,7 +60,7 @@ fun ParentHomeScreen(
                     modifier = Modifier
                         .size(160.dp)
                         .background(
-                            color = Primary.copy(alpha = 0.1f),
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                             shape = CircleShape
                         ),
                     contentAlignment = Alignment.Center
@@ -61,7 +68,7 @@ fun ParentHomeScreen(
                     Icon(
                         imageVector = Icons.Default.FamilyRestroom,
                         contentDescription = "Family",
-                        tint = Primary,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(80.dp)
                     )
                 }
@@ -73,7 +80,7 @@ fun ParentHomeScreen(
                     text = "لم تتم إضافة أطفال بعد",
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
-                        color = DarkBlue,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 22.sp
                     ),
                     textAlign = TextAlign.Center
@@ -85,7 +92,7 @@ fun ParentHomeScreen(
                 Text(
                     text = "أنشئ حساب طفلك، واضبط الحماية المناسبة،\nثم اربط جهازه.",
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 14.sp
                     ),
                     textAlign = TextAlign.Center
@@ -103,7 +110,7 @@ fun ParentHomeScreen(
                         .fillMaxWidth()
                         .height(56.dp),
                     shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = DarkBlue)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,

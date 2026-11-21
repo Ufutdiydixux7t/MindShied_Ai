@@ -23,9 +23,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mindguard.core.theme.DarkBlue
 import com.mindguard.core.theme.Primary
-import com.mindguard.core.theme.TextDark
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,7 +55,7 @@ fun CreateChildScreen(
                                 text = "إضافة طفل جديد",
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = DarkBlue
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Surface(
                                 shape = RoundedCornerShape(6.dp),
@@ -78,7 +76,7 @@ fun CreateChildScreen(
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "رجوع",
-                                tint = DarkBlue,
+                                tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -105,7 +103,7 @@ fun CreateChildScreen(
                                 .fillMaxWidth()
                                 .height(50.dp),
                             shape = RoundedCornerShape(14.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = DarkBlue)
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -131,7 +129,7 @@ fun CreateChildScreen(
                         Text(
                             text = "جميع قواعد الحماية قابلة للتعديل لاحقاً",
                             style = MaterialTheme.typography.labelSmall,
-                            color = Color.Gray
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -152,13 +150,13 @@ fun CreateChildScreen(
                         text = "أنشئ ملف طفلك",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = DarkBlue
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = "أدخل بيانات طفلك الأساسية واضبط قواعد الحماية الذكية المناسبة.",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
@@ -177,7 +175,7 @@ fun CreateChildScreen(
                                 text = "بيانات الطفل",
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = DarkBlue
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                         Spacer(modifier = Modifier.height(12.dp))
@@ -237,14 +235,14 @@ fun CreateChildScreen(
                                 text = "قواعد الحماية",
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = DarkBlue
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
                     Text(
                         text = "يضبطها الوالد ويمكن مراجعتها وتعديلها في أي وقت.",
                         style = MaterialTheme.typography.labelSmall,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     // Rule 1: Short Videos Limit
@@ -340,7 +338,7 @@ fun RuleToggleCard(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = DarkBlue,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(9.dp)
                 )
             }
@@ -352,13 +350,13 @@ fun RuleToggleCard(
                     text = title,
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Bold,
-                    color = TextDark
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(1.dp))
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 11.sp
                 )
                 if (badgeText != null) {
@@ -386,7 +384,7 @@ fun RuleToggleCard(
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color.White,
                     checkedTrackColor = Primary,
-                    uncheckedThumbColor = Color.Gray,
+                    uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     uncheckedTrackColor = Color(0xFFE2E8F0)
                 )
             )
@@ -422,7 +420,7 @@ fun RuleToggleCardWithChips(
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
-                        tint = DarkBlue,
+                        tint = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.padding(9.dp)
                     )
                 }
@@ -434,13 +432,13 @@ fun RuleToggleCardWithChips(
                         text = title,
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Bold,
-                        color = TextDark
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(1.dp))
                     Text(
                         text = subtitle,
                         style = MaterialTheme.typography.labelSmall,
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 11.sp
                     )
                 }
@@ -452,7 +450,7 @@ fun RuleToggleCardWithChips(
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
                         checkedTrackColor = Primary,
-                        uncheckedThumbColor = Color.Gray,
+                        uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         uncheckedTrackColor = Color(0xFFE2E8F0)
                     )
                 )

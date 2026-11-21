@@ -1,6 +1,7 @@
 package com.mindguard.feature.settings
 
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -51,6 +52,10 @@ fun SettingsScreen(
     onSubScreenVisibilityChange: (Boolean) -> Unit = {}
 ) {
     var currentSubScreen by remember { mutableStateOf(MoreSubScreen.Main) }
+
+    BackHandler(enabled = currentSubScreen != MoreSubScreen.Main) {
+        currentSubScreen = MoreSubScreen.Main
+    }
 
     LaunchedEffect(currentSubScreen) {
         onSubScreenVisibilityChange(currentSubScreen == MoreSubScreen.Main)

@@ -31,9 +31,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mindguard.core.theme.DarkBlue
 import com.mindguard.core.theme.Primary
-import com.mindguard.core.theme.TextDark
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,7 +66,7 @@ fun LinkChildDeviceScreen(
                                 text = "MindGuard",
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = DarkBlue
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     },
@@ -77,7 +75,7 @@ fun LinkChildDeviceScreen(
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "رجوع",
-                                tint = DarkBlue,
+                                tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -111,7 +109,7 @@ fun LinkChildDeviceScreen(
                     text = "ربط جهاز $childName",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = DarkBlue,
+                    color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center
                 )
 
@@ -120,7 +118,7 @@ fun LinkChildDeviceScreen(
                 Text(
                     text = "امسح رمز QR أدناه باستخدام تطبيق طفلك لربط الجهاز بالحساب فوراً",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
 
@@ -157,7 +155,7 @@ fun LinkChildDeviceScreen(
                                         val hash = ((x * 31 + y * 17 + seed) % 3) == 0L
                                         if (hash) {
                                             drawRect(
-                                                color = DarkBlue,
+                                                color = MaterialTheme.colorScheme.onSurface,
                                                 topLeft = Offset(x * moduleSize, y * moduleSize),
                                                 size = Size(moduleSize, moduleSize)
                                             )
@@ -172,7 +170,7 @@ fun LinkChildDeviceScreen(
                                 val coreSize = 3 * moduleSize
 
                                 drawRect(
-                                    color = DarkBlue,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                     topLeft = Offset(startX, startY),
                                     size = Size(outerSize, outerSize)
                                 )
@@ -182,7 +180,7 @@ fun LinkChildDeviceScreen(
                                     size = Size(innerSize, innerSize)
                                 )
                                 drawRect(
-                                    color = DarkBlue,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                     topLeft = Offset(startX + 2 * moduleSize, startY + 2 * moduleSize),
                                     size = Size(coreSize, coreSize)
                                 )
@@ -251,7 +249,7 @@ fun LinkChildDeviceScreen(
                     ) {
                         Icon(Icons.Outlined.ContentCopy, contentDescription = null, tint = Primary, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("نسخ الرمز", color = DarkBlue, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                        Text("نسخ الرمز", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                     }
 
                     OutlinedButton(
@@ -266,7 +264,7 @@ fun LinkChildDeviceScreen(
                     ) {
                         Icon(Icons.Outlined.Share, contentDescription = null, tint = Primary, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("مشاركة", color = DarkBlue, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                        Text("مشاركة", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                     }
                 }
 
@@ -281,7 +279,7 @@ fun LinkChildDeviceScreen(
                         text = "تعليمات التفعيل السريع",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
-                        color = DarkBlue
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
                     Spacer(modifier = Modifier.height(10.dp))
@@ -354,7 +352,7 @@ fun InstructionStepItem(
                 text = text,
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.Medium,
-                color = TextDark,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f)
             )
 
