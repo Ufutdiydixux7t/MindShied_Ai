@@ -24,6 +24,7 @@ import java.time.LocalDateTime
 class MindGuardAccessibilityService : AccessibilityService() {
     private var trackedPackage: String? = null
     private var trackedSince: LocalDateTime? = null
+    private var lastReelsSignalAt = 0L
     private var lastFrozenActionAt = 0L
     private var activeShortVideoPackage: String? = null
     private var overlayTargetPackage: String? = null
@@ -92,17 +93,29 @@ class MindGuardAccessibilityService : AccessibilityService() {
     }
 
     private fun updateUsage(packageName: String, reelsSurface: Boolean) {
+        // Ignore events outside the confirmed Reels surface. Accessibility can
+        // emit short-lived non-Reels events while the Reels screen is still visible.
+        if (!reelsSurface) return
+
         val now = LocalDateTime.now()
-        if (trackedPackage != packageName || !reelsSurface) {
-            trackedPackage = if (reelsSurface) packageName else null
-            trackedSince = if (reelsSurface) now else null
+        val nowMillis = System.currentTimeMillis()
+        val isNewReelsSession = trackedPackage != packageName ||
+                trackedSince == null ||
+                nowMillis - lastReelsSignalAt > REELS_SESSION_GAP_MS
+        if (isNewReelsSession) {
+            trackedPackage = packageName
+            trackedSince = now
+            lastReelsSignalAt = nowMillis
             return
         }
+
+        lastReelsSignalAt = nowMillis
 
         val since = trackedSince ?: now.also { trackedSince = it }
         if (!ProtectionPreferences.isReelsEnabled(this, packageName)) {
             trackedPackage = null
             trackedSince = null
+            lastReelsSignalAt = 0L
             return
         }
         val period = if (ProtectionPreferences.arePeriodsEnabled(this, packageName)) {
@@ -125,7 +138,12 @@ class MindGuardAccessibilityService : AccessibilityService() {
             .any { eventText.contains(it) }
 
         if (event.eventType == AccessibilityEvent.TYPE_VIEW_CLICKED && isHomeLabel) {
-            if (activeShortVideoPackage == packageName) activeShortVideoPackage = null
+            if (activeShortVideoPackage == packageName) {
+                activeShortVideoPackage = null
+                trackedPackage = null
+                trackedSince = null
+                lastReelsSignalAt = 0L
+            }
             return false
         }
         if (event.eventType == AccessibilityEvent.TYPE_VIEW_CLICKED && isShortVideoLabel) {
@@ -308,6 +326,7 @@ class MindGuardAccessibilityService : AccessibilityService() {
         removeReelsOverlay()
         trackedPackage = null
         trackedSince = null
+        lastReelsSignalAt = 0L
         activeShortVideoPackage = null
         overlayTargetPackage = null
     }
@@ -366,6 +385,7 @@ class MindGuardAccessibilityService : AccessibilityService() {
 
     companion object {
         private const val YOUTUBE_PACKAGE = "com.google.android.youtube"
+        private const val REELS_SESSION_GAP_MS = 3_000L
         private val YOUTUBE_SHORTS_VIEW_IDS = listOf(
             "reel_watch_fragment_root",
             "reel_recycler",
