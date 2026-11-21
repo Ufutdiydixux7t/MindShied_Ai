@@ -52,6 +52,36 @@ object ProtectionPreferences {
     private fun periodsKey(packageName: String) = "periods_$packageName"
     private fun usageKey(packageName: String, date: String, periodId: String) = "usage_${packageName}_${date}_$periodId"
     private fun usageSecondsKey(packageName: String, date: String, periodId: String) = "usage_seconds_${packageName}_${date}_$periodId"
+    private const val BLOCK_DURATION_MODE_KEY = "block_duration_edit_mode"
+    private const val BLOCK_DURATION_LOCK_UNTIL_KEY = "block_duration_edit_lock_until"
+    private const val PREVENT_UNINSTALL_KEY = "prevent_uninstall"
+    private const val TWO_DAYS_MILLIS = 48L * 60L * 60L * 1000L
+
+    fun getBlockDurationEditMode(context: Context): String =
+        prefs(context).getString(BLOCK_DURATION_MODE_KEY, "allowed_now") ?: "allowed_now"
+
+    fun setBlockDurationEditMode(context: Context, mode: String) {
+        val editor = prefs(context).edit().putString(BLOCK_DURATION_MODE_KEY, mode)
+        if (mode == "after_two_days") {
+            editor.putLong(BLOCK_DURATION_LOCK_UNTIL_KEY, System.currentTimeMillis() + TWO_DAYS_MILLIS)
+        } else {
+            editor.remove(BLOCK_DURATION_LOCK_UNTIL_KEY)
+        }
+        editor.apply()
+    }
+
+    fun canEditBlockDuration(context: Context): Boolean =
+        prefs(context).getLong(BLOCK_DURATION_LOCK_UNTIL_KEY, 0L) <= System.currentTimeMillis()
+
+    fun getBlockDurationLockRemainingMillis(context: Context): Long =
+        (prefs(context).getLong(BLOCK_DURATION_LOCK_UNTIL_KEY, 0L) - System.currentTimeMillis()).coerceAtLeast(0L)
+
+    fun isPreventUninstallEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(PREVENT_UNINSTALL_KEY, false)
+
+    fun setPreventUninstallEnabled(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(PREVENT_UNINSTALL_KEY, enabled).apply()
+    }
 
     fun setReelsEnabled(context: Context, packageName: String, enabled: Boolean) {
         prefs(context).edit().putBoolean(reelsKey(packageName), enabled).apply()

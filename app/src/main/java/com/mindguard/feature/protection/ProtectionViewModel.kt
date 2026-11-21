@@ -2,6 +2,7 @@ package com.mindguard.feature.protection
 
 import android.app.Application
 import android.app.AppOpsManager
+import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Intent
 import android.provider.Settings
@@ -9,6 +10,7 @@ import androidx.lifecycle.AndroidViewModel
 import com.mindguard.platform.accessibility.MindGuardAccessibilityService
 import com.mindguard.platform.accessibility.ProtectionPreferences
 import com.mindguard.platform.accessibility.StoredProtectionPeriod
+import com.mindguard.platform.deviceadmin.MindGuardDeviceAdminReceiver
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,6 +22,20 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
 
     private val _uiState = MutableStateFlow(ProtectionUiState())
     val uiState: StateFlow<ProtectionUiState> = _uiState.asStateFlow()
+
+    init {
+        val application = getApplication<Application>()
+        _uiState.update {
+            it.copy(
+                blockDurationEditMode = if (ProtectionPreferences.getBlockDurationEditMode(application) == "after_two_days") {
+                    BlockDurationEditMode.ALLOW_AFTER_TWO_DAYS
+                } else {
+                    BlockDurationEditMode.ALLOWED_NOW
+                },
+                isPreventUninstallActive = ProtectionPreferences.isPreventUninstallEnabled(application)
+            )
+        }
+    }
 
     fun navigateToSubScreen(subScreen: ProtectionSubScreen) {
         collapseAllApps()
@@ -185,14 +201,25 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun setAppReelsDuration(appId: String, duration: String) {
+        val application = getApplication<Application>()
+        if (!ProtectionPreferences.canEditBlockDuration(application)) {
+            val remainingHours = ((ProtectionPreferences.getBlockDurationLockRemainingMillis(application) + 3_599_999L) / 3_600_000L)
+            _uiState.update {
+                it.copy(advancedProtectionMessage = "تم قفل تعديل مدة الحظر لمدة يومين. يمكنك المحاولة بعد نحو $remainingHours ساعة، ولا يمكن تغيير خيار القفل قبل انتهاء المدة.")
+            }
+            return
+        }
         val minutes = duration.filter(Char::isDigit)
-        ProtectionPreferences.setReelsLimitMinutes(getApplication(), appId, minutes.toIntOrNull() ?: 0)
+        ProtectionPreferences.setReelsLimitMinutes(application, appId, minutes.toIntOrNull() ?: 0)
         _uiState.update { state ->
             state.copy(appProtectionItems = state.appProtectionItems.map { item ->
                 if (item.id == appId) item.copy(reelsBlockDuration = minutes) else item
             })
         }
     }
+
+    fun canEditBlockDuration(): Boolean =
+        ProtectionPreferences.canEditBlockDuration(getApplication())
 
     fun toggleAppFreeze(appId: String, enabled: Boolean) {
         ProtectionPreferences.setFreezeEnabled(getApplication(), appId, enabled)
@@ -280,8 +307,64 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
     fun toggleBiometrics(enabled: Boolean) { _uiState.update { it.copy(isBiometricsActive = enabled) } }
     fun toggleLockTimeAndDate(enabled: Boolean) { _uiState.update { it.copy(lockTimeAndDateChange = enabled) } }
     fun updatePinCode(pin: String) { _uiState.update { it.copy(pinCode = pin) } }
-    fun setBlockDurationEditMode(mode: BlockDurationEditMode) { _uiState.update { it.copy(blockDurationEditMode = mode) } }
-    fun togglePreventUninstall(enabled: Boolean) { _uiState.update { it.copy(isPreventUninstallActive = enabled) } }
+    fun setBlockDurationEditMode(mode: BlockDurationEditMode) {
+        val application = getApplication<Application>()
+        if (_uiState.value.blockDurationEditMode == mode) return
+        if (mode == BlockDurationEditMode.ALLOWED_NOW && !ProtectionPreferences.canEditBlockDuration(application)) {
+            _uiState.update {
+                it.copy(advancedProtectionMessage = "لا يمكن تغيير خيار تعديل مدة الحظر الآن. تم تفعيل القفل لمدة يومين، وسيصبح تغيير الخيار متاحًا بعد انتهاء المدة.")
+            }
+            return
+        }
+        ProtectionPreferences.setBlockDurationEditMode(
+            application,
+            if (mode == BlockDurationEditMode.ALLOW_AFTER_TWO_DAYS) "after_two_days" else "allowed_now"
+        )
+        _uiState.update { it.copy(blockDurationEditMode = mode) }
+    }
+
+    fun dismissAdvancedProtectionMessage() {
+        _uiState.update { it.copy(advancedProtectionMessage = null) }
+    }
+
+    fun isDeviceOwner(): Boolean {
+        val application = getApplication<Application>()
+        val devicePolicyManager = application.getSystemService(DevicePolicyManager::class.java)
+        return devicePolicyManager?.isDeviceOwnerApp(application.packageName) == true
+    }
+
+    fun deviceAdminActivationIntent(): Intent {
+        val application = getApplication<Application>()
+        return Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
+            putExtra(
+                DevicePolicyManager.EXTRA_DEVICE_ADMIN,
+                ComponentName(application, MindGuardDeviceAdminReceiver::class.java)
+            )
+            putExtra(
+                DevicePolicyManager.EXTRA_ADD_EXPLANATION,
+                "فعّل إدارة الجهاز لتطبيق MindGuard حتى يمكن منع حذفه."
+            )
+        }
+    }
+
+    fun togglePreventUninstall(enabled: Boolean) {
+        val application = getApplication<Application>()
+        val devicePolicyManager = application.getSystemService(DevicePolicyManager::class.java)
+        if (enabled && devicePolicyManager?.isDeviceOwnerApp(application.packageName) != true) {
+            _uiState.update {
+                it.copy(
+                    advancedProtectionMessage = "لا يمكن منع حذف التطبيق إلا بعد تهيئة MindGuard كـ Device Owner من إعداد الجهاز أو من خلال نظام إدارة الأجهزة. تفعيل Device Admin وحده لا يجعل التطبيق مالكًا للجهاز."
+                )
+            }
+            return
+        }
+        if (devicePolicyManager?.isDeviceOwnerApp(application.packageName) == true) {
+            val admin = ComponentName(application, MindGuardDeviceAdminReceiver::class.java)
+            devicePolicyManager.setUninstallBlocked(admin, application.packageName, enabled)
+        }
+        ProtectionPreferences.setPreventUninstallEnabled(application, enabled)
+        _uiState.update { it.copy(isPreventUninstallActive = enabled) }
+    }
 
     companion object {
         private val reelSupportedPackages = setOf(

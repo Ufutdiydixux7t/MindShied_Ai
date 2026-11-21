@@ -106,6 +106,19 @@ fun ProtectionScreen(
                     onBack = { viewModel.navigateBack() }
                 )
             }
+
+            uiState.advancedProtectionMessage?.let { message ->
+                AlertDialog(
+                    onDismissRequest = { viewModel.dismissAdvancedProtectionMessage() },
+                    title = { Text("الحماية المتقدمة") },
+                    text = { Text(message, textAlign = TextAlign.Right) },
+                    confirmButton = {
+                        TextButton(onClick = { viewModel.dismissAdvancedProtectionMessage() }) {
+                            Text("حسنًا")
+                        }
+                    }
+                )
+            }
         }
     }
 }
@@ -395,6 +408,7 @@ fun AppProtectionSubScreen(
                         },
                         onReelsDurationSelect = { viewModel.setAppReelsDuration(item.id, it) },
                         onReelsMinutesChange = { viewModel.setAppReelsDuration(item.id, it) },
+                        canEditReelsDuration = viewModel.canEditBlockDuration(),
                         onFreezeToggle = { enabled ->
                             if (enabled && !viewModel.isAccessibilityServiceEnabled()) {
                                 showAccessibilityDialog = true
@@ -529,6 +543,7 @@ fun ExpandableAppProtectionCard(
     onReelsToggle: (Boolean) -> Unit,
     onReelsDurationSelect: (String) -> Unit,
     onReelsMinutesChange: (String) -> Unit,
+    canEditReelsDuration: Boolean,
     onFreezeToggle: (Boolean) -> Unit,
     onFreezeDurationSelect: (String) -> Unit,
     onPeriodMinutesChange: (String, String) -> Unit,
@@ -613,6 +628,7 @@ fun ExpandableAppProtectionCard(
                         OutlinedTextField(
                             value = item.reelsBlockDuration,
                             onValueChange = onReelsMinutesChange,
+                            enabled = canEditReelsDuration,
                             modifier = Modifier.fillMaxWidth().height(54.dp).padding(bottom = 8.dp),
                             singleLine = true,
                             label = { Text("مدة Reels بالدقائق") },
@@ -622,6 +638,14 @@ fun ExpandableAppProtectionCard(
                             ),
                             shape = RoundedCornerShape(12.dp)
                         )
+                        if (!canEditReelsDuration) {
+                            Text(
+                                text = "تعديل المدة مقفل لمدة يومين حسب إعدادات الحماية المتقدمة",
+                                color = TextGray,
+                                fontSize = 11.sp,
+                                modifier = Modifier.padding(bottom = 6.dp)
+                            )
+                        }
                     }
 
                     HorizontalDivider(color = Color(0xFFE7EAF0))
@@ -1074,6 +1098,8 @@ fun AdvancedSettingsSubScreen(
     viewModel: ProtectionViewModel,
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -1253,10 +1279,15 @@ fun AdvancedSettingsSubScreen(
             // Prevent Uninstall Section (منع حذف التطبيق)
             SubScreenToggleCard(
                 title = "منع حذف التطبيق",
-                description = "حماية التطبيق من الحذف بدون إذن مسؤول النظام",
+                description = "يعمل فقط بعد تهيئة MindGuard كـ Device Owner",
                 icon = Icons.Outlined.AdminPanelSettings,
                 checked = uiState.isPreventUninstallActive,
-                onCheckedChange = { viewModel.togglePreventUninstall(it) }
+                onCheckedChange = { enabled ->
+                    if (enabled && !viewModel.isDeviceOwner()) {
+                        context.startActivity(viewModel.deviceAdminActivationIntent())
+                    }
+                    viewModel.togglePreventUninstall(enabled)
+                }
             )
 
             Spacer(modifier = Modifier.height(24.dp))

@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">MindGuard</string>
     <string name="accessibility_service_description">تستخدم MindGuard هذه الخدمة لاكتشاف التطبيقات المحمية وتطبيق حدود الاستخدام التي يحددها المستخدم.</string>
+    <string name="device_admin_description">يستخدم MindGuard إدارة الجهاز لمنع حذف التطبيق عند تفعيل الحماية المتقدمة.</string>
 </resources>

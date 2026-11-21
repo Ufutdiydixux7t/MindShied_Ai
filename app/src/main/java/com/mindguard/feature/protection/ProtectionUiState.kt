@@ -69,5 +69,6 @@ data class ProtectionUiState(
 
     // 5. Advanced Protection State (الحماية المتقدمة)
     val blockDurationEditMode: BlockDurationEditMode = BlockDurationEditMode.ALLOWED_NOW,
-    val isPreventUninstallActive: Boolean = true
+    val isPreventUninstallActive: Boolean = false,
+    val advancedProtectionMessage: String? = null
 )
