@@ -649,18 +649,6 @@ fun ExpandableAppProtectionCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 18.dp, vertical = 4.dp)
-                        .pointerInput(Unit) {
-                            awaitPointerEventScope {
-                                while (true) {
-                                    val event = awaitPointerEvent(PointerEventPass.Final)
-                                    event.changes.forEach { change ->
-                                        if (change.pressed || change.changedToUp()) {
-                                            change.consume()
-                                        }
-                                    }
-                                }
-                            }
-                        }
                 ) {
                     HorizontalDivider(color = Color(0xFFE7EAF0))
                     ProtectionSwitchRow(
