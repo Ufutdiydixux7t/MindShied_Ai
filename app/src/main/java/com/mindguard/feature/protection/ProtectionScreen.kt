@@ -1245,7 +1245,7 @@ fun AdvancedSettingsSubScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(112.dp)
+                    .height(88.dp)
                     .clickable { viewModel.setBlockDurationEditMode(BlockDurationEditMode.ALLOWED_NOW) },
                 colors = CardDefaults.cardColors(
                     containerColor = if (isOption1Selected) Color(0xFFEFF6FF) else Color.White.copy(alpha = 0.82f)
@@ -1307,7 +1307,7 @@ fun AdvancedSettingsSubScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(112.dp)
+                    .height(88.dp)
                     .clickable { showDurationLockConfirmation = true },
                 colors = CardDefaults.cardColors(
                     containerColor = if (isOption2Selected) Color(0xFFEFF6FF) else Color.White.copy(alpha = 0.82f)
@@ -1375,7 +1375,7 @@ fun AdvancedSettingsSubScreen(
                 checked = uiState.isPreventUninstallActive,
                 containerColor = Color.White.copy(alpha = 0.82f),
                 checkedTrackColor = Primary,
-                fixedHeight = 112.dp,
+                fixedHeight = 88.dp,
                 borderColor = Color(0xFFC9D7EC),
                 onCheckedChange = { enabled ->
                     if (enabled) {
