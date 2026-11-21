@@ -122,7 +122,14 @@ fun ProtectionScreen(
                 AlertDialog(
                     onDismissRequest = { viewModel.dismissAdvancedProtectionMessage() },
                     title = { Text("الحماية المتقدمة") },
-                    text = { Text(message, textAlign = TextAlign.Right) },
+                    text = {
+                        Text(
+                            text = message,
+                            textAlign = TextAlign.Right,
+                            fontSize = 13.sp,
+                            lineHeight = 20.sp
+                        )
+                    },
                     confirmButton = {
                         TextButton(onClick = { viewModel.dismissAdvancedProtectionMessage() }) {
                             Text("حسنًا")
@@ -421,7 +428,7 @@ fun AppProtectionSubScreen(
                         },
                         onLongPress = { selectedAppIds = selectedAppIds + item.id },
                         onReelsToggle = { enabled ->
-                            if (viewModel.canEditBlockDuration()) {
+                            if (enabled || viewModel.canEditBlockDuration()) {
                                 if (enabled && !viewModel.isAccessibilityServiceEnabled()) {
                                     showAccessibilityDialog = true
                                 } else {
@@ -441,7 +448,7 @@ fun AppProtectionSubScreen(
                         canEditReelsDuration = viewModel.canEditBlockDuration(),
                         canEditProtectionSettings = viewModel.canEditBlockDuration(),
                         onFreezeToggle = { enabled ->
-                            if (viewModel.canEditBlockDuration()) {
+                            if (enabled || viewModel.canEditBlockDuration()) {
                                 if (enabled && !viewModel.isAccessibilityServiceEnabled()) {
                                     showAccessibilityDialog = true
                                 } else {
@@ -472,7 +479,7 @@ fun AppProtectionSubScreen(
                         freezeDropdownExpanded = expandedFreezeAppId == item.id,
                         onFreezeDropdownChange = { expandedFreezeAppId = if (it) item.id else null },
                         onPeriodsToggle = {
-                            if (viewModel.canEditBlockDuration()) {
+                            if (!item.arePeriodsVisible || viewModel.canEditBlockDuration()) {
                                 viewModel.togglePeriodsVisibility(item.id)
                             }
                         }
@@ -678,7 +685,7 @@ fun ExpandableAppProtectionCard(
                     ProtectionSwitchRow(
                         label = "حظر الريلز",
                         checked = item.isReelsBlocked,
-                        enabled = canEditProtectionSettings,
+                        enabled = canEditProtectionSettings || !item.isReelsBlocked,
                         onCheckedChange = onReelsToggle
                     )
                     if (item.isReelsBlocked) {
@@ -713,7 +720,7 @@ fun ExpandableAppProtectionCard(
                     ProtectionSwitchRow(
                         label = "الفترات",
                         checked = item.arePeriodsVisible,
-                        enabled = canEditProtectionSettings,
+                        enabled = canEditProtectionSettings || !item.arePeriodsVisible,
                         onCheckedChange = { onPeriodsToggle() }
                     )
                     if (item.arePeriodsVisible) {
@@ -786,7 +793,7 @@ fun ExpandableAppProtectionCard(
                     ProtectionSwitchRow(
                         label = "تجميد التطبيق",
                         checked = item.isAppFrozen,
-                        enabled = canEditProtectionSettings,
+                        enabled = canEditProtectionSettings || !item.isAppFrozen,
                         onCheckedChange = onFreezeToggle
                     )
                     if (item.isAppFrozen) {
@@ -1236,6 +1243,7 @@ fun AdvancedSettingsSubScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .heightIn(min = 88.dp)
                     .clickable { viewModel.setBlockDurationEditMode(BlockDurationEditMode.ALLOWED_NOW) },
                 colors = CardDefaults.cardColors(
                     containerColor = if (isOption1Selected) Color(0xFFEFF6FF) else Color.White.copy(alpha = 0.82f)
@@ -1297,6 +1305,7 @@ fun AdvancedSettingsSubScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .heightIn(min = 88.dp)
                     .clickable { showDurationLockConfirmation = true },
                 colors = CardDefaults.cardColors(
                     containerColor = if (isOption2Selected) Color(0xFFEFF6FF) else Color.White.copy(alpha = 0.82f)
@@ -1444,8 +1453,11 @@ fun SubScreenToggleCard(
     checkedTrackColor: Color = Primary
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 88.dp),
         colors = CardDefaults.cardColors(containerColor = containerColor),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)),
         shape = RoundedCornerShape(18.dp)
     ) {
         Row(

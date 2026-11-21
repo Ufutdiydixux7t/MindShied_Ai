@@ -182,8 +182,9 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun togglePeriodsVisibility(appId: String) {
-        if (!canEditBlockDuration()) return
-        val enabled = _uiState.value.appProtectionItems.firstOrNull { it.id == appId }?.arePeriodsVisible != true
+        val currentlyEnabled = _uiState.value.appProtectionItems.firstOrNull { it.id == appId }?.arePeriodsVisible == true
+        if (currentlyEnabled && !canEditBlockDuration()) return
+        val enabled = !currentlyEnabled
         ProtectionPreferences.setPeriodsEnabled(getApplication(), appId, enabled)
         _uiState.update { state ->
             state.copy(appProtectionItems = state.appProtectionItems.map { item ->
@@ -193,7 +194,7 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun toggleAppReelsBlock(appId: String, enabled: Boolean) {
-        if (!canEditBlockDuration()) return
+        if (!enabled && !canEditBlockDuration()) return
         ProtectionPreferences.setReelsEnabled(getApplication(), appId, enabled)
         _uiState.update { state ->
             state.copy(appProtectionItems = state.appProtectionItems.map { item ->
@@ -224,7 +225,7 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
         ProtectionPreferences.canEditBlockDuration(getApplication())
 
     fun toggleAppFreeze(appId: String, enabled: Boolean) {
-        if (!canEditBlockDuration()) return
+        if (!enabled && !canEditBlockDuration()) return
         ProtectionPreferences.setFreezeEnabled(getApplication(), appId, enabled)
         _uiState.update { state ->
             state.copy(appProtectionItems = state.appProtectionItems.map { item ->
