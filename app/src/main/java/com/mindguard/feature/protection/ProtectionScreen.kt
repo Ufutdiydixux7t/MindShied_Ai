@@ -663,6 +663,9 @@ fun ExpandableAppProtectionCard(
                             enabled = canEditReelsDuration,
                             modifier = Modifier.fillMaxWidth().height(54.dp).padding(bottom = 8.dp),
                             singleLine = true,
+                            textStyle = LocalTextStyle.current.copy(
+                                color = MaterialTheme.colorScheme.onSurface
+                            ),
                             label = { Text("مدة Reels بالدقائق") },
                             placeholder = { Text("مثال: 30") },
                             colors = protectionNumberFieldColors(),
@@ -716,6 +719,9 @@ fun ExpandableAppProtectionCard(
                                         onValueChange = { onPeriodMinutesChange(period.id, it) },
                                         modifier = Modifier.width(68.dp).height(48.dp),
                                         singleLine = true,
+                                        textStyle = LocalTextStyle.current.copy(
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        ),
                                         label = { Text("دقائق", fontSize = 8.sp) },
                                         colors = protectionNumberFieldColors(),
                                         keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
