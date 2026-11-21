@@ -54,7 +54,6 @@ fun ProtectionScreen(
                 AppTopBar(title = "الحماية")
             }
             when (val subScreen = uiState.activeSubScreen) {
-            when (subScreen) {
                 null -> MainProtectionContent(
                     onCardClick = { viewModel.navigateToSubScreen(it) }
                 )
