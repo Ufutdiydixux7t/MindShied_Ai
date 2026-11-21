@@ -88,7 +88,7 @@ fun UsageScreen() {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 128.dp)
+                    .padding(20.dp)
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {

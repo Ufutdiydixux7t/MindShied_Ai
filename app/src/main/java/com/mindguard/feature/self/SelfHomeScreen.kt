@@ -36,7 +36,7 @@ fun SelfHomeScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 128.dp)
+            .padding(16.dp)
             .verticalScroll(scrollState),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
