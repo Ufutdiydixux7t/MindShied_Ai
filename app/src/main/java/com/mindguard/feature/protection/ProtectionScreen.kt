@@ -697,7 +697,7 @@ fun ExpandableAppProtectionCard(
                             singleLine = true,
                             textStyle = LocalTextStyle.current.copy(
                                 color = MaterialTheme.colorScheme.onSurface,
-                                fontSize = 12.sp
+                                fontSize = 14.sp
                             ),
                             label = { Text("مدة Reels بالدقائق") },
                             placeholder = { Text("مثال: 30") },
@@ -756,7 +756,7 @@ fun ExpandableAppProtectionCard(
                                         singleLine = true,
                                         textStyle = LocalTextStyle.current.copy(
                                             color = MaterialTheme.colorScheme.onSurface,
-                                            fontSize = 11.sp
+                                            fontSize = 13.sp
                                         ),
                                         label = { Text("دقائق", fontSize = 8.sp) },
                                         colors = protectionNumberFieldColors(),
