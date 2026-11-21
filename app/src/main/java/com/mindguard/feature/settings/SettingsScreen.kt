@@ -203,6 +203,7 @@ fun SettingsScreen(
                         scrollState = settingsScrollState,
                         modifier = Modifier.align(Alignment.CenterEnd)
                     )
+                }
             }
 
             MoreSubScreen.GeneralSettings -> GeneralSettingsScreen(
