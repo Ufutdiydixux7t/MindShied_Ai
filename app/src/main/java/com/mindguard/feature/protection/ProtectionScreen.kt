@@ -53,20 +53,7 @@ fun ProtectionScreen(
             if (uiState.activeSubScreen == null) {
                 AppTopBar(title = "الحماية")
             }
-            AnimatedContent(
-                modifier = Modifier.fillMaxSize(),
-            targetState = uiState.activeSubScreen,
-            transitionSpec = {
-                if (targetState != null) {
-                    slideInHorizontally { width -> -width } + fadeIn() togetherWith
-                            slideOutHorizontally { width -> width } + fadeOut()
-                } else {
-                    slideInHorizontally { width -> width } + fadeIn() togetherWith
-                            slideOutHorizontally { width -> -width } + fadeOut()
-                }
-            },
-            label = "ProtectionSubScreenTransition"
-        ) { subScreen ->
+            when (val subScreen = uiState.activeSubScreen) {
             when (subScreen) {
                 null -> MainProtectionContent(
                     onCardClick = { viewModel.navigateToSubScreen(it) }
@@ -97,7 +84,6 @@ fun ProtectionScreen(
                     onBack = { viewModel.navigateBack() }
                 )
             }
-        }
         }
     }
 }

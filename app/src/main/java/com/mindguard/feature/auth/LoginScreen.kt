@@ -411,7 +411,7 @@ private fun LoginWaveDecoration(top: Boolean, modifier: Modifier) {
     Canvas(
         modifier = modifier
             .fillMaxWidth()
-            .height(if (top) 135.dp else 155.dp)
+            .height(if (top) 105.dp else 125.dp)
     ) {
         val width = size.width
         val height = size.height
@@ -450,13 +450,13 @@ private fun LoginWaveDecoration(top: Boolean, modifier: Modifier) {
         }
 
         if (top) {
-            drawPath(wavePath(0f, height * 0.08f), Color(0xFFDCE9FA).copy(alpha = 0.9f))
-            drawPath(wavePath(height * 0.09f, height * 0.06f), Color(0xFFC4D9F5).copy(alpha = 0.72f))
-            drawPath(wavePath(height * 0.18f, height * 0.05f), Color(0xFFAFC9F1).copy(alpha = 0.48f))
+            drawPath(wavePath(0f, height * 0.07f), Color(0xFFDCE9FA).copy(alpha = 0.72f))
+            drawPath(wavePath(height * 0.08f, height * 0.05f), Color(0xFFC4D9F5).copy(alpha = 0.52f))
+            drawPath(wavePath(height * 0.15f, height * 0.04f), Color(0xFFAFC9F1).copy(alpha = 0.34f))
         } else {
-            drawPath(wavePath(0f, height * 0.08f), Color(0xFFDCE9FA).copy(alpha = 0.9f))
-            drawPath(wavePath(-height * 0.09f, height * 0.06f), Color(0xFFC4D9F5).copy(alpha = 0.72f))
-            drawPath(wavePath(-height * 0.18f, height * 0.05f), Color(0xFFAFC9F1).copy(alpha = 0.48f))
+            drawPath(wavePath(0f, height * 0.07f), Color(0xFFDCE9FA).copy(alpha = 0.72f))
+            drawPath(wavePath(-height * 0.08f, height * 0.05f), Color(0xFFC4D9F5).copy(alpha = 0.52f))
+            drawPath(wavePath(-height * 0.15f, height * 0.04f), Color(0xFFAFC9F1).copy(alpha = 0.34f))
         }
     }
 }

@@ -36,17 +36,12 @@ fun AppTopBar(
     profileImageUri: Uri? = null,
     userName: String? = null
 ) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.background,
-        shadowElevation = 6.dp
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 14.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 14.dp),
-            contentAlignment = Alignment.Center
-        ) {
         if (onBack != null) {
             androidx.compose.material3.IconButton(
                 onClick = onBack,
@@ -100,14 +95,13 @@ fun AppTopBar(
                 }
             }
         }
-        }
     }
 }
 
 @Composable
 private fun ColumnGreeting(userName: String) {
     androidx.compose.foundation.layout.Column(
-        horizontalAlignment = Alignment.End
+        horizontalAlignment = Alignment.Start
     ) {
         Text(
             text = "مرحباً، $userName",
