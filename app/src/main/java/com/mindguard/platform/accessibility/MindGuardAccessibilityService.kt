@@ -265,8 +265,7 @@ class MindGuardAccessibilityService : AccessibilityService() {
             setOnClickListener {
                 val targetPackage = overlayTargetPackage
                 removeReelsOverlay()
-                trackedPackage = null
-                trackedSince = null
+                resetTrackedReelsSession()
                 activeShortVideoPackage = null
                 suppressReelsUntil = System.currentTimeMillis() + 1500L
                 overlayTargetPackage = null
@@ -342,9 +341,7 @@ class MindGuardAccessibilityService : AccessibilityService() {
     override fun onInterrupt() {
         mainHandler.removeCallbacksAndMessages(null)
         removeReelsOverlay()
-        trackedPackage = null
-        trackedSince = null
-        lastReelsSignalAt = 0L
+        resetTrackedReelsSession()
         activeShortVideoPackage = null
         overlayTargetPackage = null
     }
