@@ -38,7 +38,6 @@ fun HomeScreen(
     var selectedTab by remember { mutableIntStateOf(0) }
     var showBottomBar by remember { mutableStateOf(true) }
     val isHome = selectedTab == 0
-    val isScrollableMainScreen = selectedTab == 0 || selectedTab == 1 || selectedTab == 2 || selectedTab == 4
 
     LaunchedEffect(selectedTab) {
         if (selectedTab != 2 && selectedTab != 4) {
@@ -114,7 +113,7 @@ fun HomeScreen(
                 if (showBottomBar) {
                     BottomNavigationBar(
                         modifier = Modifier.align(Alignment.BottomCenter),
-                        liftedForShortContent = !isScrollableMainScreen,
+                        liftedForShortContent = false,
                         selectedTab = selectedTab,
                         onTabSelected = { selectedTab = it }
                     )
