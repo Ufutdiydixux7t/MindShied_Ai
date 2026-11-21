@@ -31,6 +31,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.changedToUp
@@ -287,6 +291,8 @@ fun AppProtectionSubScreen(
     var periodStartTime by remember { mutableStateOf("08:00") }
     var periodEndTime by remember { mutableStateOf("12:00") }
     var expandedFreezeAppId by remember { mutableStateOf<String?>(null) }
+    var rootWindowOffset by remember { mutableStateOf(Offset.Zero) }
+    var appCardBounds by remember { mutableStateOf<Map<String, Rect>>(emptyMap()) }
 
     fun formatTime(hour: Int, minute: Int): String =
         String.format(Locale.US, "%02d:%02d", hour, minute)
@@ -305,12 +311,19 @@ fun AppProtectionSubScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .pointerInput(selectedAppIds) {
+            .onGloballyPositioned { coordinates ->
+                rootWindowOffset = coordinates.localToWindow(Offset.Zero)
+            }
+            .pointerInput(selectedAppIds, rootWindowOffset, appCardBounds) {
                 awaitPointerEventScope {
                     while (true) {
                         val event = awaitPointerEvent(PointerEventPass.Final)
                         val change = event.changes.firstOrNull()
-                        if (change?.changedToUp() == true && !change.isConsumed) {
+                        val windowPoint = change?.position?.let {
+                            Offset(rootWindowOffset.x + it.x, rootWindowOffset.y + it.y)
+                        }
+                        val tappedInsideCard = windowPoint != null && appCardBounds.values.any { it.contains(windowPoint) }
+                        if (change?.changedToUp() == true && !change.isConsumed && !tappedInsideCard) {
                             selectedAppIds = emptySet()
                             expandedFreezeAppId = null
                             viewModel.collapseAllApps()
@@ -403,6 +416,9 @@ fun AppProtectionSubScreen(
                             viewModel.toggleAppExpansion(item.id)
                         },
                         isSelected = item.id in selectedAppIds,
+                        onCardBoundsChanged = { bounds ->
+                            appCardBounds = appCardBounds + (item.id to bounds)
+                        },
                         onLongPress = { selectedAppIds = selectedAppIds + item.id },
                         onReelsToggle = { enabled ->
                             if (enabled && !viewModel.isAccessibilityServiceEnabled()) {
@@ -547,6 +563,7 @@ fun ExpandableAppProtectionCard(
     item: AppProtectionItemState,
     onToggleExpand: () -> Unit,
     isSelected: Boolean,
+    onCardBoundsChanged: (Rect) -> Unit,
     onLongPress: () -> Unit,
     onReelsToggle: (Boolean) -> Unit,
     onReelsDurationSelect: (String) -> Unit,
@@ -566,6 +583,9 @@ fun ExpandableAppProtectionCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .onGloballyPositioned { coordinates ->
+                onCardBoundsChanged(coordinates.boundsInWindow())
+            }
             .border(
                 1.dp,
                 if (isSelected) Primary else Color(0xFFE2E8F0),
