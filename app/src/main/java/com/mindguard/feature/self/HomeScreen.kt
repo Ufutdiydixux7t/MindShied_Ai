@@ -91,7 +91,9 @@ fun HomeScreen(
                             2 -> ProtectionScreen(
                                 onSubScreenVisibilityChange = { showBottomBar = it }
                             )
-                            3 -> ParentHomeScreen()
+                            3 -> ParentHomeScreen(
+                                onSubScreenVisibilityChange = { showBottomBar = it }
+                            )
                             4 -> SettingsScreen(
                                 onLogout = {
                                     navController?.navigate("login") {

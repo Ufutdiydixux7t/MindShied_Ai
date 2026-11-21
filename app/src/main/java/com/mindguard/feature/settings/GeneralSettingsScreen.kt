@@ -83,10 +83,11 @@ fun GeneralSettingsScreen(
                                 onCheckedChange = { aiTipsEnabled = it }
                             )
                             HorizontalDivider(modifier = Modifier.padding(horizontal = 14.dp), color = Color(0xFFF1F5F9))
-                            GeneralSettingsNavRow(
-                                title = "الثيم",
-                                icon = Icons.Outlined.Palette,
-                                onClick = { currentSubScreen = GeneralSettingsSubScreen.Theme }
+                            GeneralSettingsSwitchRow(
+                                title = "الوضع الداكن",
+                                icon = Icons.Outlined.DarkMode,
+                                checked = darkThemeEnabled,
+                                onCheckedChange = onDarkThemeChange
                             )
                         }
                     }

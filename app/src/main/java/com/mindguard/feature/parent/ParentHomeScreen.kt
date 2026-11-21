@@ -29,16 +29,21 @@ sealed class FamilyFlowStep {
 
 @Composable
 fun ParentHomeScreen(
-    onAddDeviceClick: () -> Unit = {}
+    onAddDeviceClick: () -> Unit = {},
+    onSubScreenVisibilityChange: (Boolean) -> Unit = {}
 ) {
     var currentStep by remember { mutableStateOf<FamilyFlowStep>(FamilyFlowStep.List) }
+
+    LaunchedEffect(currentStep) {
+        onSubScreenVisibilityChange(currentStep == FamilyFlowStep.List)
+    }
 
     when (val step = currentStep) {
         is FamilyFlowStep.List -> {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(24.dp),
+                    .padding(start = 24.dp, top = 24.dp, end = 24.dp, bottom = 92.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.weight(0.2f))
