@@ -18,7 +18,9 @@ fun AppNavHost(
     navController: NavHostController,
     startAtHome: Boolean = false,
     profileImageUri: Uri?,
-    onProfileImageChange: (Uri?) -> Unit
+    onProfileImageChange: (Uri?) -> Unit,
+    darkThemeEnabled: Boolean,
+    onDarkThemeChange: (Boolean) -> Unit
 ) {
     NavHost(
         navController = navController,
@@ -75,7 +77,9 @@ fun AppNavHost(
             HomeScreen(
                 userName = userName,
                 navController = navController,
-                profileImageUri = profileImageUri
+                profileImageUri = profileImageUri,
+                darkThemeEnabled = darkThemeEnabled,
+                onDarkThemeChange = onDarkThemeChange
             )
         }
 
@@ -89,7 +93,9 @@ fun AppNavHost(
 
         composable(AppRoute.GeneralSettings.route) {
             GeneralSettingsScreen(
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                darkThemeEnabled = darkThemeEnabled,
+                onDarkThemeChange = onDarkThemeChange
             )
         }
     }

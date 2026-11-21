@@ -39,7 +39,9 @@ enum class GeneralSettingsSubScreen {
 
 @Composable
 fun GeneralSettingsScreen(
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    darkThemeEnabled: Boolean = false,
+    onDarkThemeChange: (Boolean) -> Unit = {}
 ) {
     var currentSubScreen by remember { mutableStateOf(GeneralSettingsSubScreen.Main) }
     var aiTipsEnabled by remember { mutableStateOf(true) }
@@ -195,7 +197,11 @@ fun GeneralSettingsScreen(
             }
 
             GeneralSettingsSubScreen.Language -> LanguageSettingsScreen(onBack = { currentSubScreen = GeneralSettingsSubScreen.Main })
-            GeneralSettingsSubScreen.Theme -> ThemeSettingsScreen(onBack = { currentSubScreen = GeneralSettingsSubScreen.Main })
+            GeneralSettingsSubScreen.Theme -> ThemeSettingsScreen(
+                onBack = { currentSubScreen = GeneralSettingsSubScreen.Main },
+                darkThemeEnabled = darkThemeEnabled,
+                onDarkThemeChange = onDarkThemeChange
+            )
             GeneralSettingsSubScreen.PrivacyData -> PrivacyDataScreen(onBack = { currentSubScreen = GeneralSettingsSubScreen.Main })
             GeneralSettingsSubScreen.AppLockPin -> AppLockPinScreen(onBack = { currentSubScreen = GeneralSettingsSubScreen.Main })
             GeneralSettingsSubScreen.HelpSupport -> HelpSupportScreen(onBack = { currentSubScreen = GeneralSettingsSubScreen.Main })

@@ -18,8 +18,14 @@ fun MindGuardApp(
     var profileImageUri by remember { mutableStateOf<Uri?>(null) }
     var showBlockedScreen by remember(blockedAppName) { mutableStateOf(blockedAppName != null) }
     val context = LocalContext.current
+    val appearancePreferences = remember(context) {
+        context.getSharedPreferences("mindguard_appearance", android.content.Context.MODE_PRIVATE)
+    }
+    var darkThemeEnabled by remember {
+        mutableStateOf(appearancePreferences.getBoolean("dark_theme_enabled", false))
+    }
 
-    MindShieldAiTheme {
+    MindShieldAiTheme(darkTheme = darkThemeEnabled) {
         if (showBlockedScreen && blockedAppName != null) {
             BlockedScreen(
                 blockedAppName = blockedAppName,
@@ -42,6 +48,11 @@ fun MindGuardApp(
                 profileImageUri = profileImageUri,
                 onProfileImageChange = { newUri ->
                     profileImageUri = newUri ?: profileImageUri
+                },
+                darkThemeEnabled = darkThemeEnabled,
+                onDarkThemeChange = { enabled ->
+                    darkThemeEnabled = enabled
+                    appearancePreferences.edit().putBoolean("dark_theme_enabled", enabled).apply()
                 }
             )
         }

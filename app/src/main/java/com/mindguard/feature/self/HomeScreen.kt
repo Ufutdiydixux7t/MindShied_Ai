@@ -31,7 +31,9 @@ import com.mindguard.feature.usage.UsageScreen
 fun HomeScreen(
     userName: String = "أحمد",
     navController: NavController? = null,
-    profileImageUri: Uri? = null
+    profileImageUri: Uri? = null,
+    darkThemeEnabled: Boolean = false,
+    onDarkThemeChange: (Boolean) -> Unit = {}
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
     val isHome = selectedTab == 0
@@ -88,7 +90,9 @@ fun HomeScreen(
                                 },
                                 onNavigateToTab = { selectedTab = it },
                                 navController = navController,
-                                profileImageUri = profileImageUri
+                                profileImageUri = profileImageUri,
+                                darkThemeEnabled = darkThemeEnabled,
+                                onDarkThemeChange = onDarkThemeChange
                             )
                         }
                     }

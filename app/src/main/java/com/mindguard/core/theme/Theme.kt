@@ -3,10 +3,12 @@ package com.mindguard.core.theme
 import android.app.Activity
 import android.content.ContextWrapper
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
@@ -29,8 +31,27 @@ private val LightColorScheme = lightColorScheme(
     outline = md_theme_light_outline,
 )
 
+private val DarkColorScheme = darkColorScheme(
+    primary = Color(0xFF8AB4F8),
+    onPrimary = Color(0xFF062E6F),
+    primaryContainer = Color(0xFF174A9C),
+    onPrimaryContainer = Color(0xFFD9E6FF),
+    secondary = Color(0xFFB8C7E0),
+    onSecondary = Color(0xFF223044),
+    secondaryContainer = Color(0xFF35465F),
+    onSecondaryContainer = Color(0xFFD9E3F8),
+    background = Color(0xFF101318),
+    onBackground = Color(0xFFE5E7EB),
+    surface = Color(0xFF1A1D23),
+    onSurface = Color(0xFFE5E7EB),
+    surfaceVariant = Color(0xFF252A33),
+    onSurfaceVariant = Color(0xFFB8C0CC),
+    outline = Color(0xFF525B6A)
+)
+
 @Composable
 fun MindShieldAiTheme(
+    darkTheme: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val view = LocalView.current
@@ -48,14 +69,15 @@ fun MindShieldAiTheme(
 
         SideEffect {
             activity?.window?.let { window ->
-                window.statusBarColor = LightColorScheme.background.toArgb()
-                WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
+                val scheme = if (darkTheme) DarkColorScheme else LightColorScheme
+                window.statusBarColor = scheme.background.toArgb()
+                WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
             }
         }
     }
 
     MaterialTheme(
-        colorScheme = LightColorScheme,
+        colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme,
         typography = Typography,
         content = content
     )

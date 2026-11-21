@@ -46,7 +46,9 @@ fun SettingsScreen(
     onLogout: () -> Unit = {},
     onNavigateToTab: (Int) -> Unit = {},
     navController: NavController? = null,
-    profileImageUri: Uri? = null
+    profileImageUri: Uri? = null,
+    darkThemeEnabled: Boolean = false,
+    onDarkThemeChange: (Boolean) -> Unit = {}
 ) {
     var currentSubScreen by remember { mutableStateOf(MoreSubScreen.Main) }
 
@@ -188,7 +190,9 @@ fun SettingsScreen(
             }
 
             MoreSubScreen.GeneralSettings -> GeneralSettingsScreen(
-                onBack = { currentSubScreen = MoreSubScreen.Main }
+                onBack = { currentSubScreen = MoreSubScreen.Main },
+                darkThemeEnabled = darkThemeEnabled,
+                onDarkThemeChange = onDarkThemeChange
             )
 
             MoreSubScreen.AppsPlaceholder -> PlaceholderMoreScreen(title = "التطبيقات", onBack = { currentSubScreen = MoreSubScreen.Main })

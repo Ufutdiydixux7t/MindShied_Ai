@@ -305,9 +305,10 @@ fun AppProtectionSubScreen(
                     while (true) {
                         val event = awaitPointerEvent(PointerEventPass.Final)
                         val change = event.changes.firstOrNull()
-                        if (change?.changedToUp() == true) {
+                        if (change?.changedToUp() == true && !change.isConsumed) {
                             selectedAppIds = emptySet()
                             expandedFreezeAppId = null
+                            viewModel.collapseAllApps()
                         }
                     }
                 }
