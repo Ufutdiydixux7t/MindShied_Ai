@@ -496,7 +496,13 @@ fun AppProtectionSubScreen(
             onDismissRequest = { showAddAppDialog = false },
             title = { Text("إضافة تطبيق للحماية") },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 420.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
                     val addedIds = uiState.appProtectionItems.map { it.id }.toSet()
                     uiState.availableApps.filterNot { it.id in addedIds }.forEach { app ->
                         TextButton(
