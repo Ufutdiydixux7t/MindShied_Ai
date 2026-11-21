@@ -695,7 +695,6 @@ fun ExpandableAppProtectionCard(
                             enabled = canEditReelsDuration,
                             modifier = Modifier.fillMaxWidth().height(64.dp),
                             singleLine = true,
-                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
                             textStyle = LocalTextStyle.current.copy(
                                 color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 12.sp
@@ -755,7 +754,6 @@ fun ExpandableAppProtectionCard(
                                         enabled = canEditProtectionSettings,
                                         modifier = Modifier.width(88.dp).height(58.dp),
                                         singleLine = true,
-                                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
                                         textStyle = LocalTextStyle.current.copy(
                                             color = MaterialTheme.colorScheme.onSurface,
                                             fontSize = 11.sp
