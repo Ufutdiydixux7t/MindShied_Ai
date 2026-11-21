@@ -1,5 +1,6 @@
 package com.mindguard.feature.auth
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
@@ -13,7 +14,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -21,6 +21,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -37,7 +38,6 @@ import androidx.compose.ui.unit.sp
 import com.mindguard.R
 import com.mindguard.core.theme.DarkBlue
 import com.mindguard.core.theme.MindShieldAiTheme
-import com.mindguard.core.theme.Primary
 import com.mindguard.core.theme.Secondary
 
 @Preview(showBackground = true, device = "spec:width=411dp,height=891dp")
@@ -78,11 +78,11 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Psychology,
+                Image(
+                    painter = painterResource(id = R.mipmap.ic_launcher),
                     contentDescription = null,
-                    modifier = Modifier.size(340.dp),
-                    tint = DarkBlue.copy(alpha = 0.04f)
+                    modifier = Modifier.size(320.dp),
+                    alpha = 0.05f
                 )
             }
 
@@ -112,20 +112,23 @@ fun LoginScreen(
 
                 // Logo Container
                 Surface(
-                    modifier = Modifier.size(84.dp),
+                    modifier = Modifier.size(88.dp),
                     shape = RoundedCornerShape(24.dp),
-                    color = Primary.copy(alpha = 0.15f),
-                    shadowElevation = 0.dp
+                    color = MaterialTheme.colorScheme.surface,
+                    shadowElevation = 4.dp
                 ) {
                     Box(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(8.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Psychology,
+                        Image(
+                            painter = painterResource(id = R.mipmap.ic_launcher),
                             contentDescription = "MindGuard Logo",
-                            modifier = Modifier.size(48.dp),
-                            tint = DarkBlue
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(RoundedCornerShape(16.dp))
                         )
                     }
                 }
