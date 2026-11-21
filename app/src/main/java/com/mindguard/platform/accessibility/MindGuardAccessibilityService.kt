@@ -19,11 +19,9 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 class MindGuardAccessibilityService : AccessibilityService() {
     private var trackedPackage: String? = null
-    private var trackedSince: LocalDateTime? = null
     private var lastReelsSignalAt = 0L
     private var lastFrozenActionAt = 0L
     private var activeShortVideoPackage: String? = null
@@ -55,6 +53,10 @@ class MindGuardAccessibilityService : AccessibilityService() {
         if (packageName == applicationContext.packageName) return
         if (System.currentTimeMillis() < suppressReelsUntil) return
 
+        if (trackedPackage != null && trackedPackage != packageName) {
+            flushTrackedReelsSeconds()
+            resetTrackedReelsSession()
+        }
         val reelsSurface = isShortVideoSurface(event, packageName)
         updateUsage(packageName, reelsSurface)
 
@@ -83,13 +85,13 @@ class MindGuardAccessibilityService : AccessibilityService() {
         val limit = period?.minutes ?: ProtectionPreferences.getReelsLimitMinutes(this, packageName)
         if (limit <= 0) return true
         val usagePeriodId = period?.id ?: "global"
-        val used = ProtectionPreferences.getUsedMinutes(
+        val usedSeconds = ProtectionPreferences.getTotalUsedSeconds(
             this,
             packageName,
             LocalDate.now().toString(),
             usagePeriodId
         )
-        return used >= limit
+        return usedSeconds >= limit * 60
     }
 
     private fun updateUsage(packageName: String, reelsSurface: Boolean) {
@@ -97,35 +99,52 @@ class MindGuardAccessibilityService : AccessibilityService() {
         // emit short-lived non-Reels events while the Reels screen is still visible.
         if (!reelsSurface) return
 
-        val now = LocalDateTime.now()
         val nowMillis = System.currentTimeMillis()
         val isNewReelsSession = trackedPackage != packageName ||
-                trackedSince == null ||
                 nowMillis - lastReelsSignalAt > REELS_SESSION_GAP_MS
         if (isNewReelsSession) {
+            if (trackedPackage != null) flushTrackedReelsSeconds()
             trackedPackage = packageName
-            trackedSince = now
             lastReelsSignalAt = nowMillis
             return
         }
 
+        recordReelsSeconds(nowMillis)
         lastReelsSignalAt = nowMillis
 
-        val since = trackedSince ?: now.also { trackedSince = it }
         if (!ProtectionPreferences.isReelsEnabled(this, packageName)) {
-            trackedPackage = null
-            trackedSince = null
-            lastReelsSignalAt = 0L
+            resetTrackedReelsSession()
             return
         }
+    }
+
+    private fun recordReelsSeconds(nowMillis: Long) {
+        val packageName = trackedPackage ?: return
+        val elapsedSeconds = ((nowMillis - lastReelsSignalAt) / 1000L)
+            .coerceAtLeast(0L)
+            .coerceAtMost(REELS_SESSION_GAP_MS / 1000L)
+            .toInt()
+        if (elapsedSeconds <= 0 || !ProtectionPreferences.isReelsEnabled(this, packageName)) return
         val period = if (ProtectionPreferences.arePeriodsEnabled(this, packageName)) {
             ProtectionPreferences.currentPeriod(this, packageName) ?: return
         } else null
-        val usagePeriodId = period?.id ?: "global"
-        if (java.time.Duration.between(since, now).toMinutes() >= 1) {
-            ProtectionPreferences.addUsedMinute(this, packageName, LocalDate.now().toString(), usagePeriodId)
-            trackedSince = now
-        }
+        ProtectionPreferences.addUsedSeconds(
+            this,
+            packageName,
+            LocalDate.now().toString(),
+            period?.id ?: "global",
+            elapsedSeconds
+        )
+    }
+
+    private fun flushTrackedReelsSeconds() {
+        if (trackedPackage == null || lastReelsSignalAt == 0L) return
+        recordReelsSeconds(System.currentTimeMillis())
+    }
+
+    private fun resetTrackedReelsSession() {
+        trackedPackage = null
+        lastReelsSignalAt = 0L
     }
 
     private fun isShortVideoSurface(event: AccessibilityEvent, packageName: String): Boolean {
@@ -139,10 +158,9 @@ class MindGuardAccessibilityService : AccessibilityService() {
 
         if (event.eventType == AccessibilityEvent.TYPE_VIEW_CLICKED && isHomeLabel) {
             if (activeShortVideoPackage == packageName) {
+                flushTrackedReelsSeconds()
                 activeShortVideoPackage = null
-                trackedPackage = null
-                trackedSince = null
-                lastReelsSignalAt = 0L
+                resetTrackedReelsSession()
             }
             return false
         }

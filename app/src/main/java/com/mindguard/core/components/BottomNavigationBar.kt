@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,15 +29,16 @@ fun BottomNavigationBar(selectedTab: Int, onTabSelected: (Int) -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 18.dp, vertical = 12.dp),
+            .navigationBarsPadding()
+            .padding(horizontal = 12.dp, vertical = 10.dp),
         contentAlignment = Alignment.Center
     ) {
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
                 .widthIn(max = 420.dp)
-                .border(BorderStroke(1.dp, Primary.copy(alpha = 0.16f)), RoundedCornerShape(28.dp)),
-            shape = RoundedCornerShape(28.dp),
+                .border(BorderStroke(1.dp, Primary.copy(alpha = 0.16f)), RoundedCornerShape(50)),
+            shape = RoundedCornerShape(50),
             color = Color.White,
             shadowElevation = 16.dp,
             tonalElevation = 3.dp

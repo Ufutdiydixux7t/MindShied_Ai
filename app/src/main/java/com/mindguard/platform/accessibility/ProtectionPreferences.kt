@@ -21,6 +21,7 @@ object ProtectionPreferences {
     private fun periodsEnabledKey(packageName: String) = "periods_enabled_$packageName"
     private fun periodsKey(packageName: String) = "periods_$packageName"
     private fun usageKey(packageName: String, date: String, periodId: String) = "usage_${packageName}_${date}_$periodId"
+    private fun usageSecondsKey(packageName: String, date: String, periodId: String) = "usage_seconds_${packageName}_${date}_$periodId"
 
     fun setReelsEnabled(context: Context, packageName: String, enabled: Boolean) {
         prefs(context).edit().putBoolean(reelsKey(packageName), enabled).apply()
@@ -88,5 +89,19 @@ object ProtectionPreferences {
         val key = usageKey(packageName, date, periodId)
         val current = prefs(context).getInt(key, 0)
         prefs(context).edit().putInt(key, current + 1).apply()
+    }
+
+    fun getUsedSeconds(context: Context, packageName: String, date: String, periodId: String): Int =
+        prefs(context).getInt(usageSecondsKey(packageName, date, periodId), 0)
+
+    fun getTotalUsedSeconds(context: Context, packageName: String, date: String, periodId: String): Int =
+        getUsedMinutes(context, packageName, date, periodId) * 60 +
+                getUsedSeconds(context, packageName, date, periodId)
+
+    fun addUsedSeconds(context: Context, packageName: String, date: String, periodId: String, seconds: Int) {
+        if (seconds <= 0) return
+        val key = usageSecondsKey(packageName, date, periodId)
+        val current = getUsedSeconds(context, packageName, date, periodId)
+        prefs(context).edit().putInt(key, current + seconds).apply()
     }
 }
