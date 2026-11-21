@@ -68,7 +68,11 @@ fun ProtectionScreen(
     }
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        ) {
             if (uiState.activeSubScreen == null) {
                 AppTopBar(title = "الحماية")
             }
@@ -280,6 +284,7 @@ fun AppProtectionSubScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
             .pointerInput(selectedAppIds) {
                 awaitPointerEventScope {
                     while (true) {
@@ -538,9 +543,10 @@ fun ExpandableAppProtectionCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .then(
-                if (isSelected) Modifier.border(1.dp, Primary, RoundedCornerShape(24.dp))
-                else Modifier
+            .border(
+                1.dp,
+                if (isSelected) Primary else Color(0xFFE2E8F0),
+                RoundedCornerShape(18.dp)
             ),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) Color(0xFFE8F1FF) else Color.White
