@@ -32,7 +32,7 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
                 } else {
                     BlockDurationEditMode.ALLOWED_NOW
                 },
-                isPreventUninstallActive = ProtectionPreferences.isPreventUninstallEnabled(application)
+                isPreventUninstallActive = ProtectionPreferences.isPreventUninstallEnabled(application) && isDeviceAdminActive()
             )
         }
     }
@@ -327,10 +327,11 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
         _uiState.update { it.copy(advancedProtectionMessage = null) }
     }
 
-    fun isDeviceOwner(): Boolean {
+    fun isDeviceAdminActive(): Boolean {
         val application = getApplication<Application>()
         val devicePolicyManager = application.getSystemService(DevicePolicyManager::class.java)
-        return devicePolicyManager?.isDeviceOwnerApp(application.packageName) == true
+        val admin = ComponentName(application, MindGuardDeviceAdminReceiver::class.java)
+        return devicePolicyManager?.isAdminActive(admin) == true
     }
 
     fun deviceAdminActivationIntent(): Intent {
@@ -342,26 +343,20 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
             )
             putExtra(
                 DevicePolicyManager.EXTRA_ADD_EXPLANATION,
-                "فعّل إدارة الجهاز لتطبيق MindGuard حتى يمكن منع حذفه."
+                "فعّل إدارة الجهاز لتطبيق MindGuard حتى يحافظ على إعدادات الحماية ويمنع إزالة الإدارة دون موافقة."
             )
         }
     }
 
+    fun refreshPreventUninstallState() {
+        val enabled = isDeviceAdminActive()
+        ProtectionPreferences.setPreventUninstallEnabled(getApplication(), enabled)
+        _uiState.update { it.copy(isPreventUninstallActive = enabled) }
+    }
+
     fun togglePreventUninstall(enabled: Boolean) {
         val application = getApplication<Application>()
-        val devicePolicyManager = application.getSystemService(DevicePolicyManager::class.java)
-        if (enabled && devicePolicyManager?.isDeviceOwnerApp(application.packageName) != true) {
-            _uiState.update {
-                it.copy(
-                    advancedProtectionMessage = "لا يمكن منع حذف التطبيق إلا بعد تهيئة MindGuard كـ Device Owner من إعداد الجهاز أو من خلال نظام إدارة الأجهزة. تفعيل Device Admin وحده لا يجعل التطبيق مالكًا للجهاز."
-                )
-            }
-            return
-        }
-        if (devicePolicyManager?.isDeviceOwnerApp(application.packageName) == true) {
-            val admin = ComponentName(application, MindGuardDeviceAdminReceiver::class.java)
-            devicePolicyManager.setUninstallBlocked(admin, application.packageName, enabled)
-        }
+        if (enabled && !isDeviceAdminActive()) return
         ProtectionPreferences.setPreventUninstallEnabled(application, enabled)
         _uiState.update { it.copy(isPreventUninstallActive = enabled) }
     }

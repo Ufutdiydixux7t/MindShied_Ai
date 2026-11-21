@@ -5,6 +5,8 @@ import android.content.Intent
 import android.provider.Settings
 import java.util.Locale
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
@@ -1098,33 +1100,22 @@ fun AdvancedSettingsSubScreen(
     viewModel: ProtectionViewModel,
     onBack: () -> Unit
 ) {
-    val context = LocalContext.current
+    var showDurationLockConfirmation by remember { mutableStateOf(false) }
+    val deviceAdminLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) {
+        viewModel.refreshPreventUninstallState()
+    }
+    val beigeBackground = Color(0xFFF7F1E8)
+    val burgundy = Color(0xFF7A1F3D)
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(beigeBackground)
             .padding(bottom = 20.dp)
     ) {
-        // Sub-screen Top Bar
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Spacer(modifier = Modifier.weight(1f))
-
-            IconButton(onClick = onBack) {
-                Icon(
-                    imageVector = Icons.Default.ChevronRight,
-                    contentDescription = "رجوع",
-                    tint = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
-        }
+        AppTopBar(title = "الحماية المتقدمة", onBack = onBack)
 
         Column(
             modifier = Modifier
@@ -1133,20 +1124,21 @@ fun AdvancedSettingsSubScreen(
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Header Title: تعديل مدة الحظر
             Text(
-                text = "تعديل مدة الحظر",
-                style = MaterialTheme.typography.headlineMedium,
+                text = "إعدادات الحماية المتقدمة",
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                fontSize = 26.sp,
-                color = MaterialTheme.colorScheme.onBackground
+                fontSize = 20.sp,
+                color = burgundy,
+                textAlign = TextAlign.Right
             )
 
             Text(
                 text = "اختر طريقة تعديل المدة",
                 style = MaterialTheme.typography.bodyMedium,
                 color = TextGray,
-                fontSize = 13.sp
+                fontSize = 13.sp,
+                textAlign = TextAlign.Right
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -1158,11 +1150,11 @@ fun AdvancedSettingsSubScreen(
                     .fillMaxWidth()
                     .clickable { viewModel.setBlockDurationEditMode(BlockDurationEditMode.ALLOWED_NOW) },
                 colors = CardDefaults.cardColors(
-                    containerColor = if (isOption1Selected) Color(0xFFEFF6FF) else MaterialTheme.colorScheme.surface
+                    containerColor = if (isOption1Selected) Color(0xFFF3E4E8) else Color.White.copy(alpha = 0.82f)
                 ),
                 border = androidx.compose.foundation.BorderStroke(
                     width = if (isOption1Selected) 1.5.dp else 1.dp,
-                    color = if (isOption1Selected) Color(0xFF1E50B5) else Color(0xFFE2E8F0)
+                    color = if (isOption1Selected) burgundy else Color(0xFFE4D7D0)
                 ),
                 shape = RoundedCornerShape(18.dp)
             ) {
@@ -1175,12 +1167,12 @@ fun AdvancedSettingsSubScreen(
                     Surface(
                         modifier = Modifier.size(46.dp),
                         shape = CircleShape,
-                        color = Color(0xFFDBEAFE)
+                        color = Color(0xFFF3E4E8)
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.AccessTime,
                             contentDescription = null,
-                            tint = Color(0xFF1E50B5),
+                            tint = burgundy,
                             modifier = Modifier.padding(11.dp)
                         )
                     }
@@ -1207,7 +1199,7 @@ fun AdvancedSettingsSubScreen(
                     RadioButton(
                         selected = isOption1Selected,
                         onClick = { viewModel.setBlockDurationEditMode(BlockDurationEditMode.ALLOWED_NOW) },
-                        colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF1E50B5))
+                        colors = RadioButtonDefaults.colors(selectedColor = burgundy)
                     )
                 }
             }
@@ -1217,13 +1209,13 @@ fun AdvancedSettingsSubScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { viewModel.setBlockDurationEditMode(BlockDurationEditMode.ALLOW_AFTER_TWO_DAYS) },
+                    .clickable { showDurationLockConfirmation = true },
                 colors = CardDefaults.cardColors(
-                    containerColor = if (isOption2Selected) Color(0xFFEFF6FF) else MaterialTheme.colorScheme.surface
+                    containerColor = if (isOption2Selected) Color(0xFFF3E4E8) else Color.White.copy(alpha = 0.82f)
                 ),
                 border = androidx.compose.foundation.BorderStroke(
                     width = if (isOption2Selected) 1.5.dp else 1.dp,
-                    color = if (isOption2Selected) Color(0xFF1E50B5) else Color(0xFFE2E8F0)
+                    color = if (isOption2Selected) burgundy else Color(0xFFE4D7D0)
                 ),
                 shape = RoundedCornerShape(18.dp)
             ) {
@@ -1236,12 +1228,12 @@ fun AdvancedSettingsSubScreen(
                     Surface(
                         modifier = Modifier.size(46.dp),
                         shape = CircleShape,
-                        color = Color(0xFFEFF6FF)
+                        color = Color(0xFFF3E4E8)
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Lock,
                             contentDescription = null,
-                            tint = Color(0xFF1E50B5),
+                            tint = burgundy,
                             modifier = Modifier.padding(11.dp)
                         )
                     }
@@ -1268,8 +1260,8 @@ fun AdvancedSettingsSubScreen(
 
                     RadioButton(
                         selected = isOption2Selected,
-                        onClick = { viewModel.setBlockDurationEditMode(BlockDurationEditMode.ALLOW_AFTER_TWO_DAYS) },
-                        colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF1E50B5))
+                        onClick = { showDurationLockConfirmation = true },
+                        colors = RadioButtonDefaults.colors(selectedColor = burgundy)
                     )
                 }
             }
@@ -1279,14 +1271,21 @@ fun AdvancedSettingsSubScreen(
             // Prevent Uninstall Section (منع حذف التطبيق)
             SubScreenToggleCard(
                 title = "منع حذف التطبيق",
-                description = "يعمل فقط بعد تهيئة MindGuard كـ Device Owner",
+                description = "يتطلب تفعيل Device Admin من إعدادات النظام",
                 icon = Icons.Outlined.AdminPanelSettings,
                 checked = uiState.isPreventUninstallActive,
+                containerColor = Color.White.copy(alpha = 0.82f),
+                checkedTrackColor = burgundy,
                 onCheckedChange = { enabled ->
-                    if (enabled && !viewModel.isDeviceOwner()) {
-                        context.startActivity(viewModel.deviceAdminActivationIntent())
+                    if (enabled) {
+                        if (viewModel.isDeviceAdminActive()) {
+                            viewModel.togglePreventUninstall(true)
+                        } else {
+                            deviceAdminLauncher.launch(viewModel.deviceAdminActivationIntent())
+                        }
+                    } else {
+                        viewModel.togglePreventUninstall(false)
                     }
-                    viewModel.togglePreventUninstall(enabled)
                 }
             )
 
@@ -1299,7 +1298,7 @@ fun AdvancedSettingsSubScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1B365D)),
+            colors = ButtonDefaults.buttonColors(containerColor = burgundy),
             shape = RoundedCornerShape(14.dp),
             contentPadding = PaddingValues(vertical = 14.dp)
         ) {
@@ -1309,6 +1308,35 @@ fun AdvancedSettingsSubScreen(
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
                 color = Color.White
+            )
+        }
+
+        if (showDurationLockConfirmation) {
+            AlertDialog(
+                onDismissRequest = { showDurationLockConfirmation = false },
+                title = { Text("تفعيل منع تعديل المدة") },
+                text = {
+                    Text(
+                        "عند تفعيل هذه الخاصية، لن تتمكن من تغيير حدود الاستخدام المحددة، وذلك لضمان الالتزام بمدة الاستخدام التي تم تعيينها.",
+                        textAlign = TextAlign.Right
+                    )
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDurationLockConfirmation = false }) {
+                        Text("إلغاء", color = burgundy)
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showDurationLockConfirmation = false
+                            viewModel.setBlockDurationEditMode(BlockDurationEditMode.ALLOW_AFTER_TWO_DAYS)
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = burgundy)
+                    ) {
+                        Text("تفعيل")
+                    }
+                }
             )
         }
     }
@@ -1342,11 +1370,13 @@ fun SubScreenToggleCard(
     description: String,
     icon: ImageVector,
     checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
+    containerColor: Color = MaterialTheme.colorScheme.surface,
+    checkedTrackColor: Color = Primary
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(containerColor = containerColor),
         shape = RoundedCornerShape(18.dp)
     ) {
         Row(
@@ -1394,7 +1424,7 @@ fun SubScreenToggleCard(
                 onCheckedChange = onCheckedChange,
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color.White,
-                    checkedTrackColor = Primary
+                    checkedTrackColor = checkedTrackColor
                 )
             )
         }
