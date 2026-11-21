@@ -21,11 +21,19 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
     val uiState: StateFlow<ProtectionUiState> = _uiState.asStateFlow()
 
     fun navigateToSubScreen(subScreen: ProtectionSubScreen) {
+        collapseAllApps()
         _uiState.update { it.copy(activeSubScreen = subScreen) }
     }
 
     fun navigateBack() {
+        collapseAllApps()
         _uiState.update { it.copy(activeSubScreen = null) }
+    }
+
+    fun collapseAllApps() {
+        _uiState.update { state ->
+            state.copy(appProtectionItems = state.appProtectionItems.map { it.copy(isExpanded = false) })
+        }
     }
 
     fun loadInstalledApps() {

@@ -48,6 +48,12 @@ fun ProtectionScreen(
         viewModel.loadInstalledApps()
     }
 
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.collapseAllApps()
+        }
+    }
+
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         Column(modifier = Modifier.fillMaxSize()) {
             if (uiState.activeSubScreen == null) {

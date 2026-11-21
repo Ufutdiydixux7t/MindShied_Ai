@@ -29,6 +29,29 @@ class MindGuardAccessibilityService : AccessibilityService() {
     private var suppressReelsUntil = 0L
     private var reelsOverlay: View? = null
     private val mainHandler = Handler(Looper.getMainLooper())
+    private val reelsMonitor = object : Runnable {
+        override fun run() {
+            val packageName = activeShortVideoPackage ?: return
+            val rootPackage = rootInActiveWindow?.packageName?.toString()
+            if (rootPackage != packageName) {
+                flushTrackedReelsSeconds()
+                activeShortVideoPackage = null
+                resetTrackedReelsSession()
+                return
+            }
+
+            val now = System.currentTimeMillis()
+            recordReelsSeconds(now)
+            lastReelsSignalAt = now
+            if (ProtectionPreferences.isReelsEnabled(this@MindGuardAccessibilityService, packageName) &&
+                hasExceededReelsLimit(packageName)
+            ) {
+                showReelsOverlay(packageName)
+                return
+            }
+            mainHandler.postDelayed(this, REELS_MONITOR_INTERVAL_MS)
+        }
+    }
 
     override fun onServiceConnected() {
         super.onServiceConnected()
@@ -62,6 +85,12 @@ class MindGuardAccessibilityService : AccessibilityService() {
 
         if (ProtectionPreferences.isFrozen(this, packageName)) {
             removeReelsOverlay()
+            mainHandler.removeCallbacks(reelsMonitor)
+            if (activeShortVideoPackage == packageName) {
+                flushTrackedReelsSeconds()
+                activeShortVideoPackage = null
+                resetTrackedReelsSession()
+            }
             val now = System.currentTimeMillis()
             if (now - lastFrozenActionAt > 1000L) {
                 lastFrozenActionAt = now
@@ -70,7 +99,12 @@ class MindGuardAccessibilityService : AccessibilityService() {
             return
         }
 
-        if (!reelsSurface || !ProtectionPreferences.isReelsEnabled(this, packageName)) return
+        if (!reelsSurface || !ProtectionPreferences.isReelsEnabled(this, packageName)) {
+            if (activeShortVideoPackage == packageName) mainHandler.removeCallbacks(reelsMonitor)
+            return
+        }
+        mainHandler.removeCallbacks(reelsMonitor)
+        mainHandler.postDelayed(reelsMonitor, REELS_MONITOR_INTERVAL_MS)
         if (hasExceededReelsLimit(packageName)) {
             showReelsOverlay(packageName)
         }
@@ -160,6 +194,7 @@ class MindGuardAccessibilityService : AccessibilityService() {
             if (activeShortVideoPackage == packageName) {
                 flushTrackedReelsSeconds()
                 activeShortVideoPackage = null
+                mainHandler.removeCallbacks(reelsMonitor)
                 resetTrackedReelsSession()
             }
             return false
@@ -401,6 +436,7 @@ class MindGuardAccessibilityService : AccessibilityService() {
     companion object {
         private const val YOUTUBE_PACKAGE = "com.google.android.youtube"
         private const val REELS_SESSION_GAP_MS = 3_000L
+        private const val REELS_MONITOR_INTERVAL_MS = 1_000L
         private val YOUTUBE_SHORTS_VIEW_IDS = listOf(
             "reel_watch_fragment_root",
             "reel_recycler",
