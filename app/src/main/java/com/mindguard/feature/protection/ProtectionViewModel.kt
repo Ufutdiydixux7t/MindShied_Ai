@@ -68,7 +68,13 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
 
         // Keep the main list limited to apps known to expose a Reels/Shorts surface.
         // Other apps remain available through the explicit "إضافة تطبيق" action.
-        val reelApps = installedApps.filter { it.id in reelSupportedPackages }
+        val reelApps = installedApps.filter {
+            it.id in reelSupportedPackages &&
+                    !ProtectionPreferences.isAppRemoved(application, it.id)
+        }
+        val manuallyAddedApps = installedApps.filter {
+            ProtectionPreferences.isAppAdded(application, it.id) && it.id !in reelApps.map(AppProtectionItemState::id)
+        }
         reelApps.forEach { item ->
             if (ProtectionPreferences.getPeriods(application, item.id).isEmpty()) {
                 persistPeriods(item)
@@ -76,7 +82,7 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
         }
         _uiState.update {
             it.copy(
-                appProtectionItems = reelApps,
+                appProtectionItems = reelApps + manuallyAddedApps,
                 availableApps = installedApps
             )
         }
@@ -113,8 +119,16 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
         _uiState.update { state ->
             val app = state.availableApps.firstOrNull { it.id == appId } ?: return@update state
             if (state.appProtectionItems.any { it.id == appId }) return@update state
+            ProtectionPreferences.markAppAdded(getApplication(), appId)
             if (ProtectionPreferences.getPeriods(getApplication(), appId).isEmpty()) persistPeriods(app)
             state.copy(appProtectionItems = state.appProtectionItems + app)
+        }
+    }
+
+    fun removeApp(appId: String) {
+        ProtectionPreferences.markAppRemoved(getApplication(), appId)
+        _uiState.update { state ->
+            state.copy(appProtectionItems = state.appProtectionItems.filterNot { it.id == appId })
         }
     }
 

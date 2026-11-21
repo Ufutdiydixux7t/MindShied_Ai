@@ -13,8 +13,37 @@ data class StoredProtectionPeriod(
 
 object ProtectionPreferences {
     private const val PREFS_NAME = "mindguard_protection"
+    private const val REMOVED_APPS_KEY = "removed_protection_apps"
+    private const val ADDED_APPS_KEY = "added_protection_apps"
 
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+    private fun appSet(context: Context, key: String): Set<String> =
+        prefs(context).getStringSet(key, emptySet()).orEmpty()
+
+    fun isAppRemoved(context: Context, packageName: String) =
+        packageName in appSet(context, REMOVED_APPS_KEY)
+
+    fun isAppAdded(context: Context, packageName: String) =
+        packageName in appSet(context, ADDED_APPS_KEY)
+
+    fun markAppAdded(context: Context, packageName: String) {
+        val removed = appSet(context, REMOVED_APPS_KEY).toMutableSet().apply { remove(packageName) }
+        val added = appSet(context, ADDED_APPS_KEY).toMutableSet().apply { add(packageName) }
+        prefs(context).edit()
+            .putStringSet(REMOVED_APPS_KEY, removed)
+            .putStringSet(ADDED_APPS_KEY, added)
+            .apply()
+    }
+
+    fun markAppRemoved(context: Context, packageName: String) {
+        val removed = appSet(context, REMOVED_APPS_KEY).toMutableSet().apply { add(packageName) }
+        val added = appSet(context, ADDED_APPS_KEY).toMutableSet().apply { remove(packageName) }
+        prefs(context).edit()
+            .putStringSet(REMOVED_APPS_KEY, removed)
+            .putStringSet(ADDED_APPS_KEY, added)
+            .apply()
+    }
     private fun reelsKey(packageName: String) = "reels_$packageName"
     private fun reelsLimitKey(packageName: String) = "reels_limit_minutes_$packageName"
     private fun freezeKey(packageName: String) = "freeze_$packageName"

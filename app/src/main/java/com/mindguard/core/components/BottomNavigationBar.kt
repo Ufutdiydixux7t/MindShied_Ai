@@ -20,6 +20,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.mindguard.core.theme.Primary
@@ -37,6 +38,7 @@ fun BottomNavigationBar(selectedTab: Int, onTabSelected: (Int) -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .widthIn(max = 420.dp)
+                .clip(RoundedCornerShape(50))
                 .border(BorderStroke(1.dp, Primary.copy(alpha = 0.16f)), RoundedCornerShape(50)),
             shape = RoundedCornerShape(50),
             color = Color.White,

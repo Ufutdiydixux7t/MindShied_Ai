@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -245,6 +246,7 @@ fun AppProtectionSubScreen(
     var showAddAppDialog by remember { mutableStateOf(false) }
     var showAccessibilityDialog by remember { mutableStateOf(false) }
     var showUsageStatsDialog by remember { mutableStateOf(false) }
+    var selectedAppId by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = Modifier
@@ -310,6 +312,12 @@ fun AppProtectionSubScreen(
                     ExpandableAppProtectionCard(
                         item = item,
                         onToggleExpand = { viewModel.toggleAppExpansion(item.id) },
+                        isSelected = selectedAppId == item.id,
+                        onLongPress = { selectedAppId = item.id },
+                        onRemove = {
+                            viewModel.removeApp(item.id)
+                            selectedAppId = null
+                        },
                         onReelsToggle = { enabled ->
                             if (enabled && !viewModel.isAccessibilityServiceEnabled()) {
                                 showAccessibilityDialog = true
@@ -408,6 +416,9 @@ fun AppProtectionSubScreen(
 fun ExpandableAppProtectionCard(
     item: AppProtectionItemState,
     onToggleExpand: () -> Unit,
+    isSelected: Boolean,
+    onLongPress: () -> Unit,
+    onRemove: () -> Unit,
     onReelsToggle: (Boolean) -> Unit,
     onReelsDurationSelect: (String) -> Unit,
     onReelsMinutesChange: (String) -> Unit,
@@ -421,7 +432,12 @@ fun ExpandableAppProtectionCard(
     var freezeDropdownExpanded by remember { mutableStateOf(false) }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(
+                if (isSelected) Modifier.border(1.dp, Color(0xFFCC3D55), RoundedCornerShape(24.dp))
+                else Modifier
+            ),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(24.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
@@ -430,7 +446,7 @@ fun ExpandableAppProtectionCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable(onClick = onToggleExpand)
+                    .combinedClickable(onClick = onToggleExpand, onLongClick = onLongPress)
                     .padding(horizontal = 18.dp, vertical = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -450,6 +466,19 @@ fun ExpandableAppProtectionCard(
                     tint = Color(0xFF0B1652),
                     modifier = Modifier.size(24.dp)
                 )
+            }
+
+            AnimatedVisibility(visible = isSelected) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = onRemove) {
+                        Icon(Icons.Default.DeleteOutline, contentDescription = null, tint = Color(0xFFCC3D55))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("إزالة التطبيق", color = Color(0xFFCC3D55), fontWeight = FontWeight.Bold)
+                    }
+                }
             }
 
             AnimatedVisibility(visible = item.isExpanded) {
