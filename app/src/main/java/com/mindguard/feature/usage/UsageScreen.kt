@@ -88,8 +88,8 @@ fun UsageScreen() {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(20.dp),
+                    .padding(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 128.dp)
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 UsageSummaryCard(currentData, isDaily = selectedTabIndex == 0)

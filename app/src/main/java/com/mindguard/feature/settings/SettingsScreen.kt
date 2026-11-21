@@ -68,7 +68,7 @@ fun SettingsScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(MaterialTheme.colorScheme.background)
-                        .padding(start = 20.dp, top = 0.dp, end = 20.dp, bottom = 112.dp)
+                        .padding(start = 20.dp, top = 0.dp, end = 20.dp, bottom = 128.dp)
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
