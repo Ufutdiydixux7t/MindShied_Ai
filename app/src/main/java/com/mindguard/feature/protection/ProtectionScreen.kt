@@ -244,6 +244,7 @@ fun AppProtectionSubScreen(
     val context = LocalContext.current
     var showAddAppDialog by remember { mutableStateOf(false) }
     var showAccessibilityDialog by remember { mutableStateOf(false) }
+    var showUsageStatsDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -314,6 +315,9 @@ fun AppProtectionSubScreen(
                                 showAccessibilityDialog = true
                             } else {
                                 viewModel.toggleAppReelsBlock(item.id, enabled)
+                                if (enabled && !viewModel.isUsageStatsAccessEnabled()) {
+                                    showUsageStatsDialog = true
+                                }
                             }
                         },
                         onReelsDurationSelect = { viewModel.setAppReelsDuration(item.id, it) },
@@ -377,6 +381,25 @@ fun AppProtectionSubScreen(
                 }) { Text("فتح الإعدادات") }
             },
             dismissButton = { TextButton(onClick = { showAccessibilityDialog = false }) { Text("لاحقًا") } }
+        )
+    }
+
+    if (showUsageStatsDialog) {
+        AlertDialog(
+            onDismissRequest = { showUsageStatsDialog = false },
+            title = { Text("السماح بإحصائيات الاستخدام") },
+            text = {
+                Text("يستخدم MindGuard مدة بقاء التطبيق في الواجهة للتأكد من استمرار مشاهدة الريلز وإظهار الحظر في الوقت الصحيح.")
+            },
+            confirmButton = {
+                Button(onClick = {
+                    showUsageStatsDialog = false
+                    context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
+                }) { Text("فتح الإعدادات") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showUsageStatsDialog = false }) { Text("لاحقًا") }
+            }
         )
     }
 }

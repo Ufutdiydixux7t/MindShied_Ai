@@ -1,6 +1,7 @@
 package com.mindguard.feature.protection
 
 import android.app.Application
+import android.app.AppOpsManager
 import android.content.ComponentName
 import android.content.Intent
 import android.provider.Settings
@@ -128,6 +129,16 @@ class ProtectionViewModel(application: Application) : AndroidViewModel(applicati
         return enabledServices.split(':').any {
             it.equals(fullName, ignoreCase = true) || it.equals(shortName, ignoreCase = true)
         }
+    }
+
+    fun isUsageStatsAccessEnabled(): Boolean {
+        val application = getApplication<Application>()
+        val appOps = application.getSystemService(AppOpsManager::class.java) ?: return false
+        return appOps.checkOpNoThrow(
+            AppOpsManager.OPSTR_GET_USAGE_STATS,
+            application.applicationInfo.uid,
+            application.packageName
+        ) == AppOpsManager.MODE_ALLOWED
     }
 
     fun toggleAppExpansion(appId: String) {

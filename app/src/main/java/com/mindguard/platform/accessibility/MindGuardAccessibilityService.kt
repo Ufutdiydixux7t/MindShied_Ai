@@ -9,6 +9,8 @@ import android.graphics.Path
 import android.graphics.drawable.GradientDrawable
 import android.os.Handler
 import android.os.Looper
+import android.app.usage.UsageEvents
+import android.app.usage.UsageStatsManager
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
@@ -29,18 +31,20 @@ class MindGuardAccessibilityService : AccessibilityService() {
     private var suppressReelsUntil = 0L
     private var reelsOverlay: View? = null
     private val mainHandler = Handler(Looper.getMainLooper())
+    private val usageStatsManager by lazy {
+        getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager
+    }
     private val reelsMonitor = object : Runnable {
         override fun run() {
             val packageName = activeShortVideoPackage ?: return
-            val rootPackage = rootInActiveWindow?.packageName?.toString()
-            if (rootPackage != packageName) {
+            val now = System.currentTimeMillis()
+            if (!isPackageInForeground(packageName, now)) {
                 flushTrackedReelsSeconds()
                 activeShortVideoPackage = null
                 resetTrackedReelsSession()
                 return
             }
 
-            val now = System.currentTimeMillis()
             recordReelsSeconds(now)
             lastReelsSignalAt = now
             if (ProtectionPreferences.isReelsEnabled(this@MindGuardAccessibilityService, packageName) &&
@@ -179,6 +183,60 @@ class MindGuardAccessibilityService : AccessibilityService() {
     private fun resetTrackedReelsSession() {
         trackedPackage = null
         lastReelsSignalAt = 0L
+    }
+
+    /**
+     * UsageStatsManager is more reliable than rootInActiveWindow while a video
+     * is playing because some Android builds temporarily expose a null or
+     * service-owned accessibility root. If Usage Access is unavailable, use
+     * the accessibility root as a safe fallback.
+     */
+    private fun isPackageInForeground(packageName: String, now: Long): Boolean {
+        val events = runCatching {
+            usageStatsManager.queryEvents(now - FOREGROUND_LOOKBACK_MS, now)
+        }.getOrNull()
+
+        if (events != null) {
+            val event = UsageEvents.Event()
+            var latestTime = 0L
+            var latestPackage: String? = null
+            var hasUsageEvents = false
+            while (events.hasNextEvent()) {
+                events.getNextEvent(event)
+                if (event.eventType != UsageEvents.Event.MOVE_TO_FOREGROUND &&
+                    event.eventType != UsageEvents.Event.MOVE_TO_BACKGROUND
+                ) continue
+                hasUsageEvents = true
+                if (event.timeStamp >= latestTime) {
+                    latestTime = event.timeStamp
+                    latestPackage = if (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND) {
+                        event.packageName
+                    } else {
+                        null
+                    }
+                }
+            }
+            if (hasUsageEvents && latestTime >= now - FOREGROUND_LOOKBACK_MS) {
+                return latestPackage == packageName
+            }
+
+            // A foreground app does not emit a new MOVE_TO_FOREGROUND event
+            // every few seconds. Use the daily usage snapshot for that case.
+            val recentStats = runCatching {
+                usageStatsManager.queryUsageStats(
+                    UsageStatsManager.INTERVAL_DAILY,
+                    now - USAGE_STATS_LOOKBACK_MS,
+                    now
+                )
+            }.getOrNull().orEmpty()
+            val latestUsedPackage = recentStats
+                .filter { it.lastTimeUsed > 0L }
+                .maxByOrNull { it.lastTimeUsed }
+                ?.packageName
+            if (latestUsedPackage != null) return latestUsedPackage == packageName
+        }
+
+        return rootInActiveWindow?.packageName?.toString() == packageName
     }
 
     private fun isShortVideoSurface(event: AccessibilityEvent, packageName: String): Boolean {
@@ -437,6 +495,8 @@ class MindGuardAccessibilityService : AccessibilityService() {
         private const val YOUTUBE_PACKAGE = "com.google.android.youtube"
         private const val REELS_SESSION_GAP_MS = 3_000L
         private const val REELS_MONITOR_INTERVAL_MS = 1_000L
+        private const val FOREGROUND_LOOKBACK_MS = 15_000L
+        private const val USAGE_STATS_LOOKBACK_MS = 24 * 60 * 60 * 1000L
         private val YOUTUBE_SHORTS_VIEW_IDS = listOf(
             "reel_watch_fragment_root",
             "reel_recycler",
