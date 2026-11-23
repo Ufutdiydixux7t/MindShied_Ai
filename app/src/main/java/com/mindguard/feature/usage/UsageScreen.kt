@@ -60,7 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.layout.ContentScale
-import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberDrawablePainter
 import com.mindguard.core.components.AppTopBar
 import com.mindguard.core.theme.Primary
 import kotlinx.coroutines.Dispatchers
@@ -258,9 +258,9 @@ private fun ScreenUsageCard(data: RealStatistics, tab: Int) {
         ) {
             Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("استخدام شاشة الهاتف", fontWeight = FontWeight.Bold, fontSize = 14.sp, textAlign = TextAlign.End)
-                    Spacer(modifier = Modifier.width(6.dp))
                     Icon(Icons.Default.Apps, contentDescription = null, tint = Primary)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("استخدام شاشة الهاتف", fontWeight = FontWeight.Bold, fontSize = 14.sp, textAlign = TextAlign.End)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(toArabicDigits(comparison), fontSize = 12.sp, color = if (data.totalMinutes <= data.previousMinutes || data.previousMinutes == 0) Color(0xFF159447) else Color(0xFFC43D4B))
@@ -391,13 +391,6 @@ private fun MostUsedAppsCard(apps: List<RealAppUsage>) {
 private fun RealAppUsageItem(rank: Int, app: RealAppUsage) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(toArabicDigits(rank.toString()), fontWeight = FontWeight.Bold, color = Primary, modifier = Modifier.width(22.dp), textAlign = TextAlign.Center)
-            if (app.icon != null) {
-                androidx.compose.foundation.Image(painter = rememberAsyncImagePainter(app.icon), contentDescription = app.name, modifier = Modifier.size(36.dp), contentScale = ContentScale.Fit)
-            } else {
-                Icon(Icons.Default.Apps, contentDescription = null, tint = Primary, modifier = Modifier.size(36.dp))
-            }
-            Spacer(modifier = Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(app.name, fontWeight = FontWeight.Bold, fontSize = 16.sp, textAlign = TextAlign.End)
@@ -406,6 +399,14 @@ private fun RealAppUsageItem(rank: Int, app: RealAppUsage) {
                 Spacer(modifier = Modifier.height(5.dp))
                 LinearProgressIndicator(progress = { app.percentage }, modifier = Modifier.fillMaxWidth().height(6.dp), color = Primary, trackColor = Color(0xFFE6EDF8))
             }
+            Spacer(modifier = Modifier.width(10.dp))
+            if (app.icon != null) {
+                androidx.compose.foundation.Image(painter = rememberDrawablePainter(app.icon), contentDescription = app.name, modifier = Modifier.size(36.dp), contentScale = ContentScale.Fit)
+            } else {
+                Icon(Icons.Default.Apps, contentDescription = null, tint = Primary, modifier = Modifier.size(36.dp))
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(toArabicDigits(rank.toString()), fontWeight = FontWeight.Bold, color = Primary, modifier = Modifier.width(22.dp), textAlign = TextAlign.Center)
         }
     }
 }
@@ -450,6 +451,8 @@ private fun UsagePermissionCard() {
 
 @Composable
 private fun DetailedUsageScreen(statistics: RealStatistics, onBack: () -> Unit) {
+    var visibleAppCount by remember { mutableIntStateOf(5) }
+
     Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         AppTopBar(title = "إحصائيات التطبيق المفصلة", onBack = onBack)
         Column(
@@ -478,7 +481,7 @@ private fun DetailedUsageScreen(statistics: RealStatistics, onBack: () -> Unit) 
             if (statistics.appUsage.isEmpty()) {
                 Text("لا توجد بيانات تطبيقات متاحة حالياً", modifier = Modifier.fillMaxWidth().padding(24.dp), textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
-                statistics.appUsage.forEachIndexed { index, app ->
+                statistics.appUsage.take(visibleAppCount).forEachIndexed { index, app ->
                     var expanded by remember(app.packageName) { mutableStateOf(false) }
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -486,24 +489,13 @@ private fun DetailedUsageScreen(statistics: RealStatistics, onBack: () -> Unit) 
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         border = BorderStroke(1.dp, Primary.copy(alpha = 0.12f))
                     ) {
-                        Column(modifier = Modifier.fillMaxWidth().padding(12.dp)) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(10.dp)) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable { expanded = !expanded },
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                if (app.icon != null) {
-                                    androidx.compose.foundation.Image(
-                                        painter = rememberAsyncImagePainter(app.icon),
-                                        contentDescription = app.name,
-                                        modifier = Modifier.size(42.dp),
-                                        contentScale = ContentScale.Fit
-                                    )
-                                } else {
-                                    Icon(Icons.Default.Apps, contentDescription = null, tint = Primary, modifier = Modifier.size(42.dp))
-                                }
-                                Spacer(modifier = Modifier.width(10.dp))
                                 Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
                                     Text(app.name, fontWeight = FontWeight.Bold, fontSize = 14.sp, textAlign = TextAlign.End)
                                     Text(formatDuration(app.minutes), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.End)
@@ -515,6 +507,18 @@ private fun DetailedUsageScreen(statistics: RealStatistics, onBack: () -> Unit) 
                                         trackColor = Color(0xFFE6EDF8)
                                     )
                                 }
+                                Spacer(modifier = Modifier.width(10.dp))
+                                if (app.icon != null) {
+                                    androidx.compose.foundation.Image(
+                                        painter = rememberDrawablePainter(app.icon),
+                                        contentDescription = app.name,
+                                        modifier = Modifier.size(40.dp),
+                                        contentScale = ContentScale.Fit
+                                    )
+                                } else {
+                                    Icon(Icons.Default.Apps, contentDescription = null, tint = Primary, modifier = Modifier.size(40.dp))
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
                                 Icon(
                                     imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                                     contentDescription = if (expanded) "إخفاء التفاصيل" else "عرض التفاصيل",
@@ -533,6 +537,9 @@ private fun DetailedUsageScreen(statistics: RealStatistics, onBack: () -> Unit) 
                         }
                     }
                 }
+                if (visibleAppCount < statistics.appUsage.size) {
+                    ShowMoreButton(onClick = { visibleAppCount += 5 })
+                }
             }
         }
     }
@@ -545,8 +552,8 @@ private fun DetailedUsageRow(label: String, value: String) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(value, fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
         Text(label, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.End)
+        Text(value, fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 

@@ -75,9 +75,9 @@ fun BlockedScreen(
             Spacer(modifier = Modifier.height(54.dp))
             Button(
                 onClick = onReturnHome,
-                modifier = Modifier.fillMaxWidth().height(58.dp),
-                shape = RoundedCornerShape(30.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF244FA5))
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
                 Text("العودة إلى الرئيسية", fontSize = 17.sp, fontWeight = FontWeight.Bold)
             }

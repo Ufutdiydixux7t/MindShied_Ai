@@ -101,9 +101,9 @@ fun CreateChildScreen(
                             onClick = { onNextToLink(childName.ifBlank { "آدم" }) },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(50.dp),
-                            shape = RoundedCornerShape(14.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)
+                                .height(52.dp),
+                            shape = RoundedCornerShape(24.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,

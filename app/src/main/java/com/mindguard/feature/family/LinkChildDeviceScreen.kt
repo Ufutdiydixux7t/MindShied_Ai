@@ -244,9 +244,9 @@ fun LinkChildDeviceScreen(
                         },
                         modifier = Modifier
                             .weight(1f)
-                            .height(42.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(1.dp, Color(0xFFCBD5E1))
+                            .height(52.dp),
+                        shape = RoundedCornerShape(24.dp),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
                     ) {
                         Icon(Icons.Outlined.ContentCopy, contentDescription = null, tint = Primary, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
@@ -259,9 +259,9 @@ fun LinkChildDeviceScreen(
                         },
                         modifier = Modifier
                             .weight(1f)
-                            .height(42.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(1.dp, Color(0xFFCBD5E1))
+                            .height(52.dp),
+                        shape = RoundedCornerShape(24.dp),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
                     ) {
                         Icon(Icons.Outlined.Share, contentDescription = null, tint = Primary, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))

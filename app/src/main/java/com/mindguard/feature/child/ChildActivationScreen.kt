@@ -237,8 +237,8 @@ fun ChildActivationScreen(
                                     },
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(50.dp),
-                                    shape = RoundedCornerShape(14.dp),
+                                        .height(52.dp),
+                                    shape = RoundedCornerShape(24.dp),
                                     colors = ButtonDefaults.buttonColors(containerColor = DarkBlue)
                                 ) {
                                     Text("السماح باستخدام الكاميرا", fontWeight = FontWeight.Bold)
