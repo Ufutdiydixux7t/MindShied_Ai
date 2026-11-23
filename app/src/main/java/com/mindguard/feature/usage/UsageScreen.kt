@@ -107,7 +107,9 @@ private val reelsPackageNames = setOf(
 )
 
 @Composable
-fun UsageScreen() {
+fun UsageScreen(
+    onDetailVisibilityChange: (Boolean) -> Unit = {}
+) {
     val context = LocalContext.current
     var selectedTab by remember { mutableIntStateOf(0) }
     var showDetails by remember { mutableStateOf(false) }
@@ -118,6 +120,10 @@ fun UsageScreen() {
         statistics = withContext(Dispatchers.Default) {
             loadRealStatistics(context, selectedTab)
         }
+    }
+
+    LaunchedEffect(showDetails) {
+        onDetailVisibilityChange(!showDetails)
     }
 
     LaunchedEffect(Unit) {
@@ -180,7 +186,7 @@ fun UsageScreen() {
                 UsagePermissionCard()
             }
             StatisticsSummaryCard(statistics)
-            ScreenUsageCard(statistics)
+            ScreenUsageCard(statistics, selectedTab)
             DailyUsageChartCard(statistics)
             PeakAndReelsRow(statistics)
             MostUsedAppsCard(statistics.appUsage)
@@ -224,7 +230,7 @@ private fun SummaryTile(title: String, value: String, icon: androidx.compose.ui.
 }
 
 @Composable
-private fun ScreenUsageCard(data: RealStatistics) {
+private fun ScreenUsageCard(data: RealStatistics, tab: Int) {
     val comparison = if (data.previousMinutes > 0) {
         val difference = data.totalMinutes - data.previousMinutes
         val percentage = (kotlin.math.abs(difference).toFloat() / data.previousMinutes * 100).toInt()
@@ -244,7 +250,7 @@ private fun ScreenUsageCard(data: RealStatistics) {
         ) {
             Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("استخدام شاشة الهاتف", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text("استخدام شاشة الهاتف", fontWeight = FontWeight.Bold, fontSize = 14.sp, textAlign = TextAlign.End)
                     Spacer(modifier = Modifier.width(6.dp))
                     Icon(Icons.Default.Apps, contentDescription = null, tint = Primary)
                 }
@@ -252,15 +258,20 @@ private fun ScreenUsageCard(data: RealStatistics) {
                 Text(toArabicDigits(comparison), fontSize = 12.sp, color = if (data.totalMinutes <= data.previousMinutes || data.previousMinutes == 0) Color(0xFF159447) else Color(0xFFC43D4B))
                 Text("مقارنة بالفترة السابقة", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            UsageRing(data.totalMinutes, data.previousMinutes)
+            UsageRing(data.totalMinutes, tab)
         }
     }
 }
 
 @Composable
-private fun UsageRing(minutes: Int, previousMinutes: Int) {
-    val progress = if (previousMinutes > 0) (minutes.toFloat() / previousMinutes).coerceIn(0f, 1f) else if (minutes > 0) 1f else 0f
-    Box(modifier = Modifier.size(104.dp), contentAlignment = Alignment.Center) {
+private fun UsageRing(minutes: Int, tab: Int) {
+    val periodMinutes = when (tab) {
+        0 -> 24 * 60
+        1 -> 7 * 24 * 60
+        else -> 30 * 24 * 60
+    }
+    val progress = (minutes.toFloat() / periodMinutes).coerceIn(0f, 1f)
+    Box(modifier = Modifier.size(88.dp), contentAlignment = Alignment.Center) {
         androidx.compose.material3.CircularProgressIndicator(
             progress = { progress },
             modifier = Modifier.fillMaxSize(),
@@ -269,8 +280,8 @@ private fun UsageRing(minutes: Int, previousMinutes: Int) {
             strokeWidth = 9.dp
         )
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(formatDuration(minutes), fontWeight = FontWeight.Bold, fontSize = 16.sp)
-            Text("اليوم الحالي", fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(formatDuration(minutes), fontWeight = FontWeight.Bold, fontSize = 10.sp, textAlign = TextAlign.Center, maxLines = 1)
+            Text(periodLabel(tab), fontSize = 8.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
         }
     }
 }
@@ -284,7 +295,7 @@ private fun DailyUsageChartCard(data: RealStatistics) {
     ) {
         Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("ساعات الاستخدام اليومية", fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.weight(1f))
+                Text("ساعات الاستخدام اليومية", fontWeight = FontWeight.Bold, fontSize = 17.sp, modifier = Modifier.weight(1f))
                 Icon(Icons.Default.BarChart, contentDescription = null, tint = Primary)
             }
             Spacer(modifier = Modifier.height(14.dp))
@@ -318,28 +329,31 @@ private fun DailyUsageChartCard(data: RealStatistics) {
 @Composable
 private fun PeakAndReelsRow(data: RealStatistics) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        CircleInfoCard("أوقات الذروة", data.peakRange, "أكثر الأوقات استخداماً", Icons.Default.AccessTime, Modifier.weight(1f))
-        CircleInfoCard("الفيديوهات القصيرة", formatDuration(data.reelsMinutes), "من إجمالي الاستخدام", Icons.Default.PlayArrow, Modifier.weight(1f))
+        MetricInfoCard("أوقات الذروة", data.peakRange, "أكثر الأوقات استخداماً", Icons.Default.AccessTime, Modifier.weight(1f))
+        MetricInfoCard("استهلاك الريلز", formatDuration(data.reelsMinutes), "من إجمالي الاستخدام", Icons.Default.PlayArrow, Modifier.weight(1f))
     }
 }
 
 @Composable
-private fun CircleInfoCard(title: String, value: String, subtitle: String, icon: androidx.compose.ui.graphics.vector.ImageVector, modifier: Modifier) {
+private fun MetricInfoCard(title: String, value: String, subtitle: String, icon: androidx.compose.ui.graphics.vector.ImageVector, modifier: Modifier) {
     Card(
         modifier = modifier,
-        shape = androidx.compose.foundation.shape.CircleShape,
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f)),
         border = BorderStroke(1.5.dp, Primary.copy(alpha = 0.35f))
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(11.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(icon, contentDescription = null, tint = Primary, modifier = Modifier.size(23.dp))
-            Text(title, fontSize = 12.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(value, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Primary, textAlign = TextAlign.Center)
-            Text(subtitle, fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(icon, contentDescription = null, tint = Primary, modifier = Modifier.size(19.dp))
+                Spacer(modifier = Modifier.width(5.dp))
+                Text(title, fontSize = 11.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(value, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Primary, textAlign = TextAlign.Center)
+            Text(subtitle, fontSize = 8.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
         }
     }
 }
@@ -349,7 +363,7 @@ private fun MostUsedAppsCard(apps: List<RealAppUsage>) {
     Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(22.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
         Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("التطبيقات الأكثر استخداماً", fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.weight(1f))
+                Text("التطبيقات الأكثر استخداماً", fontWeight = FontWeight.Bold, fontSize = 17.sp, modifier = Modifier.weight(1f))
                 Icon(Icons.Default.Timeline, contentDescription = null, tint = Primary)
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -378,7 +392,7 @@ private fun RealAppUsageItem(rank: Int, app: RealAppUsage) {
             Spacer(modifier = Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(app.name, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    Text(app.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                     Text(formatDuration(app.minutes), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Spacer(modifier = Modifier.height(5.dp))
@@ -427,7 +441,7 @@ private fun DetailedUsageScreen(statistics: RealStatistics, onBack: () -> Unit) 
             Text(
                 text = "أعلى التطبيقات حسب وقت الاستخدام",
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                fontSize = 20.sp,
+                fontSize = 17.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.End
@@ -446,11 +460,11 @@ private fun DetailedUsageScreen(statistics: RealStatistics, onBack: () -> Unit) 
                     var expanded by remember(app.packageName) { mutableStateOf(false) }
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(22.dp),
+                        shape = RoundedCornerShape(18.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         border = BorderStroke(1.dp, Primary.copy(alpha = 0.12f))
                     ) {
-                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(12.dp)) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -469,8 +483,8 @@ private fun DetailedUsageScreen(statistics: RealStatistics, onBack: () -> Unit) 
                                 }
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
-                                    Text(app.name, fontWeight = FontWeight.Bold, fontSize = 15.sp, textAlign = TextAlign.End)
-                                    Text(formatDuration(app.minutes), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.End)
+                                    Text(app.name, fontWeight = FontWeight.Bold, fontSize = 16.sp, textAlign = TextAlign.End)
+                                    Text(formatDuration(app.minutes), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.End)
                                     Spacer(modifier = Modifier.height(5.dp))
                                     LinearProgressIndicator(
                                         progress = { app.percentage },
@@ -509,8 +523,8 @@ private fun DetailedUsageRow(label: String, value: String) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(value, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-        Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.End)
+        Text(value, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+        Text(label, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.End)
     }
 }
 
@@ -594,6 +608,12 @@ private fun startOfDayMillis(now: Long): Long = LocalDate.now().atStartOfDay(Zon
 private fun formatDuration(minutes: Int): String {
     if (minutes < 60) return "${toArabicDigits(minutes.toString())} دقيقة"
     return "${toArabicDigits((minutes / 60).toString())}س ${toArabicDigits((minutes % 60).toString())}د"
+}
+
+private fun periodLabel(tab: Int): String = when (tab) {
+    0 -> "من ٢٤ ساعة"
+    1 -> "من أسبوع"
+    else -> "من شهر"
 }
 
 private fun formatLastUsed(timestamp: Long): String {

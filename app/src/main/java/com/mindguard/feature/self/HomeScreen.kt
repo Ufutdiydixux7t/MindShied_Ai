@@ -37,9 +37,11 @@ fun HomeScreen(
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
     var showBottomBar by remember { mutableStateOf(true) }
+    var showUsageTopBar by remember { mutableStateOf(true) }
     val isHome = selectedTab == 0
 
     LaunchedEffect(selectedTab) {
+        if (selectedTab != 1) showUsageTopBar = true
         if (selectedTab != 2 && selectedTab != 4) {
             showBottomBar = true
         }
@@ -64,7 +66,7 @@ fun HomeScreen(
                         .fillMaxSize()
                         .padding(top = paddingValues.calculateTopPadding())
                 ) {
-                    if (selectedTab != 2 && selectedTab != 4) {
+                    if (selectedTab != 2 && selectedTab != 4 && (selectedTab != 1 || showUsageTopBar)) {
                         AppTopBar(
                             title = when (selectedTab) {
                                 0 -> "الرئيسية"
@@ -86,7 +88,9 @@ fun HomeScreen(
                     ) {
                         when (selectedTab) {
                             0 -> SelfHomeScreen()
-                            1 -> UsageScreen()
+                            1 -> UsageScreen(
+                                onDetailVisibilityChange = { showUsageTopBar = it }
+                            )
                             2 -> ProtectionScreen(
                                 onSubScreenVisibilityChange = { showBottomBar = it }
                             )
