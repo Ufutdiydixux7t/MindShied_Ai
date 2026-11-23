@@ -60,7 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.layout.ContentScale
-import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberDrawablePainter
 import com.mindguard.core.components.AppTopBar
 import com.mindguard.core.theme.Primary
 import kotlinx.coroutines.Dispatchers
@@ -113,6 +113,7 @@ fun UsageScreen(
     val context = LocalContext.current
     var selectedTab by remember { mutableIntStateOf(0) }
     var showDetails by remember { mutableStateOf(false) }
+    var visibleAppCount by remember { mutableIntStateOf(5) }
     var refreshKey by remember { mutableIntStateOf(0) }
     var statistics by remember { mutableStateOf(RealStatistics()) }
 
@@ -124,6 +125,10 @@ fun UsageScreen(
 
     LaunchedEffect(showDetails) {
         onDetailVisibilityChange(!showDetails)
+    }
+
+    LaunchedEffect(selectedTab) {
+        visibleAppCount = 5
     }
 
     LaunchedEffect(Unit) {
@@ -189,7 +194,10 @@ fun UsageScreen(
             ScreenUsageCard(statistics, selectedTab)
             DailyUsageChartCard(statistics)
             PeakAndReelsRow(statistics)
-            MostUsedAppsCard(statistics.appUsage)
+            MostUsedAppsCard(statistics.appUsage.take(visibleAppCount))
+            if (visibleAppCount < statistics.appUsage.size) {
+                ShowMoreButton(onClick = { visibleAppCount += 5 })
+            }
             DetailedStatisticsButton(onClick = { showDetails = true })
             Spacer(modifier = Modifier.height(20.dp))
         }
@@ -363,7 +371,7 @@ private fun MostUsedAppsCard(apps: List<RealAppUsage>) {
     Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(22.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
         Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("التطبيقات الأكثر استخداماً", fontWeight = FontWeight.Bold, fontSize = 17.sp, modifier = Modifier.weight(1f))
+                Text("التطبيقات الأكثر استخداماً", fontWeight = FontWeight.Bold, fontSize = 17.sp, modifier = Modifier.weight(1f), textAlign = TextAlign.End)
                 Icon(Icons.Default.Timeline, contentDescription = null, tint = Primary)
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -385,14 +393,14 @@ private fun RealAppUsageItem(rank: Int, app: RealAppUsage) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(toArabicDigits(rank.toString()), fontWeight = FontWeight.Bold, color = Primary, modifier = Modifier.width(22.dp), textAlign = TextAlign.Center)
             if (app.icon != null) {
-                androidx.compose.foundation.Image(painter = rememberAsyncImagePainter(app.icon), contentDescription = app.name, modifier = Modifier.size(36.dp), contentScale = ContentScale.Fit)
+                androidx.compose.foundation.Image(painter = rememberDrawablePainter(app.icon), contentDescription = app.name, modifier = Modifier.size(36.dp), contentScale = ContentScale.Fit)
             } else {
                 Icon(Icons.Default.Apps, contentDescription = null, tint = Primary, modifier = Modifier.size(36.dp))
             }
             Spacer(modifier = Modifier.width(10.dp))
-            Column(modifier = Modifier.weight(1f)) {
+            Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(app.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text(app.name, fontWeight = FontWeight.Bold, fontSize = 16.sp, textAlign = TextAlign.End)
                     Text(formatDuration(app.minutes), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Spacer(modifier = Modifier.height(5.dp))
@@ -407,12 +415,26 @@ private fun DetailedStatisticsButton(onClick: () -> Unit) {
     Button(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth().height(52.dp),
-        shape = RoundedCornerShape(18.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = Primary)
+        shape = RoundedCornerShape(24.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
     ) {
         Text("إحصائيات التطبيق المفصلة", fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.width(6.dp))
         Icon(Icons.Default.ChevronLeft, contentDescription = null)
+    }
+}
+
+@Composable
+private fun ShowMoreButton(onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth().height(52.dp),
+        shape = RoundedCornerShape(24.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+    ) {
+        Text("عرض المزيد", fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.width(6.dp))
+        Icon(Icons.Default.KeyboardArrowDown, contentDescription = null)
     }
 }
 
@@ -473,7 +495,7 @@ private fun DetailedUsageScreen(statistics: RealStatistics, onBack: () -> Unit) 
                             ) {
                                 if (app.icon != null) {
                                     androidx.compose.foundation.Image(
-                                        painter = rememberAsyncImagePainter(app.icon),
+                                        painter = rememberDrawablePainter(app.icon),
                                         contentDescription = app.name,
                                         modifier = Modifier.size(42.dp),
                                         contentScale = ContentScale.Fit
@@ -483,8 +505,8 @@ private fun DetailedUsageScreen(statistics: RealStatistics, onBack: () -> Unit) 
                                 }
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
-                                    Text(app.name, fontWeight = FontWeight.Bold, fontSize = 16.sp, textAlign = TextAlign.End)
-                                    Text(formatDuration(app.minutes), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.End)
+                                    Text(app.name, fontWeight = FontWeight.Bold, fontSize = 14.sp, textAlign = TextAlign.End)
+                                    Text(formatDuration(app.minutes), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.End)
                                     Spacer(modifier = Modifier.height(5.dp))
                                     LinearProgressIndicator(
                                         progress = { app.percentage },
@@ -523,8 +545,8 @@ private fun DetailedUsageRow(label: String, value: String) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(value, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
-        Text(label, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.End)
+        Text(value, fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
+        Text(label, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.End)
     }
 }
 

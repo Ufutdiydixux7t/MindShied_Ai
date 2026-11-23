@@ -85,7 +85,7 @@ fun MindShieldAiTheme(
         colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme,
         typography = Typography,
         shapes = Shapes(
-            small = RoundedCornerShape(14.dp),
+            small = RoundedCornerShape(22.dp),
             medium = RoundedCornerShape(20.dp),
             large = RoundedCornerShape(26.dp),
             extraLarge = RoundedCornerShape(32.dp)
