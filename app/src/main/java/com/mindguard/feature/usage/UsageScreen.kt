@@ -2,6 +2,7 @@ package com.mindguard.feature.usage
 
 import android.app.AppOpsManager
 import android.app.usage.UsageStatsManager
+import android.app.usage.UsageEvents
 import android.content.Context
 import android.graphics.drawable.Drawable
 import androidx.compose.foundation.background
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Apps
@@ -29,6 +31,8 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Timeline
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -56,7 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.layout.ContentScale
-import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberDrawablePainter
 import com.mindguard.core.components.AppTopBar
 import com.mindguard.core.theme.Primary
 import kotlinx.coroutines.Dispatchers
@@ -75,7 +79,8 @@ private data class RealAppUsage(
     val icon: Drawable?,
     val minutes: Int,
     val percentage: Float,
-    val lastUsedMillis: Long
+    val lastUsedMillis: Long,
+    val launches: Int
 )
 
 private data class RealChartPoint(val label: String, val minutes: Int)
@@ -89,6 +94,16 @@ private data class RealStatistics(
     val peakDescription: String = "لا توجد بيانات استخدام كافية بعد.",
     val previousMinutes: Int = 0,
     val hasPermission: Boolean = true
+)
+
+private val reelsPackageNames = setOf(
+    "com.instagram.android",
+    "com.instagram.lite",
+    "com.google.android.youtube",
+    "com.zhiliaoapp.musically",
+    "com.ss.android.ugc.trill",
+    "com.facebook.katana",
+    "com.facebook.lite"
 )
 
 @Composable
@@ -127,6 +142,7 @@ fun UsageScreen() {
             containerColor = Color.Transparent,
             contentColor = Primary,
             divider = {},
+            indicator = {},
             modifier = Modifier.padding(horizontal = 16.dp)
         ) {
             listOf("اليوم", "الأسبوع", "الشهر").forEachIndexed { index, title ->
@@ -137,14 +153,15 @@ fun UsageScreen() {
                         Modifier
                             .padding(horizontal = 3.dp, vertical = 4.dp)
                             .shadow(5.dp, RoundedCornerShape(18.dp))
-                            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(18.dp))
+                            .background(Primary, RoundedCornerShape(18.dp))
                     } else {
                         Modifier.padding(horizontal = 3.dp, vertical = 4.dp)
                     },
                     text = {
                         Text(
                             text = title,
-                            fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal
+                            fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal,
+                            color = if (selectedTab == index) Color.White else MaterialTheme.colorScheme.onSurface
                         )
                     }
                 )
@@ -166,7 +183,7 @@ fun UsageScreen() {
             ScreenUsageCard(statistics)
             DailyUsageChartCard(statistics)
             PeakAndReelsRow(statistics)
-            MostUsedAppsCard(statistics.appUsage, onShowAll = { showDetails = true })
+            MostUsedAppsCard(statistics.appUsage)
             DetailedStatisticsButton(onClick = { showDetails = true })
             Spacer(modifier = Modifier.height(20.dp))
         }
@@ -232,7 +249,7 @@ private fun ScreenUsageCard(data: RealStatistics) {
                     Icon(Icons.Default.Apps, contentDescription = null, tint = Primary)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(comparison, fontSize = 12.sp, color = if (data.totalMinutes <= data.previousMinutes || data.previousMinutes == 0) Color(0xFF159447) else Color(0xFFC43D4B))
+                Text(toArabicDigits(comparison), fontSize = 12.sp, color = if (data.totalMinutes <= data.previousMinutes || data.previousMinutes == 0) Color(0xFF159447) else Color(0xFFC43D4B))
                 Text("مقارنة بالفترة السابقة", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             UsageRing(data.totalMinutes, data.previousMinutes)
@@ -289,7 +306,7 @@ private fun DailyUsageChartCard(data: RealStatistics) {
                                     .background(Primary, RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
                             )
                             Spacer(modifier = Modifier.height(5.dp))
-                            Text(point.label, fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(toArabicDigits(point.label), fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }
@@ -328,7 +345,7 @@ private fun CircleInfoCard(title: String, value: String, subtitle: String, icon:
 }
 
 @Composable
-private fun MostUsedAppsCard(apps: List<RealAppUsage>, onShowAll: () -> Unit) {
+private fun MostUsedAppsCard(apps: List<RealAppUsage>) {
     Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(22.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
         Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -343,15 +360,6 @@ private fun MostUsedAppsCard(apps: List<RealAppUsage>, onShowAll: () -> Unit) {
                     RealAppUsageItem(index + 1, app)
                     if (index < apps.take(5).lastIndex) Spacer(modifier = Modifier.height(10.dp))
                 }
-                if (apps.size > 5) {
-                    androidx.compose.material3.TextButton(
-                        onClick = onShowAll,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("عرض كل التطبيقات", color = Primary, fontWeight = FontWeight.Bold)
-                        Icon(Icons.Default.ChevronLeft, contentDescription = null, tint = Primary)
-                    }
-                }
             }
         }
     }
@@ -361,9 +369,9 @@ private fun MostUsedAppsCard(apps: List<RealAppUsage>, onShowAll: () -> Unit) {
 private fun RealAppUsageItem(rank: Int, app: RealAppUsage) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("$rank", fontWeight = FontWeight.Bold, color = Primary, modifier = Modifier.width(22.dp), textAlign = TextAlign.Center)
+            Text(toArabicDigits(rank.toString()), fontWeight = FontWeight.Bold, color = Primary, modifier = Modifier.width(22.dp), textAlign = TextAlign.Center)
             if (app.icon != null) {
-                androidx.compose.foundation.Image(painter = rememberAsyncImagePainter(app.icon), contentDescription = app.name, modifier = Modifier.size(36.dp), contentScale = ContentScale.Fit)
+                androidx.compose.foundation.Image(painter = rememberDrawablePainter(app.icon), contentDescription = app.name, modifier = Modifier.size(36.dp), contentScale = ContentScale.Fit)
             } else {
                 Icon(Icons.Default.Apps, contentDescription = null, tint = Primary, modifier = Modifier.size(36.dp))
             }
@@ -435,6 +443,7 @@ private fun DetailedUsageScreen(statistics: RealStatistics, onBack: () -> Unit) 
                 Text("لا توجد بيانات تطبيقات متاحة حالياً", modifier = Modifier.fillMaxWidth().padding(24.dp), textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
                 statistics.appUsage.forEachIndexed { index, app ->
+                    var expanded by remember(app.packageName) { mutableStateOf(false) }
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(22.dp),
@@ -442,11 +451,49 @@ private fun DetailedUsageScreen(statistics: RealStatistics, onBack: () -> Unit) 
                         border = BorderStroke(1.dp, Primary.copy(alpha = 0.12f))
                     ) {
                         Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                            RealAppUsageItem(index + 1, app)
-                            Spacer(modifier = Modifier.height(14.dp))
-                            DetailedUsageRow("إجمالي وقت الاستخدام", formatDuration(app.minutes))
-                            DetailedUsageRow("نسبة الاستخدام", "${(app.percentage * 100).toInt()}%")
-                            DetailedUsageRow("آخر استخدام", formatLastUsed(app.lastUsedMillis))
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { expanded = !expanded },
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                if (app.icon != null) {
+                                    androidx.compose.foundation.Image(
+                                        painter = rememberDrawablePainter(app.icon),
+                                        contentDescription = app.name,
+                                        modifier = Modifier.size(42.dp),
+                                        contentScale = ContentScale.Fit
+                                    )
+                                } else {
+                                    Icon(Icons.Default.Apps, contentDescription = null, tint = Primary, modifier = Modifier.size(42.dp))
+                                }
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
+                                    Text(app.name, fontWeight = FontWeight.Bold, fontSize = 15.sp, textAlign = TextAlign.End)
+                                    Text(formatDuration(app.minutes), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.End)
+                                    Spacer(modifier = Modifier.height(5.dp))
+                                    LinearProgressIndicator(
+                                        progress = { app.percentage },
+                                        modifier = Modifier.fillMaxWidth().height(6.dp),
+                                        color = Primary,
+                                        trackColor = Color(0xFFE6EDF8)
+                                    )
+                                }
+                                Icon(
+                                    imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                    contentDescription = if (expanded) "إخفاء التفاصيل" else "عرض التفاصيل",
+                                    tint = Primary,
+                                    modifier = Modifier.padding(start = 6.dp)
+                                )
+                            }
+                            if (expanded) {
+                                Spacer(modifier = Modifier.height(10.dp))
+                                DetailedUsageRow("عدد مرات فتح التطبيق", toArabicDigits("${app.launches} مرات"))
+                                DetailedUsageRow("إجمالي الوقت المقضي", formatDuration(app.minutes))
+                                DetailedUsageRow("وقت الفيديوهات القصيرة", if (app.packageName in reelsPackageNames) formatDuration(app.minutes) else "لا ينطبق")
+                                DetailedUsageRow("آخر استخدام", formatLastUsed(app.lastUsedMillis))
+                                DetailedUsageRow("نسبة الاستخدام", toArabicDigits("${(app.percentage * 100).toInt()}%"))
+                            }
                         }
                     }
                 }
@@ -484,8 +531,8 @@ private fun loadRealStatistics(context: Context, tab: Int): RealStatistics {
     val usable = stats.filter { it.packageName != ownPackage && it.totalTimeInForeground > 0L }
     val totalMillis = usable.sumOf { it.totalTimeInForeground }
     val totalMinutes = (totalMillis / 60_000L).toInt()
-    val reelsPackages = setOf("com.instagram.android", "com.instagram.lite", "com.google.android.youtube", "com.zhiliaoapp.musically", "com.ss.android.ugc.trill", "com.facebook.katana", "com.facebook.lite")
-    val reelsMinutes = (usable.filter { it.packageName in reelsPackages }.sumOf { it.totalTimeInForeground } / 60_000L).toInt()
+    val reelsMinutes = (usable.filter { it.packageName in reelsPackageNames }.sumOf { it.totalTimeInForeground } / 60_000L).toInt()
+    val launchCounts = countForegroundEvents(manager, start, end)
     val topApps = usable.sortedByDescending { it.totalTimeInForeground }.take(10).map { usage ->
         val appInfo = runCatching { packageManager.getApplicationInfo(usage.packageName, 0) }.getOrNull()
         val minutes = (usage.totalTimeInForeground / 60_000L).toInt()
@@ -495,7 +542,8 @@ private fun loadRealStatistics(context: Context, tab: Int): RealStatistics {
             icon = appInfo?.loadIcon(packageManager),
             minutes = minutes,
             percentage = if (totalMinutes > 0) minutes.toFloat() / totalMinutes else 0f,
-            lastUsedMillis = usage.lastTimeUsed
+            lastUsedMillis = usage.lastTimeUsed,
+            launches = launchCounts[usage.packageName] ?: 0
         )
     }
     val chart = buildChart(manager, start, end, tab)
@@ -544,11 +592,40 @@ private fun hasUsagePermission(context: Context): Boolean {
 private fun startOfDayMillis(now: Long): Long = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
 private fun formatDuration(minutes: Int): String {
-    if (minutes < 60) return "$minutes دقيقة"
-    return "${minutes / 60}س ${minutes % 60}د"
+    if (minutes < 60) return "${toArabicDigits(minutes.toString())} دقيقة"
+    return "${toArabicDigits((minutes / 60).toString())}س ${toArabicDigits((minutes % 60).toString())}د"
 }
 
 private fun formatLastUsed(timestamp: Long): String {
     if (timestamp <= 0L) return "غير متاح"
-    return SimpleDateFormat("hh:mm a", Locale("ar")).format(Date(timestamp))
+    return toArabicDigits(SimpleDateFormat("hh:mm a", Locale("ar")).format(Date(timestamp)))
 }
+
+private fun countForegroundEvents(manager: UsageStatsManager, start: Long, end: Long): Map<String, Int> {
+    val counts = mutableMapOf<String, Int>()
+    val events = manager.queryEvents(start, end)
+    val event = UsageEvents.Event()
+    while (events.hasNextEvent()) {
+        events.getNextEvent(event)
+        if (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND) {
+            counts[event.packageName] = (counts[event.packageName] ?: 0) + 1
+        }
+    }
+    return counts
+}
+
+private fun toArabicDigits(value: String): String = value.map { character ->
+    when (character) {
+        '0' -> '٠'
+        '1' -> '١'
+        '2' -> '٢'
+        '3' -> '٣'
+        '4' -> '٤'
+        '5' -> '٥'
+        '6' -> '٦'
+        '7' -> '٧'
+        '8' -> '٨'
+        '9' -> '٩'
+        else -> character
+    }
+}.joinToString("")
