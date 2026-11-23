@@ -1,51 +1,116 @@
 package com.mindguard.feature.usage
 
-import androidx.compose.foundation.Canvas
+import android.app.AppOpsManager
+import android.app.usage.UsageStats
+import android.app.usage.UsageStatsManager
+import android.content.Context
+import android.graphics.drawable.Drawable
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Apps
-import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material3.*
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Movie
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.ShowChart
+import androidx.compose.material.icons.filled.Timeline
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
-import com.mindguard.core.theme.DarkBlue
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.rememberDrawablePainter
+import com.mindguard.core.components.AppTopBar
 import com.mindguard.core.theme.Primary
-import com.mindguard.core.theme.Secondary
-import com.mindguard.core.theme.Success
-import com.mindguard.core.theme.TextDark
-import com.mindguard.core.theme.Warning
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+
+private data class RealAppUsage(
+    val packageName: String,
+    val name: String,
+    val icon: Drawable?,
+    val minutes: Int,
+    val percentage: Float
+)
+
+private data class RealChartPoint(val label: String, val minutes: Int)
+
+private data class RealStatistics(
+    val totalMinutes: Int = 0,
+    val reelsMinutes: Int = 0,
+    val appUsage: List<RealAppUsage> = emptyList(),
+    val chart: List<RealChartPoint> = emptyList(),
+    val peakRange: String = "غير متاح",
+    val peakDescription: String = "لا توجد بيانات استخدام كافية بعد.",
+    val previousMinutes: Int = 0,
+    val hasPermission: Boolean = true
+)
 
 @Composable
 fun UsageScreen() {
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
-    val uiState = remember { UsageUiState() }
-    val currentData = when (selectedTabIndex) {
-        0 -> uiState.dailyData
-        1 -> uiState.weeklyData
-        2 -> uiState.monthlyData
-        else -> uiState.dailyData
+    val context = LocalContext.current
+    var selectedTab by remember { mutableIntStateOf(0) }
+    var showDetails by remember { mutableStateOf(false) }
+    var refreshKey by remember { mutableIntStateOf(0) }
+    var statistics by remember { mutableStateOf(RealStatistics()) }
+
+    LaunchedEffect(selectedTab, refreshKey) {
+        statistics = withContext(Dispatchers.Default) {
+            loadRealStatistics(context, selectedTab)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(10_000L)
+            refreshKey++
+        }
+    }
+
+    if (showDetails) {
+        DetailedUsageScreen(onBack = { showDetails = false })
+        return
     }
 
     Column(
@@ -54,356 +119,166 @@ fun UsageScreen() {
             .background(MaterialTheme.colorScheme.background)
     ) {
         TabRow(
-            selectedTabIndex = selectedTabIndex,
+            selectedTabIndex = selectedTab,
             containerColor = Color.Transparent,
             contentColor = Primary,
             divider = {},
-            indicator = { tabPositions ->
-                TabRowDefaults.SecondaryIndicator(
-                    modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
-                    color = Primary
-                )
-            },
             modifier = Modifier.padding(horizontal = 16.dp)
         ) {
-            val tabs = listOf("يومي", "أسبوعي", "شهري")
-            tabs.forEachIndexed { index, title ->
+            listOf("اليوم", "الأسبوع", "الشهر").forEachIndexed { index, title ->
                 Tab(
-                    selected = selectedTabIndex == index,
-                    onClick = { selectedTabIndex = index },
+                    selected = selectedTab == index,
+                    onClick = { selectedTab = index },
                     text = {
                         Text(
                             text = title,
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = if (selectedTabIndex == index) FontWeight.Bold else FontWeight.Normal
+                            fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal
                         )
                     }
                 )
             }
         }
 
-        if (uiState.isEmpty) {
-            EmptyStatsView()
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(20.dp)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
-            ) {
-                UsageSummaryCard(currentData, isDaily = selectedTabIndex == 0)
-                UsageChartCard(currentData, selectedTabIndex)
-                AppUsageCard(currentData.appUsageList)
-                PeakHoursCard(currentData.peakHourRange, currentData.peakHourDescription)
-                if (selectedTabIndex == 0) {
-                    PeriodAnalysisSection(currentData.periodAnalysis)
-                }
-                AiInsightCard(currentData.aiInsight)
-                WeeklyGoalCard(
-                    currentData.weeklyGoalTitle,
-                    currentData.weeklyGoalProgress,
-                    currentData.weeklyGoalComparison
-                )
-                Spacer(modifier = Modifier.height(24.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            if (!statistics.hasPermission) {
+                UsagePermissionCard()
             }
-        }
-    }
-}
-
-@Composable
-fun UsageSummaryCard(data: StatisticsData, isDaily: Boolean) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        shape = RoundedCornerShape(22.dp)
-    ) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Text(
-                text = if (isDaily) "استخدام اليوم" else if (data.chartPoints.size > 7) "استخدام الشهر" else "استخدام الأسبوع",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = DarkBlue
-            )
+            StatisticsSummaryCard(statistics)
+            ScreenUsageCard(statistics)
+            DailyUsageChartCard(statistics)
+            PeakAndReelsRow(statistics)
+            MostUsedAppsCard(statistics.appUsage)
+            DetailedStatisticsButton(onClick = { showDetails = true })
             Spacer(modifier = Modifier.height(20.dp))
-
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                SummaryItem("إجمالي الاستخدام", data.totalUsageTime, Modifier.weight(1f))
-                SummaryItem("وقت الريلز", data.reelsTime, Modifier.weight(1f))
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                SummaryItem("عدد الجلسات", "${data.sessionsCount} جلسات", Modifier.weight(1f))
-                SummaryItem("عدد الفيديوهات", "${data.videosWatched} فيديو", Modifier.weight(1f))
-            }
         }
     }
 }
 
 @Composable
-fun SummaryItem(label: String, value: String, modifier: Modifier = Modifier) {
-    Column(modifier = modifier) {
-        Text(text = label, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-        Text(text = value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = TextDark)
-    }
-}
-
-@Composable
-fun UsageChartCard(data: StatisticsData, tabIndex: Int) {
+private fun StatisticsSummaryCard(data: RealStatistics) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        shape = RoundedCornerShape(22.dp)
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f))
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Text(
-                text = "وقت الاستخدام",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = DarkBlue
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
-            ) {
-                SimpleLineChart(data.chartPoints, data.dailyLimitMinutes.toFloat())
-            }
-
-            if (tabIndex == 0) {
-                Text(
-                    text = "الحد اليومي: ${data.dailyLimitMinutes} دقيقة",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Warning,
-                    modifier = Modifier.align(Alignment.End).padding(top = 8.dp)
-                )
-            }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            SummaryTile("الاستهلاك الكلي", formatDuration(data.totalMinutes), Icons.Default.AccessTime, Modifier.weight(1f))
+            SummaryTile("استخدام الشاشة", formatDuration(data.totalMinutes), Icons.Default.Apps, Modifier.weight(1f))
+            SummaryTile("فيديوهات قصيرة", formatDuration(data.reelsMinutes), Icons.Default.Movie, Modifier.weight(1f))
         }
     }
 }
 
 @Composable
-fun SimpleLineChart(points: List<ChartPoint>, limit: Float) {
-    val primaryColor = Primary
-    val warningColor = Warning
-
-    Canvas(modifier = Modifier.fillMaxSize()) {
-        if (points.isEmpty()) return@Canvas
-
-        val width = size.width
-        val height = size.height
-        val maxVal = (points.maxOf { it.value }.coerceAtLeast(limit)) * 1.2f
-
-        val spaceX = width / (points.size - 1)
-
-        val limitY = height - (limit / maxVal) * height
-        drawLine(
-            color = warningColor.copy(alpha = 0.3f),
-            start = androidx.compose.ui.geometry.Offset(0f, limitY),
-            end = androidx.compose.ui.geometry.Offset(width, limitY),
-            strokeWidth = 2.dp.toPx(),
-            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
-        )
-
-        val path = Path()
-        points.forEachIndexed { i, pt ->
-            val x = i * spaceX
-            val y = height - (pt.value / maxVal) * height
-            if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
-        }
-
-        drawPath(
-            path = path,
-            color = primaryColor,
-            style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
-        )
-
-        points.forEachIndexed { i, pt ->
-            val x = i * spaceX
-            val y = height - (pt.value / maxVal) * height
-            drawCircle(color = primaryColor, radius = 4.dp.toPx(), center = androidx.compose.ui.geometry.Offset(x, y))
-            drawCircle(color = Color.White, radius = 2.dp.toPx(), center = androidx.compose.ui.geometry.Offset(x, y))
-        }
+private fun SummaryTile(title: String, value: String, icon: androidx.compose.ui.graphics.vector.ImageVector, modifier: Modifier) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(icon, contentDescription = null, tint = Primary, modifier = Modifier.size(25.dp))
+        Spacer(modifier = Modifier.height(5.dp))
+        Text(value, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
+        Text(title, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
     }
 }
 
 @Composable
-fun AppUsageCard(apps: List<AppUsageData>) {
+private fun ScreenUsageCard(data: RealStatistics) {
+    val comparison = if (data.previousMinutes > 0) {
+        val difference = data.totalMinutes - data.previousMinutes
+        val percentage = (kotlin.math.abs(difference).toFloat() / data.previousMinutes * 100).toInt()
+        if (difference <= 0) "انخفاض $percentage% مقارنة بالفترة السابقة" else "ارتفاع $percentage% مقارنة بالفترة السابقة"
+    } else {
+        "لا توجد مقارنة سابقة متاحة"
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        shape = RoundedCornerShape(22.dp)
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Text(
-                text = "استخدام التطبيقات",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = DarkBlue
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            apps.forEach { app ->
-                AppUsageItem(app)
-                if (app != apps.last()) {
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color(0xFFF1F5F9))
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun AppUsageItem(app: AppUsageData) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Surface(modifier = Modifier.size(36.dp), shape = CircleShape, color = Color(0xFFF1F5F9)) {
-            if (app.iconUrl != null) {
-                AsyncImage(
-                    model = app.iconUrl,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize().padding(8.dp),
-                    contentScale = ContentScale.Fit
-                )
-            } else {
-                Icon(Icons.Default.Apps, contentDescription = null, tint = DarkBlue, modifier = Modifier.padding(8.dp))
-            }
-        }
-        Spacer(modifier = Modifier.width(16.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(text = app.name, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = TextDark)
-                Text(text = "${app.minutes} دقيقة", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            LinearProgressIndicator(
-                progress = { app.percentage },
-                modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
-                color = if (app.name == "Instagram") Primary else Secondary,
-                trackColor = Color(0xFFF1F5F9)
-            )
-        }
-    }
-}
-
-@Composable
-fun PeakHoursCard(range: String, description: String) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD)),
-        shape = RoundedCornerShape(22.dp)
-    ) {
-        Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
-            Surface(modifier = Modifier.size(44.dp), shape = CircleShape, color = Color.White) {
-                Icon(Icons.Default.AccessTime, contentDescription = null, tint = Primary, modifier = Modifier.padding(10.dp))
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(text = "أوقات الذروة", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = DarkBlue)
-                Text(text = range, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold, color = Primary)
-                Text(text = description, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-            }
-        }
-    }
-}
-
-@Composable
-fun PeriodAnalysisSection(periods: List<UsagePeriod>) {
-    Column {
-        Text(
-            text = "تحليل الفترات",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = DarkBlue,
-            modifier = Modifier.padding(vertical = 8.dp)
-        )
-
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            periods.forEach { period ->
-                PeriodCard(period)
-            }
-        }
-    }
-}
-
-@Composable
-fun PeriodCard(period: UsagePeriod) {
-    val progress = period.usedMinutes.toFloat() / period.totalMinutes.toFloat()
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        shape = RoundedCornerShape(18.dp)
-    ) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Column(modifier = Modifier.weight(1f)) {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(text = period.name, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = TextDark)
-                    if (period.isCompleted) {
-                        Text(text = "مكتملة", style = MaterialTheme.typography.labelSmall, color = Success, fontWeight = FontWeight.Bold)
-                    }
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(18.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("استخدام شاشة الهاتف", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Icon(Icons.Default.Apps, contentDescription = null, tint = Primary)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                LinearProgressIndicator(
-                    progress = { progress },
-                    modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
-                    color = if (period.isCompleted) Success else Primary,
-                    trackColor = Color(0xFFF1F5F9)
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "${period.usedMinutes} / ${period.totalMinutes} دقيقة", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                Text(comparison, fontSize = 12.sp, color = if (data.totalMinutes <= data.previousMinutes || data.previousMinutes == 0) Color(0xFF159447) else Color(0xFFC43D4B))
+                Text("مقارنة بالفترة السابقة", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
+            UsageRing(data.totalMinutes, data.previousMinutes)
         }
     }
 }
 
 @Composable
-fun AiInsightCard(insight: String) {
+private fun UsageRing(minutes: Int, previousMinutes: Int) {
+    val progress = if (previousMinutes > 0) (minutes.toFloat() / previousMinutes).coerceIn(0f, 1f) else if (minutes > 0) 1f else 0f
+    Box(modifier = Modifier.size(104.dp), contentAlignment = Alignment.Center) {
+        androidx.compose.material3.CircularProgressIndicator(
+            progress = { progress },
+            modifier = Modifier.fillMaxSize(),
+            color = Primary,
+            trackColor = Color(0xFFDDE8FA),
+            strokeWidth = 9.dp
+        )
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(formatDuration(minutes), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Text("اليوم الحالي", fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+private fun DailyUsageChartCard(data: RealStatistics) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = DarkBlue),
-        shape = RoundedCornerShape(22.dp)
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
+        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "تحليل MindGuard", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = Color.White)
+                Text("ساعات الاستخدام اليومية", fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.weight(1f))
+                Icon(Icons.Default.BarChart, contentDescription = null, tint = Primary)
             }
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(text = insight, style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.9f), lineHeight = 22.sp)
-        }
-    }
-}
-
-@Composable
-fun WeeklyGoalCard(title: String, progress: Float, comparison: String) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        shape = RoundedCornerShape(22.dp)
-    ) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Text(text = "هدف هذا الأسبوع", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = DarkBlue)
-            Text(text = title, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.size(50.dp)) {
-                    CircularProgressIndicator(progress = { progress }, color = Success, strokeWidth = 4.dp, trackColor = Color(0xFFE8F5E9))
-                    Text(text = "${(progress * 100).toInt()}%", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = Success)
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Text(text = "${(progress * 100).toInt()}% من الهدف", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = TextDark)
-                    Text(text = comparison, style = MaterialTheme.typography.labelSmall, color = Success)
+            Spacer(modifier = Modifier.height(14.dp))
+            if (data.chart.all { it.minutes == 0 }) {
+                Text("لا توجد بيانات يومية كافية", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth().height(150.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    val max = data.chart.maxOfOrNull { it.minutes }?.coerceAtLeast(1) ?: 1
+                    data.chart.forEach { point ->
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Bottom) {
+                            Box(
+                                modifier = Modifier
+                                    .width(28.dp)
+                                    .height((point.minutes.toFloat() / max * 105).coerceAtLeast(if (point.minutes > 0) 8f else 2f).dp)
+                                    .background(Primary, RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                            )
+                            Spacer(modifier = Modifier.height(5.dp))
+                            Text(point.label, fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
                 }
             }
         }
@@ -411,21 +286,180 @@ fun WeeklyGoalCard(title: String, progress: Float, comparison: String) {
 }
 
 @Composable
-fun EmptyStatsView() {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+private fun PeakAndReelsRow(data: RealStatistics) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        SmallInfoCard("أوقات الذروة", data.peakRange, "أكثر الأوقات استخداماً", Icons.Default.AccessTime, Modifier.weight(1f))
+        SmallInfoCard("الوقت المقضي على الفيديوهات القصيرة", formatDuration(data.reelsMinutes), "من إجمالي الاستخدام", Icons.Default.PlayArrow, Modifier.weight(1f))
+    }
+}
+
+@Composable
+private fun SmallInfoCard(title: String, value: String, subtitle: String, icon: androidx.compose.ui.graphics.vector.ImageVector, modifier: Modifier) {
+    Card(modifier = modifier, shape = RoundedCornerShape(18.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f))) {
+        Column(modifier = Modifier.fillMaxWidth().padding(13.dp), horizontalAlignment = Alignment.End) {
+            Icon(icon, contentDescription = null, tint = Primary, modifier = Modifier.size(23.dp))
+            Text(title, fontSize = 12.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.End)
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(value, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Primary, textAlign = TextAlign.End)
+            Text(subtitle, fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.End)
+        }
+    }
+}
+
+@Composable
+private fun MostUsedAppsCard(apps: List<RealAppUsage>) {
+    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(22.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("التطبيقات الأكثر استخداماً", fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.weight(1f))
+                Icon(Icons.Default.Timeline, contentDescription = null, tint = Primary)
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            if (apps.isEmpty()) {
+                Text("لا توجد بيانات تطبيقات متاحة", modifier = Modifier.fillMaxWidth().padding(14.dp), textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            } else {
+                apps.forEachIndexed { index, app ->
+                    RealAppUsageItem(index + 1, app)
+                    if (index < apps.lastIndex) Spacer(modifier = Modifier.height(10.dp))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RealAppUsageItem(rank: Int, app: RealAppUsage) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("$rank", fontWeight = FontWeight.Bold, color = Primary, modifier = Modifier.width(22.dp), textAlign = TextAlign.Center)
+            if (app.icon != null) {
+                androidx.compose.foundation.Image(painter = rememberDrawablePainter(app.icon), contentDescription = app.name, modifier = Modifier.size(36.dp), contentScale = ContentScale.Fit)
+            } else {
+                Icon(Icons.Default.Apps, contentDescription = null, tint = Primary, modifier = Modifier.size(36.dp))
+            }
+            Spacer(modifier = Modifier.width(10.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(app.name, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    Text(formatDuration(app.minutes), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Spacer(modifier = Modifier.height(5.dp))
+                LinearProgressIndicator(progress = { app.percentage }, modifier = Modifier.fillMaxWidth().height(6.dp), color = Primary, trackColor = Color(0xFFE6EDF8))
+            }
+        }
+    }
+}
+
+@Composable
+private fun DetailedStatisticsButton(onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth().height(52.dp),
+        shape = RoundedCornerShape(18.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = Primary)
     ) {
-        Icon(Icons.Default.BarChart, contentDescription = null, modifier = Modifier.size(80.dp), tint = Color.LightGray)
-        Spacer(modifier = Modifier.height(24.dp))
-        Text(text = "لا توجد بيانات كافية حتى الآن", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = DarkBlue)
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "استخدم التطبيقات لبعض الوقت حتى يبدأ MindGuard في تحليل نمط استخدامك.",
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray
+        Text("إحصائيات التطبيق المفصلة", fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.width(6.dp))
+        Icon(Icons.Default.ChevronLeft, contentDescription = null)
+    }
+}
+
+@Composable
+private fun UsagePermissionCard() {
+    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp), colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF4DD))) {
+        Row(modifier = Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text("فعّل صلاحية إحصائيات الاستخدام من إعدادات النظام لعرض بيانات حقيقية.", fontSize = 12.sp, modifier = Modifier.weight(1f), textAlign = TextAlign.End)
+            Icon(Icons.Default.Info, contentDescription = null, tint = Color(0xFFB77900))
+        }
+    }
+}
+
+@Composable
+private fun DetailedUsageScreen(onBack: () -> Unit) {
+    Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        AppTopBar(title = "إحصائيات التطبيق المفصلة", onBack = onBack)
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("ستتوفر الإحصائيات المفصلة لاحقاً", color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+        }
+    }
+}
+
+private fun loadRealStatistics(context: Context, tab: Int): RealStatistics {
+    val manager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+    if (!hasUsagePermission(context)) return RealStatistics(hasPermission = false)
+
+    val now = System.currentTimeMillis()
+    val end = now
+    val start = when (tab) {
+        0 -> startOfDayMillis(now)
+        1 -> now - 7L * 24 * 60 * 60 * 1000
+        else -> now - 30L * 24 * 60 * 60 * 1000
+    }
+    val stats = manager.queryUsageStats(UsageStatsManager.INTERVAL_BEST, start, end).orEmpty()
+    val packageManager = context.packageManager
+    val ownPackage = context.packageName
+    val usable = stats.filter { it.packageName != ownPackage && it.totalTimeInForeground > 0L }
+    val totalMillis = usable.sumOf { it.totalTimeInForeground }
+    val totalMinutes = (totalMillis / 60_000L).toInt()
+    val reelsPackages = setOf("com.instagram.android", "com.instagram.lite", "com.google.android.youtube", "com.zhiliaoapp.musically", "com.ss.android.ugc.trill", "com.facebook.katana", "com.facebook.lite")
+    val reelsMinutes = (usable.filter { it.packageName in reelsPackages }.sumOf { it.totalTimeInForeground } / 60_000L).toInt()
+    val topApps = usable.sortedByDescending { it.totalTimeInForeground }.take(10).map { usage ->
+        val appInfo = runCatching { packageManager.getApplicationInfo(usage.packageName, 0) }.getOrNull()
+        val minutes = (usage.totalTimeInForeground / 60_000L).toInt()
+        RealAppUsage(
+            packageName = usage.packageName,
+            name = appInfo?.loadLabel(packageManager)?.toString() ?: usage.packageName,
+            icon = appInfo?.loadIcon(packageManager),
+            minutes = minutes,
+            percentage = if (totalMinutes > 0) minutes.toFloat() / totalMinutes else 0f
         )
     }
+    val chart = buildChart(manager, start, end, tab)
+    val peak = chart.maxByOrNull { it.minutes }
+    val previousMinutes = loadPreviousMinutes(context, manager, tab, now)
+
+    return RealStatistics(
+        totalMinutes = totalMinutes,
+        reelsMinutes = reelsMinutes,
+        appUsage = topApps,
+        chart = chart,
+        peakRange = peak?.label ?: "غير متاح",
+        peakDescription = if (peak != null) "أعلى استخدام مسجل في هذه الفترة" else "لا توجد بيانات استخدام كافية بعد",
+        previousMinutes = previousMinutes,
+        hasPermission = true
+    )
+}
+
+private fun buildChart(manager: UsageStatsManager, start: Long, end: Long, tab: Int): List<RealChartPoint> {
+    val days = if (tab == 0) 6 else if (tab == 1) 7 else 7
+    val bucketMillis = if (tab == 0) 4L * 60 * 60 * 1000 else if (tab == 1) 24L * 60 * 60 * 1000 else 4L * 24 * 60 * 60 * 1000
+    val labels = if (tab == 0) listOf("00", "04", "08", "12", "16", "20") else (days - 1 downTo 0).map { offset -> LocalDate.now().minusDays(offset.toLong()).format(DateTimeFormatter.ofPattern("EEE", java.util.Locale("ar"))) }
+    val result = mutableListOf<RealChartPoint>()
+    for (index in labels.indices) {
+        val bucketStart = if (tab == 0) start + index * bucketMillis else end - (labels.size - index) * bucketMillis
+        val bucketEnd = (bucketStart + bucketMillis).coerceAtMost(end)
+        val stats = manager.queryUsageStats(UsageStatsManager.INTERVAL_BEST, bucketStart, bucketEnd).orEmpty()
+        val minutes = (stats.sumOf { it.totalTimeInForeground } / 60_000L).toInt()
+        result += RealChartPoint(labels[index], minutes)
+    }
+    return result
+}
+
+private fun loadPreviousMinutes(context: Context, manager: UsageStatsManager, tab: Int, now: Long): Int {
+    val duration = when (tab) { 0 -> 24L * 60 * 60 * 1000; 1 -> 7L * 24 * 60 * 60 * 1000; else -> 30L * 24 * 60 * 60 * 1000 }
+    val stats = manager.queryUsageStats(UsageStatsManager.INTERVAL_BEST, now - duration * 2, now - duration).orEmpty()
+    return (stats.filter { it.packageName != context.packageName }.sumOf { it.totalTimeInForeground } / 60_000L).toInt()
+}
+
+private fun hasUsagePermission(context: Context): Boolean {
+    val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+    val mode = appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), context.packageName)
+    return mode == AppOpsManager.MODE_ALLOWED
+}
+
+private fun startOfDayMillis(now: Long): Long = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+private fun formatDuration(minutes: Int): String {
+    if (minutes < 60) return "$minutes دقيقة"
+    return "${minutes / 60}س ${minutes % 60}د"
 }
