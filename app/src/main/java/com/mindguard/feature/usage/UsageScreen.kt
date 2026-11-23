@@ -60,7 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.layout.ContentScale
-import coil.compose.rememberDrawablePainter
+import coil.compose.rememberAsyncImagePainter
 import com.mindguard.core.components.AppTopBar
 import com.mindguard.core.theme.Primary
 import kotlinx.coroutines.Dispatchers
@@ -393,7 +393,7 @@ private fun RealAppUsageItem(rank: Int, app: RealAppUsage) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(toArabicDigits(rank.toString()), fontWeight = FontWeight.Bold, color = Primary, modifier = Modifier.width(22.dp), textAlign = TextAlign.Center)
             if (app.icon != null) {
-                androidx.compose.foundation.Image(painter = rememberDrawablePainter(app.icon), contentDescription = app.name, modifier = Modifier.size(36.dp), contentScale = ContentScale.Fit)
+                androidx.compose.foundation.Image(painter = rememberAsyncImagePainter(app.icon), contentDescription = app.name, modifier = Modifier.size(36.dp), contentScale = ContentScale.Fit)
             } else {
                 Icon(Icons.Default.Apps, contentDescription = null, tint = Primary, modifier = Modifier.size(36.dp))
             }
@@ -495,7 +495,7 @@ private fun DetailedUsageScreen(statistics: RealStatistics, onBack: () -> Unit) 
                             ) {
                                 if (app.icon != null) {
                                     androidx.compose.foundation.Image(
-                                        painter = rememberDrawablePainter(app.icon),
+                                        painter = rememberAsyncImagePainter(app.icon),
                                         contentDescription = app.name,
                                         modifier = Modifier.size(42.dp),
                                         contentScale = ContentScale.Fit
