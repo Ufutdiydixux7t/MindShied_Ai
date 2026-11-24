@@ -339,7 +339,7 @@ class MindGuardAccessibilityService : AccessibilityService() {
             setPadding(0, 0, 0, 0)
         }
         val buttonWidth = (236 * resources.displayMetrics.density).toInt()
-        val buttonHeight = (58 * resources.displayMetrics.density).toInt()
+        val buttonHeight = (52 * resources.displayMetrics.density).toInt()
         val button = Button(this).apply {
             text = "العودة إلى الرئيسية"
             textSize = 17f
@@ -350,9 +350,9 @@ class MindGuardAccessibilityService : AccessibilityService() {
             setPadding(28, 0, 28, 0)
             setTypeface(typeface, android.graphics.Typeface.BOLD)
             background = GradientDrawable().apply {
-                setColor(Color.rgb(36, 79, 165))
-                cornerRadius = 32 * resources.displayMetrics.density
-                setStroke((2 * resources.displayMetrics.density).toInt(), Color.rgb(19, 53, 126))
+                setColor(Color.rgb(0, 18, 66))
+                cornerRadius = 24 * resources.displayMetrics.density
+                setStroke((1 * resources.displayMetrics.density).toInt(), Color.rgb(32, 62, 112))
             }
             elevation = 6 * resources.displayMetrics.density
             setOnClickListener {

@@ -239,7 +239,7 @@ fun ChildActivationScreen(
                                         .fillMaxWidth()
                                         .height(52.dp),
                                     shape = RoundedCornerShape(24.dp),
-                                    colors = ButtonDefaults.buttonColors(containerColor = DarkBlue)
+                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                                 ) {
                                     Text("السماح باستخدام الكاميرا", fontWeight = FontWeight.Bold)
                                 }
@@ -251,7 +251,7 @@ fun ChildActivationScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(320.dp),
-                            colors = CardDefaults.cardColors(containerColor = DarkBlue),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
                             shape = RoundedCornerShape(24.dp),
                             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                         ) {
@@ -377,7 +377,7 @@ fun ChildActivationScreen(
                                     .fillMaxWidth()
                                     .height(54.dp),
                                 shape = RoundedCornerShape(22.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = DarkBlue)
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                             ) {
                                 Text(
                                     text = "تأكيد الاقتران والبدء",
@@ -457,7 +457,7 @@ fun ChildActivationScreen(
                             showSuccessDialog = false
                             onActivationSuccess()
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = DarkBlue)
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
                         Text("الانتقال للرئيسية")
                     }

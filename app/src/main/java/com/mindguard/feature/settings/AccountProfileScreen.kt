@@ -197,7 +197,7 @@ fun AccountProfileScreen(
                         .fillMaxWidth()
                         .height(56.dp),
                     shape = RoundedCornerShape(22.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = DarkBlue)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Text(
                         text = "حفظ التغييرات",

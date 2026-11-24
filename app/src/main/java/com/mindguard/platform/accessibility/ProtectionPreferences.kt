@@ -1,6 +1,7 @@
 package com.mindguard.platform.accessibility
 
 import android.content.Context
+import java.time.LocalDate
 import java.time.LocalTime
 
 /** Shared, lightweight configuration used by the protection UI and AccessibilityService. */
@@ -169,5 +170,51 @@ object ProtectionPreferences {
         val key = usageSecondsKey(packageName, date, periodId)
         val current = getUsedSeconds(context, packageName, date, periodId)
         prefs(context).edit().putInt(key, current + seconds).apply()
+    }
+
+    /**
+     * Returns only seconds recorded by MindGuard for this package in the
+     * half-open local-date range. Both minute and second counters are read so
+     * older saved records remain included; arbitrary period IDs are supported.
+     */
+    fun getRecordedUsageSecondsBetween(
+        context: Context,
+        packageName: String,
+        startInclusive: LocalDate,
+        endExclusive: LocalDate
+    ): Long {
+        if (endExclusive <= startInclusive) return 0L
+
+        val allEntries = prefs(context).all
+        val secondsPrefix = "usage_seconds_${packageName}_"
+        val minutesPrefix = "usage_${packageName}_"
+
+        fun totalForPrefix(prefix: String, multiplier: Long): Long = allEntries.entries.sumOf { (key, value) ->
+            if (!key.startsWith(prefix)) return@sumOf 0L
+            val date = runCatching { LocalDate.parse(key.removePrefix(prefix).take(10)) }.getOrNull()
+                ?: return@sumOf 0L
+            if (date < startInclusive || date >= endExclusive) return@sumOf 0L
+            ((value as? Int) ?: 0).coerceAtLeast(0).toLong() * multiplier
+        }
+
+        return totalForPrefix(secondsPrefix, 1L) + totalForPrefix(minutesPrefix, 60L)
+    }
+
+    /** True only when MindGuard has a saved counter for this package in the date range. */
+    fun hasRecordedUsageBetween(
+        context: Context,
+        packageName: String,
+        startInclusive: LocalDate,
+        endExclusive: LocalDate
+    ): Boolean {
+        if (endExclusive <= startInclusive) return false
+        val allEntries = prefs(context).all
+        val prefixes = listOf("usage_seconds_${packageName}_", "usage_${packageName}_")
+        return allEntries.keys.any { key ->
+            val prefix = prefixes.firstOrNull { key.startsWith(it) } ?: return@any false
+            val date = runCatching { LocalDate.parse(key.removePrefix(prefix).take(10)) }.getOrNull()
+                ?: return@any false
+            date >= startInclusive && date < endExclusive
+        }
     }
 }

@@ -1011,8 +1011,8 @@ fun ContentProtectionSubScreen(
                                 onClick = { viewModel.updateStrictnessLevel(level) },
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = if (isSelected) Primary else Color(0xFFF1F5F9),
-                                    contentColor = if (isSelected) Color.White else TextDark
+                                    containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                                    contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                                 ),
                                 shape = RoundedCornerShape(22.dp)
                             ) {
@@ -1166,7 +1166,10 @@ fun SettingsLockSubScreen(
                     }
                     Button(
                         onClick = { viewModel.updatePinCode("4321") },
-                        colors = ButtonDefaults.buttonColors(containerColor = Primary.copy(alpha = 0.1f), contentColor = Primary),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
                         shape = RoundedCornerShape(22.dp)
                     ) {
                         Text("تغيير الرمز", fontWeight = FontWeight.Bold)
