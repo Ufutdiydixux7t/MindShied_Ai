@@ -447,106 +447,80 @@ private fun LoginWaveDecoration(top: Boolean, modifier: Modifier) {
     ) {
         val width = size.width
         val height = size.height
-        fun wavePath(layer: Int): Path = Path().apply {
-            val waveWidth = width * when (layer) {
-                0 -> 0.78f
-                1 -> 0.68f
-                else -> 0.58f
-            }
-            val startX = width - waveWidth
-            val rightEdge = when (layer) {
-                0 -> if (top) 0.43f else 0.52f
-                1 -> if (top) 0.56f else 0.41f
-                else -> if (top) 0.68f else 0.30f
-            }
-            val leftEdge = when (layer) {
-                0 -> if (top) 0.56f else 0.62f
-                1 -> if (top) 0.68f else 0.49f
-                else -> if (top) 0.77f else 0.40f
-            }
-            val middle = when (layer) {
-                0 -> if (top) 0.46f else 0.53f
-                1 -> if (top) 0.58f else 0.44f
-                else -> if (top) 0.70f else 0.33f
-            }
-            if (top) {
-                moveTo(0f, 0f)
-                lineTo(waveWidth * 0.78f, 0f)
-                cubicTo(
-                    waveWidth * 1.04f, height * 0.05f,
-                    waveWidth * 0.98f, height * (rightEdge - 0.12f),
-                    waveWidth * 0.76f, height * rightEdge
-                )
-                cubicTo(
-                    waveWidth * 0.52f, height * (middle + 0.12f),
-                    waveWidth * 0.24f, height * (leftEdge - 0.10f),
-                    0f, height * leftEdge
-                )
-                close()
-            } else {
-                moveTo(startX, height)
-                lineTo(width, height)
-                lineTo(width, height * rightEdge)
-                cubicTo(
-                    width - waveWidth * 0.05f, height * (rightEdge + 0.16f),
-                    width - waveWidth * 0.28f, height * (middle - 0.12f),
-                    startX + waveWidth * 0.54f, height * middle
-                )
-                cubicTo(
-                    startX + waveWidth * 0.32f, height * (leftEdge + 0.07f),
-                    startX + waveWidth * 0.12f, height * (leftEdge - 0.10f),
-                    startX, height * leftEdge
-                )
-                close()
-            }
-        }
-
         if (top) {
+            fun topWave(topReach: Float, curveReach: Float, leftReach: Float) = Path().apply {
+                moveTo(0f, 0f)
+                lineTo(width * topReach, 0f)
+                cubicTo(
+                    width * curveReach, 0f,
+                    0f, height * (leftReach * 0.78f),
+                    0f, height * leftReach
+                )
+                close()
+            }
+
             drawPath(
-                path = wavePath(0),
+                path = topWave(topReach = 0.68f, curveReach = 0.78f, leftReach = 0.98f),
                 brush = Brush.verticalGradient(
-                    colors = listOf(Color(0xFFC5D9F2).copy(alpha = 0.86f), LoginSoftBlue.copy(alpha = 0.96f)),
+                    colors = listOf(Color(0xFFE7EFFB), Color(0xFFD7E4F8)),
                     startY = 0f,
                     endY = height
                 )
             )
             drawPath(
-                path = wavePath(1),
+                path = topWave(topReach = 0.47f, curveReach = 0.55f, leftReach = 0.72f),
                 brush = Brush.verticalGradient(
-                    colors = listOf(LoginLightBlue.copy(alpha = 0.54f), Color.White.copy(alpha = 0.68f)),
+                    colors = listOf(Color(0xFFC4D7F3), Color(0xFFB2CAEF)),
                     startY = 0f,
                     endY = height
                 )
             )
             drawPath(
-                path = wavePath(2),
+                path = topWave(topReach = 0.29f, curveReach = 0.36f, leftReach = 0.43f),
                 brush = Brush.verticalGradient(
-                    colors = listOf(LoginRoyalBlue.copy(alpha = 0.20f), LoginLightBlue.copy(alpha = 0.38f)),
+                    colors = listOf(Color(0xFF91B3E9), Color(0xFF83A8E4)),
                     startY = 0f,
                     endY = height
                 )
             )
         } else {
+            fun bottomWave(leftReach: Float, centerReach: Float, rightReach: Float) = Path().apply {
+                moveTo(0f, height * leftReach)
+                cubicTo(
+                    0f, height * (leftReach + (centerReach - leftReach) * 0.25f),
+                    width * 0.42f, height * (centerReach - (rightReach - centerReach) * 0.12f),
+                    width * 0.60f, height * centerReach
+                )
+                cubicTo(
+                    width * 0.78f, height * (centerReach + (rightReach - centerReach) * 0.12f),
+                    width, height * (rightReach + (centerReach - rightReach) * 0.22f),
+                    width, height * rightReach
+                )
+                lineTo(width, height)
+                lineTo(0f, height)
+                close()
+            }
+
             drawPath(
-                path = wavePath(0),
+                path = bottomWave(leftReach = 0.24f, centerReach = 0.68f, rightReach = 0.04f),
                 brush = Brush.verticalGradient(
-                    colors = listOf(Color(0xFFDCE9F8).copy(alpha = 0.32f), Color(0xFFC5D9F4).copy(alpha = 0.94f)),
+                    colors = listOf(Color(0xFFE6EFFB), Color(0xFFD3E2F7)),
                     startY = 0f,
                     endY = height
                 )
             )
             drawPath(
-                path = wavePath(1),
+                path = bottomWave(leftReach = 0.50f, centerReach = 0.84f, rightReach = 0.25f),
                 brush = Brush.verticalGradient(
-                    colors = listOf(LoginLightBlue.copy(alpha = 0.42f), Color(0xFF91B6E7).copy(alpha = 0.60f)),
+                    colors = listOf(Color(0xFFBFD4F2), Color(0xFFA8C3ED)),
                     startY = 0f,
                     endY = height
                 )
             )
             drawPath(
-                path = wavePath(2),
+                path = bottomWave(leftReach = 0.77f, centerReach = 0.98f, rightReach = 0.51f),
                 brush = Brush.verticalGradient(
-                    colors = listOf(Color(0xFFB9D1F0).copy(alpha = 0.34f), LoginRoyalBlue.copy(alpha = 0.24f)),
+                    colors = listOf(Color(0xFF98B9EB), Color(0xFF7FA7E3)),
                     startY = 0f,
                     endY = height
                 )
