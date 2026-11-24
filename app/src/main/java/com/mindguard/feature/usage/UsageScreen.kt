@@ -493,13 +493,6 @@ private fun DetailedUsageScreen(statistics: RealStatistics, onBack: () -> Unit) 
                 textAlign = TextAlign.Right,
                 style = MaterialTheme.typography.titleMedium.copy(textDirection = TextDirection.Rtl)
             )
-            Text(
-                text = "بيانات حقيقية من إحصائيات استخدام الجهاز",
-                modifier = Modifier.fillMaxWidth(),
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.End
-            )
             if (statistics.isLoading) {
                 Text("جارٍ تحميل بيانات الاستخدام", modifier = Modifier.fillMaxWidth().padding(24.dp), textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else if (!statistics.hasPermission) {
@@ -519,27 +512,30 @@ private fun DetailedUsageScreen(statistics: RealStatistics, onBack: () -> Unit) 
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { expanded = !expanded },
+                                    .clickable { expanded = !expanded }
+                                    .padding(horizontal = 6.dp, vertical = 3.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                if (app.icon != null) {
-                                    androidx.compose.foundation.Image(
-                                        painter = rememberAsyncImagePainter(app.icon),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(32.dp),
-                                        contentScale = ContentScale.Fit
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .background(Color.Transparent, RoundedCornerShape(12.dp)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    com.mindguard.feature.protection.AppBrandIconBadge(
+                                        appId = app.packageName,
+                                        appName = app.name,
+                                        icon = app.icon
                                     )
-                                } else {
-                                    Icon(Icons.Default.Apps, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp))
                                 }
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(12.dp))
                                 Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.Start) {
-                                    Text(app.name, fontWeight = FontWeight.Bold, fontSize = 13.sp, textAlign = TextAlign.Start, maxLines = 1)
-                                    Text(formatDuration(app.minutes), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Start)
-                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(app.name, fontWeight = FontWeight.Bold, fontSize = 14.sp, textAlign = TextAlign.Start, maxLines = 1)
+                                    Text(formatDuration(app.minutes), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Start)
+                                    Spacer(modifier = Modifier.height(6.dp))
                                     LinearProgressIndicator(
                                         progress = { app.percentage },
-                                        modifier = Modifier.fillMaxWidth().height(5.dp),
+                                        modifier = Modifier.fillMaxWidth().height(6.dp),
                                         color = MaterialTheme.colorScheme.primary,
                                         trackColor = MaterialTheme.colorScheme.surfaceVariant
                                     )
