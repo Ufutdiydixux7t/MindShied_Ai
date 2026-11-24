@@ -184,7 +184,7 @@ fun LoginScreen(
                     onValueChange = { email = it },
                     placeholder = { Text("البريد الإلكتروني", color = LoginMuted) },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(18.dp),
+                    shape = RoundedCornerShape(26.dp),
                     leadingIcon = {
                         Icon(Icons.Default.Email, contentDescription = null, tint = LoginRoyalBlue)
                     },
@@ -207,7 +207,7 @@ fun LoginScreen(
                     onValueChange = { password = it },
                     placeholder = { Text("كلمة المرور", color = LoginMuted) },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(18.dp),
+                    shape = RoundedCornerShape(26.dp),
                     leadingIcon = {
                         Icon(Icons.Default.Lock, contentDescription = null, tint = LoginRoyalBlue)
                     },
@@ -281,7 +281,7 @@ fun LoginScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
-                    shape = RoundedCornerShape(20.dp),
+                    shape = RoundedCornerShape(32.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = LoginNavy),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp, pressedElevation = 2.dp)
                 ) {
@@ -448,6 +448,12 @@ private fun LoginWaveDecoration(top: Boolean, modifier: Modifier) {
         val width = size.width
         val height = size.height
         fun wavePath(layer: Int): Path = Path().apply {
+            val waveWidth = width * when (layer) {
+                0 -> 0.78f
+                1 -> 0.68f
+                else -> 0.58f
+            }
+            val startX = width - waveWidth
             val rightEdge = when (layer) {
                 0 -> if (top) 0.43f else 0.52f
                 1 -> if (top) 0.56f else 0.41f
@@ -465,32 +471,31 @@ private fun LoginWaveDecoration(top: Boolean, modifier: Modifier) {
             }
             if (top) {
                 moveTo(0f, 0f)
-                lineTo(width, 0f)
-                lineTo(width, height * rightEdge)
+                lineTo(waveWidth * 0.78f, 0f)
                 cubicTo(
-                    width * 0.82f, height * (rightEdge - 0.13f),
-                    width * 0.66f, height * (middle - 0.16f),
-                    width * 0.45f, height * middle
+                    waveWidth * 1.04f, height * 0.05f,
+                    waveWidth * 0.98f, height * (rightEdge - 0.12f),
+                    waveWidth * 0.76f, height * rightEdge
                 )
                 cubicTo(
-                    width * 0.27f, height * (leftEdge + 0.08f),
-                    width * 0.12f, height * (leftEdge - 0.13f),
+                    waveWidth * 0.52f, height * (middle + 0.12f),
+                    waveWidth * 0.24f, height * (leftEdge - 0.10f),
                     0f, height * leftEdge
                 )
                 close()
             } else {
-                moveTo(0f, height)
+                moveTo(startX, height)
                 lineTo(width, height)
                 lineTo(width, height * rightEdge)
                 cubicTo(
-                    width * 0.82f, height * (rightEdge + 0.15f),
-                    width * 0.66f, height * (middle - 0.13f),
-                    width * 0.45f, height * middle
+                    width - waveWidth * 0.05f, height * (rightEdge + 0.16f),
+                    width - waveWidth * 0.28f, height * (middle - 0.12f),
+                    startX + waveWidth * 0.54f, height * middle
                 )
                 cubicTo(
-                    width * 0.27f, height * (leftEdge + 0.10f),
-                    width * 0.12f, height * (leftEdge - 0.13f),
-                    0f, height * leftEdge
+                    startX + waveWidth * 0.32f, height * (leftEdge + 0.07f),
+                    startX + waveWidth * 0.12f, height * (leftEdge - 0.10f),
+                    startX, height * leftEdge
                 )
                 close()
             }
