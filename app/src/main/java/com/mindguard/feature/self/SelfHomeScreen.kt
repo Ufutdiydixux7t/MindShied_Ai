@@ -3,6 +3,7 @@ package com.mindguard.feature.self
 import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,10 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.HourglassBottom
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.SelfImprovement
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -38,6 +35,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -87,78 +86,116 @@ fun SelfHomeScreen() {
 
     val protectionEnabled = protectedApps.isNotEmpty()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 18.dp)
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Spacer(modifier = Modifier.height(8.dp))
+    Box(modifier = Modifier.fillMaxSize()) {
+        HomeBottomWaveDecoration(modifier = Modifier.align(Alignment.BottomCenter))
 
-        ManualProtectionStatusCard(
-            enabled = protectionEnabled,
-            protectedAppsCount = protectedApps.size
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 18.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Spacer(modifier = Modifier.height(8.dp))
 
-        if (protectedApps.isEmpty()) {
-            EmptyProtectionCard()
-        } else {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Surface(
-                    modifier = Modifier.size(38.dp),
-                    shape = RoundedCornerShape(13.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer
+            ManualProtectionStatusCard(
+                enabled = protectionEnabled,
+                protectedAppsCount = protectedApps.size
+            )
+
+            if (protectedApps.isEmpty()) {
+                EmptyProtectionCard()
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Apps,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(9.dp)
-                    )
+                    Surface(
+                        modifier = Modifier.size(38.dp),
+                        shape = RoundedCornerShape(13.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Apps,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(9.dp)
+                        )
+                    }
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 12.dp)
+                    ) {
+                        Text(
+                            text = "التطبيقات المحمية",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "الوقت المتبقي اليوم",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primaryContainer
+                    ) {
+                        Text(
+                            text = protectedApps.size.toString(),
+                            modifier = Modifier.padding(horizontal = 13.dp, vertical = 6.dp),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
                 }
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 12.dp)
-                ) {
-                    Text(
-                        text = "التطبيقات المحمية",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = "الوقت المتبقي اليوم",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primaryContainer
-                ) {
-                    Text(
-                        text = protectedApps.size.toString(),
-                        modifier = Modifier.padding(horizontal = 13.dp, vertical = 6.dp),
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
+
+                protectedApps.forEach { app ->
+                    ProtectedAppRemainingCard(app)
                 }
             }
 
-            protectedApps.forEach { app ->
-                ProtectedAppRemainingCard(app)
-            }
+            DailyAdviceCard(protectedApps)
+            // Keep the final card clear of the floating bottom navigation bar.
+            Spacer(modifier = Modifier.height(112.dp))
         }
+    }
+}
 
-        DailyAdviceCard(protectedApps)
-        // Keep the final card clear of the floating bottom navigation bar.
-        Spacer(modifier = Modifier.height(112.dp))
+@Composable
+private fun HomeBottomWaveDecoration(modifier: Modifier = Modifier) {
+    val waveStart = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.34f)
+    val waveEnd = MaterialTheme.colorScheme.primary.copy(alpha = 0.07f)
+
+    Canvas(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(128.dp)
+    ) {
+        val width = size.width
+        val height = size.height
+        val wave = Path().apply {
+            moveTo(0f, height * 0.34f)
+            cubicTo(
+                width * 0.28f, height * 0.12f,
+                width * 0.68f, height * 0.82f,
+                width, height * 0.24f
+            )
+            lineTo(width, height)
+            lineTo(0f, height)
+            close()
+        }
+        drawPath(
+            path = wave,
+            brush = Brush.verticalGradient(
+                colors = listOf(waveStart, waveEnd),
+                startY = 0f,
+                endY = height
+            )
+        )
     }
 }
 
@@ -184,22 +221,10 @@ private fun ManualProtectionStatusCard(
                 .padding(horizontal = 18.dp, vertical = 18.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Surface(
-                modifier = Modifier.size(54.dp),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primary
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Security,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier.padding(14.dp)
-                )
-            }
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = 14.dp)
+                    .padding(end = 12.dp)
             ) {
                 Text(
                     text = if (enabled) "الحماية اليدوية مفعّلة" else "الحماية اليدوية غير مفعّلة",
@@ -235,24 +260,13 @@ private fun ManualProtectionStatusCard(
                 shape = RoundedCornerShape(50),
                 color = MaterialTheme.colorScheme.surface.copy(alpha = 0.78f)
             ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = if (enabled) Icons.Default.CheckCircle else Icons.Default.Info,
-                        contentDescription = null,
-                        tint = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(15.dp)
-                    )
-                    Text(
-                        text = if (enabled) "نشطة" else "غير نشطة",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(start = 5.dp)
-                    )
-                }
+                Text(
+                    text = if (enabled) "نشطة" else "غير نشطة",
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             }
         }
     }
@@ -279,22 +293,9 @@ private fun ProtectedAppRemainingCard(app: HomeProtectedAppState) {
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Surface(
-                    modifier = Modifier.size(46.dp),
-                    shape = RoundedCornerShape(15.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer
-                ) {
-                    Icon(
-                        imageVector = if (app.isFrozen) Icons.Default.Security else Icons.Default.HourglassBottom,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(11.dp)
-                    )
-                }
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(start = 12.dp)
                 ) {
                     Text(
                         text = app.appName,
@@ -328,18 +329,11 @@ private fun ProtectedAppRemainingCard(app: HomeProtectedAppState) {
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Security,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp)
-                        )
                         Text(
                             text = "التطبيق مجمّد حالياً",
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.padding(start = 8.dp)
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 }

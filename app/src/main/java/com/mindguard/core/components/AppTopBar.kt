@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -66,11 +67,9 @@ fun AppTopBar(
 
         if (userName != null) {
             Row(
-                modifier = Modifier.align(Alignment.CenterEnd),
+                modifier = Modifier.align(Alignment.CenterStart),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ColumnGreeting(userName)
-                Spacer(modifier = Modifier.width(8.dp))
                 Surface(
                     modifier = Modifier.size(40.dp),
                     shape = CircleShape,
@@ -81,7 +80,7 @@ fun AppTopBar(
                             model = profileImageUri,
                             contentDescription = "الصورة الشخصية",
                             modifier = Modifier
-                                .fillMaxWidth()
+                                .fillMaxSize()
                                 .clip(CircleShape),
                             contentScale = ContentScale.Crop
                         )
@@ -94,6 +93,8 @@ fun AppTopBar(
                         )
                     }
                 }
+                Spacer(modifier = Modifier.width(8.dp))
+                ColumnGreeting(userName)
             }
         }
     }
@@ -102,20 +103,20 @@ fun AppTopBar(
 @Composable
 private fun ColumnGreeting(userName: String) {
     androidx.compose.foundation.layout.Column(
-        horizontalAlignment = Alignment.End
+        horizontalAlignment = Alignment.Start
     ) {
         Text(
             text = "مرحباً، $userName",
             color = MaterialTheme.colorScheme.onSurface,
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp,
-            textAlign = TextAlign.End
+            textAlign = TextAlign.Start
         )
         Text(
             text = "حماية ذكية لعقل أكثر صفاءً",
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 10.sp,
-            textAlign = TextAlign.End
+            textAlign = TextAlign.Start
         )
     }
 }

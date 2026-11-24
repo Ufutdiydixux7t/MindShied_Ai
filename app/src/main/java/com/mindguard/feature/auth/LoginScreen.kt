@@ -22,7 +22,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -90,7 +89,7 @@ fun LoginScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.ic_app_logo),
+                    painter = painterResource(id = R.drawable.ic_app_logo_transparent),
                     contentDescription = null,
                     modifier = Modifier.size(280.dp),
                     alpha = 0.025f
@@ -126,30 +125,12 @@ fun LoginScreen(
             ) {
                 Spacer(modifier = Modifier.height(42.dp))
 
-                // Logo Container
-                Surface(
-                    modifier = Modifier
-                        .size(96.dp)
-                        .border(1.dp, Color.White, RoundedCornerShape(28.dp)),
-                    shape = RoundedCornerShape(28.dp),
-                    color = Color.White,
-                    shadowElevation = 8.dp
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(7.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_app_logo),
-                            contentDescription = "MindGuard Logo",
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(RoundedCornerShape(22.dp))
-                        )
-                    }
-                }
+                // App Logo — standalone transparent mark without a surrounding tile.
+                Image(
+                    painter = painterResource(id = R.drawable.ic_app_logo_transparent),
+                    contentDescription = "MindGuard Logo",
+                    modifier = Modifier.size(124.dp)
+                )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
