@@ -60,7 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.layout.ContentScale
-import coil.compose.rememberDrawablePainter
+import coil.compose.rememberAsyncImagePainter
 import com.mindguard.core.components.AppTopBar
 import com.mindguard.core.theme.Primary
 import kotlinx.coroutines.Dispatchers
@@ -95,6 +95,7 @@ private data class RealStatistics(
     val previousMinutes: Int = 0,
     val hasPermission: Boolean = true
 )
+
 
 private val reelsPackageNames = setOf(
     "com.instagram.android",
@@ -401,7 +402,7 @@ private fun RealAppUsageItem(rank: Int, app: RealAppUsage) {
             }
             Spacer(modifier = Modifier.width(10.dp))
             if (app.icon != null) {
-                androidx.compose.foundation.Image(painter = rememberDrawablePainter(app.icon), contentDescription = app.name, modifier = Modifier.size(36.dp), contentScale = ContentScale.Fit)
+                androidx.compose.foundation.Image(painter = rememberAsyncImagePainter(app.icon), contentDescription = app.name, modifier = Modifier.size(36.dp), contentScale = ContentScale.Fit)
             } else {
                 Icon(Icons.Default.Apps, contentDescription = null, tint = Primary, modifier = Modifier.size(36.dp))
             }
@@ -510,7 +511,7 @@ private fun DetailedUsageScreen(statistics: RealStatistics, onBack: () -> Unit) 
                                 Spacer(modifier = Modifier.width(10.dp))
                                 if (app.icon != null) {
                                     androidx.compose.foundation.Image(
-                                        painter = rememberDrawablePainter(app.icon),
+                                        painter = rememberAsyncImagePainter(app.icon),
                                         contentDescription = app.name,
                                         modifier = Modifier.size(40.dp),
                                         contentScale = ContentScale.Fit
