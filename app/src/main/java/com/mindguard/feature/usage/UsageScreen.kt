@@ -37,6 +37,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -551,9 +552,13 @@ private fun DetailedUsageScreen(statistics: RealStatistics, onBack: () -> Unit) 
                             if (expanded) {
                                 Spacer(modifier = Modifier.height(10.dp))
                                 DetailedUsageRow("مرات الانتقال إلى التطبيق", toArabicDigits("${app.launches} مرات"))
+                                HorizontalDivider(color = Color(0xFFE7EAF0), thickness = 0.5.dp)
                                 DetailedUsageRow("إجمالي الوقت المقضي", formatDuration(app.minutes))
+                                HorizontalDivider(color = Color(0xFFE7EAF0), thickness = 0.5.dp)
                                 DetailedUsageRow("وقت الفيديوهات القصيرة المَرْصودة", app.trackedReelsSeconds?.let(::formatDurationSeconds) ?: if (app.packageName in reelsPackageNames) "غير متاح" else "لا ينطبق")
+                                HorizontalDivider(color = Color(0xFFE7EAF0), thickness = 0.5.dp)
                                 DetailedUsageRow("آخر استخدام", formatLastUsed(app.lastUsedMillis))
+                                HorizontalDivider(color = Color(0xFFE7EAF0), thickness = 0.5.dp)
                                 DetailedUsageRow("نسبة الاستخدام", toArabicDigits("${(app.percentage * 100).toInt()}%"))
                             }
                         }
@@ -570,7 +575,7 @@ private fun DetailedUsageScreen(statistics: RealStatistics, onBack: () -> Unit) 
 @Composable
 private fun DetailedUsageRow(label: String, value: String) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 7.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
