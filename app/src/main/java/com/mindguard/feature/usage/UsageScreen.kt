@@ -56,6 +56,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -258,17 +259,22 @@ private fun ScreenUsageCard(data: RealStatistics, tab: Int) {
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(18.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Icon(Icons.Default.Apps, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("استخدام شاشة الهاتف", fontWeight = FontWeight.Bold, fontSize = 14.sp, textAlign = TextAlign.Start)
+                    Text("استخدام شاشة الهاتف", fontWeight = FontWeight.Bold, fontSize = 14.sp, textAlign = TextAlign.Right)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(toArabicDigits(comparison), fontSize = 12.sp, color = if (previousMinutes == null || data.totalMinutes <= previousMinutes) Color(0xFF159447) else Color(0xFFC43D4B), textAlign = TextAlign.Start)
-                Text("مقارنة بالفترة السابقة", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Start)
+                Text(toArabicDigits(comparison), modifier = Modifier.fillMaxWidth(), fontSize = 12.sp, color = if (previousMinutes == null || data.totalMinutes <= previousMinutes) Color(0xFF159447) else Color(0xFFC43D4B), textAlign = TextAlign.Right)
+                Text("مقارنة بالفترة السابقة", modifier = Modifier.fillMaxWidth(), fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Right)
             }
             UsageRing(data.totalMinutes, tab, data.hasData && data.hasPermission)
         }
@@ -484,7 +490,8 @@ private fun DetailedUsageScreen(statistics: RealStatistics, onBack: () -> Unit) 
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.End
+                textAlign = TextAlign.Right,
+                style = MaterialTheme.typography.titleMedium.copy(textDirection = TextDirection.Rtl)
             )
             Text(
                 text = "بيانات حقيقية من إحصائيات استخدام الجهاز",
