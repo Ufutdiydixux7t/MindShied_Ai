@@ -29,18 +29,22 @@ import com.mindguard.core.theme.Primary
 @Composable
 fun CreateChildScreen(
     onBack: () -> Unit,
-    onNextToLink: (childName: String) -> Unit
+    onNextToLink: (FamilyChildDraft) -> Unit,
+    initialDraft: FamilyChildDraft? = null
 ) {
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-        var childName by remember { mutableStateOf("") }
-        var childAge by remember { mutableStateOf("") }
+        var childName by remember(initialDraft) { mutableStateOf(initialDraft?.name.orEmpty()) }
+        var childEmail by remember(initialDraft) { mutableStateOf(initialDraft?.email.orEmpty()) }
+        var childAge by remember(initialDraft) { mutableStateOf(initialDraft?.age?.toString().orEmpty()) }
+        var formError by remember { mutableStateOf<String?>(null) }
 
-        var isShortVideosLimitEnabled by remember { mutableStateOf(true) }
-        var isProtectedAppsEnabled by remember { mutableStateOf(true) }
-        var isSleepTimeEnabled by remember { mutableStateOf(true) }
-        var isContentProtectionEnabled by remember { mutableStateOf(true) }
-        var isLockRulesEnabled by remember { mutableStateOf(true) }
-        var isExtraTimeEnabled by remember { mutableStateOf(true) }
+        val initialSettings = initialDraft?.protectionSettings ?: FamilyProtectionSettings()
+        var isShortVideosLimitEnabled by remember(initialDraft) { mutableStateOf(initialSettings.shortVideosLimitEnabled) }
+        var isProtectedAppsEnabled by remember(initialDraft) { mutableStateOf(initialSettings.protectedAppsEnabled) }
+        var isSleepTimeEnabled by remember(initialDraft) { mutableStateOf(initialSettings.sleepTimeEnabled) }
+        var isContentProtectionEnabled by remember(initialDraft) { mutableStateOf(initialSettings.contentProtectionEnabled) }
+        var isLockRulesEnabled by remember(initialDraft) { mutableStateOf(initialSettings.lockRulesEnabled) }
+        var isExtraTimeEnabled by remember(initialDraft) { mutableStateOf(initialSettings.extraTimeEnabled) }
 
         Scaffold(
             topBar = {
@@ -97,8 +101,41 @@ fun CreateChildScreen(
                             .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        formError?.let { error ->
+                            Text(
+                                text = error,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                        }
                         Button(
-                            onClick = { onNextToLink(childName.ifBlank { "آدم" }) },
+                            onClick = {
+                                val parsedAge = childAge.toIntOrNull()
+                                formError = when {
+                                    childName.isBlank() -> "أدخل اسم الطفل للمتابعة."
+                                    !android.util.Patterns.EMAIL_ADDRESS.matcher(childEmail.trim()).matches() -> "أدخل بريداً إلكترونياً صحيحاً."
+                                    parsedAge == null || parsedAge !in 1..18 -> "أدخل عمراً صحيحاً بين ١ و١٨ سنة."
+                                    else -> null
+                                }
+                                if (formError == null) {
+                                    onNextToLink(
+                                        FamilyChildDraft(
+                                            name = childName.trim(),
+                                            email = childEmail.trim(),
+                                            age = parsedAge!!,
+                                            protectionSettings = FamilyProtectionSettings(
+                                                shortVideosLimitEnabled = isShortVideosLimitEnabled,
+                                                protectedAppsEnabled = isProtectedAppsEnabled,
+                                                sleepTimeEnabled = isSleepTimeEnabled,
+                                                contentProtectionEnabled = isContentProtectionEnabled,
+                                                lockRulesEnabled = isLockRulesEnabled,
+                                                extraTimeEnabled = isExtraTimeEnabled
+                                            )
+                                        )
+                                    )
+                                }
+                            },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(52.dp),
@@ -110,7 +147,7 @@ fun CreateChildScreen(
                                 horizontalArrangement = Arrangement.Center
                             ) {
                                 Text(
-                                    text = "التالي: ربط جهاز الطفل",
+                                    text = "التالي: مراجعة الملف المحلي",
                                     style = MaterialTheme.typography.titleSmall.copy(
                                         fontWeight = FontWeight.Bold,
                                         color = Color.White
@@ -180,9 +217,9 @@ fun CreateChildScreen(
                         }
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        OutlinedTextField(
-                            value = childName,
-                            onValueChange = { childName = it },
+                            OutlinedTextField(
+                                value = childName,
+                                onValueChange = { childName = it; formError = null },
                             label = { Text("اسم الطفل", fontSize = 13.sp) },
                             placeholder = { Text("مثال: آدم", fontSize = 13.sp) },
                             modifier = Modifier.fillMaxWidth(),
@@ -201,8 +238,29 @@ fun CreateChildScreen(
                         Spacer(modifier = Modifier.height(10.dp))
 
                         OutlinedTextField(
+                            value = childEmail,
+                            onValueChange = { childEmail = it; formError = null },
+                            label = { Text("البريد الإلكتروني", fontSize = 13.sp) },
+                            placeholder = { Text("name@example.com", fontSize = 13.sp) },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(22.dp),
+                            leadingIcon = {
+                                Icon(Icons.Default.Email, contentDescription = null, tint = Primary, modifier = Modifier.size(18.dp))
+                            },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                            singleLine = true,
+                            textStyle = MaterialTheme.typography.bodyMedium,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                unfocusedBorderColor = Color(0xFFE2E8F0),
+                                focusedBorderColor = Primary
+                            )
+                        )
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        OutlinedTextField(
                             value = childAge,
-                            onValueChange = { childAge = it },
+                            onValueChange = { childAge = it.filter(Char::isDigit); formError = null },
                             label = { Text("العمر", fontSize = 13.sp) },
                             placeholder = { Text("مثال: ١٠ سنوات", fontSize = 13.sp) },
                             modifier = Modifier.fillMaxWidth(),
@@ -244,6 +302,11 @@ fun CreateChildScreen(
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    Text(
+                        text = "في النسخة المحلية تُحفظ هذه القواعد على جهاز ولي الأمر فقط ولا تُطبّق على جهاز الطفل.",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
 
                     // Rule 1: Short Videos Limit
                     RuleToggleCard(
@@ -252,7 +315,7 @@ fun CreateChildScreen(
                         icon = Icons.Outlined.PlayCircle,
                         checked = isShortVideosLimitEnabled,
                         onCheckedChange = { isShortVideosLimitEnabled = it },
-                        badgeText = "٦٠ دقيقة يومياً"
+                        badgeText = "تفضيل محلي"
                     )
 
                     // Rule 2: Protected Apps
@@ -272,7 +335,7 @@ fun CreateChildScreen(
                         icon = Icons.Outlined.Bedtime,
                         checked = isSleepTimeEnabled,
                         onCheckedChange = { isSleepTimeEnabled = it },
-                        badgeText = "٩:٠٠ م – ٧:٠٠ ص"
+                        badgeText = "تفضيل محلي"
                     )
 
                     // Rule 4: Content Protection
@@ -296,7 +359,7 @@ fun CreateChildScreen(
                     // Rule 6: Request Extra Time
                     RuleToggleCard(
                         title = "طلب وقت إضافي",
-                        subtitle = "يستطيع الطفل إرسال طلب وقت إضافي لمراجعته",
+                        subtitle = "تفضيل محلي؛ لا تصل طلبات من جهاز الطفل في هذا الوضع",
                         icon = Icons.Outlined.Update,
                         checked = isExtraTimeEnabled,
                         onCheckedChange = { isExtraTimeEnabled = it }

@@ -1,42 +1,55 @@
 package com.mindguard.feature.parent
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.FamilyRestroom
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.CompositionLocalProvider
 import com.mindguard.feature.family.CreateChildScreen
+import com.mindguard.feature.family.FamilyChildDraft
+import com.mindguard.feature.family.FamilyChildDetailsScreen
+import com.mindguard.feature.family.FamilyHomeScreen
+import com.mindguard.feature.family.FamilyRequestsScreen
+import com.mindguard.feature.family.FamilyRewardsScreen
+import com.mindguard.feature.family.FamilySavedScreen
+import com.mindguard.feature.family.FamilyUnavailableScreen
+import com.mindguard.feature.family.FamilyViewModel
 import com.mindguard.feature.family.LinkChildDeviceScreen
 
 sealed class FamilyFlowStep {
-    object List : FamilyFlowStep()
-    object CreateChild : FamilyFlowStep()
-    data class LinkDevice(val childName: String) : FamilyFlowStep()
+    data object List : FamilyFlowStep()
+    data object CreateChild : FamilyFlowStep()
+    data class LinkDevice(val draft: FamilyChildDraft) : FamilyFlowStep()
+    data class Saved(val childId: String) : FamilyFlowStep()
+    data class ChildDetails(val childId: String) : FamilyFlowStep()
+    data object ExceptionRequests : FamilyFlowStep()
+    data class Rewards(val childId: String?, val returnTo: FamilyFlowStep) : FamilyFlowStep()
 }
 
 @Composable
 fun ParentHomeScreen(
-    onAddDeviceClick: () -> Unit = {},
     onSubScreenVisibilityChange: (Boolean) -> Unit = {}
 ) {
+    val familyViewModel: FamilyViewModel = viewModel()
+    val uiState by familyViewModel.uiState.collectAsState()
     var currentStep by remember { mutableStateOf<FamilyFlowStep>(FamilyFlowStep.List) }
+    var currentDraft by remember { mutableStateOf<FamilyChildDraft?>(null) }
 
-    BackHandler(enabled = currentStep != FamilyFlowStep.List) {
-        currentStep = when (currentStep) {
+    BackHandler(enabled = currentStep !is FamilyFlowStep.List) {
+        currentStep = when (val step = currentStep) {
             FamilyFlowStep.CreateChild -> FamilyFlowStep.List
             is FamilyFlowStep.LinkDevice -> FamilyFlowStep.CreateChild
+            is FamilyFlowStep.Saved -> FamilyFlowStep.List
+            is FamilyFlowStep.ChildDetails -> FamilyFlowStep.List
+            FamilyFlowStep.ExceptionRequests -> FamilyFlowStep.List
+            is FamilyFlowStep.Rewards -> step.returnTo
             FamilyFlowStep.List -> FamilyFlowStep.List
         }
     }
@@ -45,108 +58,77 @@ fun ParentHomeScreen(
         onSubScreenVisibilityChange(currentStep == FamilyFlowStep.List)
     }
 
-    when (val step = currentStep) {
-        is FamilyFlowStep.List -> {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(start = 24.dp, top = 24.dp, end = 24.dp, bottom = 92.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(modifier = Modifier.weight(0.2f))
-
-                // Family Illustration / Icon Container
-                Box(
-                    modifier = Modifier
-                        .size(160.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                            shape = CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.FamilyRestroom,
-                        contentDescription = "Family",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(80.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                // Heading
-                Text(
-                    text = "لم تتم إضافة أطفال بعد",
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontSize = 22.sp
-                    ),
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Subtitle description
-                Text(
-                    text = "أنشئ حساب طفلك، واضبط الحماية المناسبة،\nثم اربط جهازه.",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 14.sp
-                    ),
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.weight(0.5f))
-
-                // Add New Device Button
-                Button(
-                    onClick = {
-                        currentStep = FamilyFlowStep.CreateChild
-                        onAddDeviceClick()
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(22.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "ربط جهاز جديد",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-        }
-        is FamilyFlowStep.CreateChild -> {
-            CreateChildScreen(
-                onBack = { currentStep = FamilyFlowStep.List },
-                onNextToLink = { name -> currentStep = FamilyFlowStep.LinkDevice(name) }
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+        when (val step = currentStep) {
+            FamilyFlowStep.List -> FamilyHomeScreen(
+                state = uiState,
+                onAddChild = {
+                    currentDraft = null
+                    currentStep = FamilyFlowStep.CreateChild
+                },
+                onOpenChild = { childId -> currentStep = FamilyFlowStep.ChildDetails(childId) },
+                onOpenRequests = { currentStep = FamilyFlowStep.ExceptionRequests },
+                onOpenRewards = { currentStep = FamilyFlowStep.Rewards(childId = null, returnTo = FamilyFlowStep.List) }
             )
-        }
-        is FamilyFlowStep.LinkDevice -> {
-            LinkChildDeviceScreen(
-                childName = step.childName,
+
+            FamilyFlowStep.CreateChild -> CreateChildScreen(
+                onBack = {
+                    currentDraft = null
+                    currentStep = FamilyFlowStep.List
+                },
+                onNextToLink = { draft ->
+                    currentDraft = draft
+                    currentStep = FamilyFlowStep.LinkDevice(draft)
+                },
+                initialDraft = currentDraft
+            )
+
+            is FamilyFlowStep.LinkDevice -> LinkChildDeviceScreen(
+                draft = step.draft,
                 onBack = { currentStep = FamilyFlowStep.CreateChild },
-                onFinish = { currentStep = FamilyFlowStep.List }
+                onSaveLocally = {
+                    val child = familyViewModel.addChild(step.draft)
+                    currentDraft = null
+                    currentStep = FamilyFlowStep.Saved(child.id)
+                }
+            )
+
+            is FamilyFlowStep.Saved -> {
+                val child = uiState.children.firstOrNull { it.id == step.childId }
+                if (child != null) {
+                    FamilySavedScreen(child = child, onContinue = { currentStep = FamilyFlowStep.List })
+                } else {
+                    FamilyUnavailableScreen(onBack = { currentStep = FamilyFlowStep.List })
+                }
+            }
+
+            is FamilyFlowStep.ChildDetails -> {
+                val child = uiState.children.firstOrNull { it.id == step.childId }
+                if (child != null) {
+                    FamilyChildDetailsScreen(
+                        child = child,
+                        rewards = uiState.rewards.filter { it.childId == child.id },
+                        onBack = { currentStep = FamilyFlowStep.List },
+                        onUpdateChild = familyViewModel::updateChild,
+                        onManageRewards = {
+                            currentStep = FamilyFlowStep.Rewards(childId = child.id, returnTo = step)
+                        }
+                    )
+                } else {
+                    FamilyUnavailableScreen(onBack = { currentStep = FamilyFlowStep.List })
+                }
+            }
+
+            FamilyFlowStep.ExceptionRequests -> FamilyRequestsScreen(
+                onBack = { currentStep = FamilyFlowStep.List }
+            )
+
+            is FamilyFlowStep.Rewards -> FamilyRewardsScreen(
+                state = uiState,
+                initialChildId = step.childId,
+                onBack = { currentStep = step.returnTo },
+                onAddReward = familyViewModel::addReward,
+                onCompleteReward = familyViewModel::completeReward
             )
         }
     }
