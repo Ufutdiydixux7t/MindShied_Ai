@@ -9,6 +9,8 @@ pluginManagement {
         }
         mavenCentral()
         gradlePluginPortal()
+        mavenLocal()
+        maven { url = uri("D:/MindShieldAi/MindShieldAi/local-repo") }
     }
 }
 plugins {
@@ -19,6 +21,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        mavenLocal()
+        maven { url = uri("D:/MindShieldAi/MindShieldAi/local-repo") }
     }
 }
 
