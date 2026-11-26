@@ -13,3 +13,15 @@
 .externalNativeBuild
 .cxx
 local.properties
+local-repo/
+
+# Gradle
+.gradle/
+build/
+**/build/
+
+# Kotlin cache
+.kotlin/
+
+# Local configuration
+local.properties
